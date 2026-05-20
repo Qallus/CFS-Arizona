@@ -73,37 +73,37 @@ export default function DNAPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Dna className="w-6 h-6 text-orange-500" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Dna className="w-6 h-6 text-brand" />
             DNA Configuration
           </h1>
-          <p className="text-zinc-400">Core identity and configuration files</p>
+          <p className="text-muted-foreground">Core identity and configuration files</p>
         </div>
         <Button
           variant="outline"
           onClick={loadFiles}
           disabled={isLoading}
-          className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+          className="border-border text-muted-foreground hover:bg-secondary"
         >
           <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
-      <Card className="bg-zinc-900/50 border-zinc-800">
+      <Card className="bg-card/50 border-border">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <CardHeader className="border-b border-zinc-800">
-            <TabsList className="bg-zinc-800">
+          <CardHeader className="border-b border-border">
+            <TabsList className="bg-secondary">
               {dnaFiles.map((file) => (
                 <TabsTrigger
                   key={file.id}
                   value={file.id}
-                  className="data-[state=active]:bg-zinc-700 text-zinc-400 data-[state=active]:text-white"
+                  className="data-[state=active]:bg-secondary text-muted-foreground data-[state=active]:text-foreground"
                 >
                   <file.icon className="w-4 h-4 mr-2" />
                   {file.name}
                   {hasChanges[file.id] && (
-                    <Badge variant="outline" className="ml-2 border-orange-500 text-orange-500 text-xs">
+                    <Badge variant="outline" className="ml-2 border-brand text-brand text-xs">
                       Modified
                     </Badge>
                   )}
@@ -115,13 +115,13 @@ export default function DNAPage() {
           <CardContent className="p-0">
             {dnaFiles.map((file) => (
               <TabsContent key={file.id} value={file.id} className="m-0">
-                <div className="p-4 border-b border-zinc-800 bg-zinc-800/30">
-                  <CardTitle className="text-lg text-white">{file.name}</CardTitle>
+                <div className="p-4 border-b border-border bg-secondary/30">
+                  <CardTitle className="text-lg text-foreground">{file.name}</CardTitle>
                   <CardDescription>{file.description}</CardDescription>
                 </div>
                 <div className="p-4">
                   {isLoading ? (
-                    <div className="flex items-center justify-center h-64 text-zinc-500">
+                    <div className="flex items-center justify-center h-64 text-muted-foreground">
                       Loading...
                     </div>
                   ) : (
@@ -129,14 +129,14 @@ export default function DNAPage() {
                       <Textarea
                         value={files[file.id] || ''}
                         onChange={(e) => handleContentChange(file.id, e.target.value)}
-                        className="min-h-[400px] font-mono text-sm bg-zinc-900 border-zinc-700 text-zinc-100"
+                        className="min-h-[400px] font-mono text-sm bg-card border-border text-foreground"
                         placeholder={`${file.name} content will appear here...`}
                       />
                       <div className="flex justify-end mt-4">
                         <Button
                           onClick={() => saveFile(file.id)}
                           disabled={isSaving || !hasChanges[file.id]}
-                          className="bg-orange-500 hover:bg-orange-600 text-white"
+                          className="bg-brand hover:bg-brand/90 text-white"
                         >
                           <Save className="w-4 h-4 mr-2" />
                           {isSaving ? 'Saving...' : 'Save Changes'}

@@ -130,7 +130,7 @@ export default function MissionsPage() {
   };
 
   const statusConfig = {
-    queued: { icon: <ListTodo className="w-4 h-4" />, color: 'border-zinc-500 text-zinc-500', bg: 'bg-zinc-800/50' },
+    queued: { icon: <ListTodo className="w-4 h-4" />, color: 'border-zinc-500 text-muted-foreground', bg: 'bg-secondary/50' },
     'in-progress': { icon: <Play className="w-4 h-4" />, color: 'border-blue-500 text-blue-500', bg: 'bg-blue-900/20' },
     completed: { icon: <CheckCircle className="w-4 h-4" />, color: 'border-green-500 text-green-500', bg: 'bg-green-900/20' },
     blocked: { icon: <AlertCircle className="w-4 h-4" />, color: 'border-red-500 text-red-500', bg: 'bg-red-900/20' },
@@ -140,15 +140,15 @@ export default function MissionsPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <ListTodo className="w-6 h-6 text-orange-500" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <ListTodo className="w-6 h-6 text-brand" />
             Mission Queue
           </h1>
-          <p className="text-zinc-400">Prioritized tasks in execution order</p>
+          <p className="text-muted-foreground">Prioritized tasks in execution order</p>
         </div>
         <Button 
           onClick={() => setShowForm(!showForm)}
-          className="bg-orange-500 hover:bg-orange-600 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
         >
           {showForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
           {showForm ? 'Cancel' : 'New Mission'}
@@ -157,64 +157,64 @@ export default function MissionsPage() {
 
       {/* Add Mission Form */}
       {showForm && (
-        <Card className="mb-6 bg-zinc-900/50 border-zinc-800 border-orange-500/30">
+        <Card className="mb-6 bg-card/50 border-border border-brand/30">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Plus className="w-5 h-5 text-orange-500" />
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Plus className="w-5 h-5 text-brand" />
               Create New Mission
             </CardTitle>
             <CardDescription>Add a prioritized task to the mission queue</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Mission Title *</label>
+              <label className="text-sm text-muted-foreground block mb-2">Mission Title *</label>
               <Input
                 placeholder="e.g., Build customer onboarding flow"
                 value={newMission.title}
                 onChange={(e) => setNewMission({ ...newMission, title: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-secondary border-border text-foreground"
               />
             </div>
             
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Description</label>
+              <label className="text-sm text-muted-foreground block mb-2">Description</label>
               <Textarea
                 placeholder="Describe the mission scope, deliverables, and success criteria..."
                 value={newMission.description}
                 onChange={(e) => setNewMission({ ...newMission, description: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white min-h-[120px]"
+                className="bg-secondary border-border text-foreground min-h-[120px]"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Estimated Hours</label>
+                <label className="text-sm text-muted-foreground block mb-2">Estimated Hours</label>
                 <Input
                   type="number"
                   step="0.5"
                   placeholder="e.g., 4"
                   value={newMission.estimatedHours}
                   onChange={(e) => setNewMission({ ...newMission, estimatedHours: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Tags (comma separated)</label>
+                <label className="text-sm text-muted-foreground block mb-2">Tags (comma separated)</label>
                 <Input
                   placeholder="e.g., dev, frontend, urgent"
                   value={newMission.tags}
                   onChange={(e) => setNewMission({ ...newMission, tags: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
               </div>
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={addMission} className="bg-orange-500 hover:bg-orange-600">
+              <Button onClick={addMission} className="bg-brand hover:bg-brand/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Add to Queue
               </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)} className="border-zinc-700 text-zinc-300">
+              <Button variant="outline" onClick={() => setShowForm(false)} className="border-border text-muted-foreground">
                 Cancel
               </Button>
             </div>
@@ -224,18 +224,18 @@ export default function MissionsPage() {
 
       {/* Missions List */}
       {isLoading ? (
-        <div className="text-center py-12 text-zinc-500">Loading...</div>
+        <div className="text-center py-12 text-muted-foreground">Loading...</div>
       ) : missions.length === 0 ? (
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="py-12 text-center">
-            <ListTodo className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-            <p className="text-zinc-400">No missions in queue. Add one above.</p>
+            <ListTodo className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">No missions in queue. Add one above.</p>
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-3">
           {missions.map((mission, index) => (
-            <Card key={mission.id} className={`border-zinc-800 ${statusConfig[mission.status].bg}`}>
+            <Card key={mission.id} className={`border-border ${statusConfig[mission.status].bg}`}>
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   <div className="flex flex-col gap-1 items-center">
@@ -244,17 +244,17 @@ export default function MissionsPage() {
                       size="sm"
                       disabled={index === 0}
                       onClick={() => movePriority(mission.id, 'up')}
-                      className="h-6 w-6 p-0 text-zinc-500 hover:text-white"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                     >
                       <ArrowUp className="w-4 h-4" />
                     </Button>
-                    <span className="text-center text-sm font-bold text-orange-500">{index + 1}</span>
+                    <span className="text-center text-sm font-bold text-brand">{index + 1}</span>
                     <Button
                       variant="ghost"
                       size="sm"
                       disabled={index === missions.length - 1}
                       onClick={() => movePriority(mission.id, 'down')}
-                      className="h-6 w-6 p-0 text-zinc-500 hover:text-white"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                     >
                       <ArrowDown className="w-4 h-4" />
                     </Button>
@@ -262,25 +262,25 @@ export default function MissionsPage() {
                   
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <h3 className="text-lg font-medium text-white">{mission.title}</h3>
+                      <h3 className="text-lg font-medium text-foreground">{mission.title}</h3>
                       <Badge variant="outline" className={statusConfig[mission.status].color}>
                         {statusConfig[mission.status].icon}
                         <span className="ml-1">{mission.status}</span>
                       </Badge>
                       {mission.estimatedHours && (
-                        <Badge variant="outline" className="border-zinc-600 text-zinc-400">
+                        <Badge variant="outline" className="border-border text-muted-foreground">
                           <Clock className="w-3 h-3 mr-1" />
                           {mission.estimatedHours}h
                         </Badge>
                       )}
                     </div>
                     {mission.description && (
-                      <p className="text-zinc-400 text-sm mb-2">{mission.description}</p>
+                      <p className="text-muted-foreground text-sm mb-2">{mission.description}</p>
                     )}
                     {mission.tags && mission.tags.length > 0 && (
                       <div className="flex gap-1 flex-wrap">
                         {mission.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline" className="border-zinc-700 text-zinc-500 text-xs">
+                          <Badge key={i} variant="outline" className="border-border text-muted-foreground text-xs">
                             <Tag className="w-2 h-2 mr-1" />
                             {tag}
                           </Badge>
@@ -327,7 +327,7 @@ export default function MissionsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteMission(mission.id)}
-                      className="text-zinc-500 hover:text-red-500"
+                      className="text-muted-foreground hover:text-red-500"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />

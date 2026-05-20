@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SIG360.com Financial Planning</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: #050614;
+    color: #fff;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+    cursor: none; /* hide native cursor — we draw our own */
+  }
+
+  .hero {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, #1a2050 0%, #0a0f2e 35%, #050614 100%);
+  }
+
+  /* Layered grain for depth */
+  .hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 100%, rgba(80,120,255,0.25), transparent 60%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  #scene { position: absolute; inset: 0; }
+
+  .ag-nav {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    width: min(1180px, calc(100% - 32px));
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    pointer-events: auto;
+  }
+
+  .ag-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .ag-brand-mark {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    background:
+      radial-gradient(circle at 30% 30%, #ffffff, transparent 20%),
+      conic-gradient(from 120deg, #7db7ff, #b88cff, #86fff4, #b7ff8a, #7db7ff);
+    box-shadow: 0 0 35px rgba(125,183,255,0.35);
+  }
+
+  .ag-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.045);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .ag-nav-links a {
+    color: rgba(255,255,255,0.72);
+    text-decoration: none;
+    font-size: 0.88rem;
+    padding: 10px 14px;
+    border-radius: 999px;
+    transition: all 0.25s ease;
+  }
+
+  .ag-nav-links a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .ag-nav-cta {
+    color: #08101d;
+    background: #ffffff;
+    text-decoration: none;
+    padding: 11px 18px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 800;
+    transition: all 0.25s ease;
+  }
+
+  .ag-nav-cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 40px rgba(255,255,255,0.16);
+  }
+
+  .content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    padding: 0 24px;
+    pointer-events: none;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(180, 200, 255, 0.7);
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  h1 {
+    font-size: clamp(56px, 9vw, 128px);
+    font-weight: 200;
+    letter-spacing: -0.05em;
+    line-height: 1;
+    background: linear-gradient(180deg, #ffffff 0%, #a8b4d6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .subtitle {
+    margin-top: 28px;
+    font-size: 18px;
+    font-weight: 300;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 520px;
+    line-height: 1.6;
+  }
+
+  .cta-row {
+    margin-top: 48px;
+    display: flex;
+    gap: 16px;
+    pointer-events: auto;
+  }
+
+  .cta {
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 400;
+    cursor: none;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+  }
+  .cta:hover { background: rgba(255, 255, 255, 0.14); transform: translateY(-1px); }
+  .cta.primary { background: #fff; color: #050614; border-color: #fff; }
+  .cta.primary:hover { background: #e8ecff; }
+
+  /* Custom cursor (dot + ring) */
+  .cursor-dot, .cursor-ring {
+    position: fixed;
+    top: 0; left: 0;
+    pointer-events: none;
+    z-index: 100;
+    transform: translate(-50%, -50%);
+    will-change: transform;
+  }
+  .cursor-dot {
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 50%;
+    transition: width 0.25s, height 0.25s, border-color 0.25s;
+  }
+  .cursor-ring.hover {
+    width: 64px; height: 64px;
+    border-color: rgba(180, 200, 255, 0.8);
+  }
+
+  @media (max-width: 900px) {
+    .ag-nav-links {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ag-nav {
+      width: min(100%, calc(100% - 24px));
+    }
+
+    .ag-nav-cta {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <canvas id="scene"></canvas>
+
+  <nav class="ag-nav">
+    <a class="ag-brand" href="#" data-cursor="hover">
+      <span class="ag-brand-mark"></span>
+      <span>SIG360.com</span>
+    </a>
+
+    <div class="ag-nav-links">
+      <a href="#planning" data-cursor="hover">Planning</a>
+      <a href="#estate" data-cursor="hover">Estate</a>
+      <a href="#insurance" data-cursor="hover">Insurance</a>
+      <a href="#markets" data-cursor="hover">Markets</a>
+    </div>
+
+    <a class="ag-nav-cta" href="#review" data-cursor="hover">Schedule a Review</a>
+  </nav>
+
+  <div class="content">
+    <div class="eyebrow">SIG360.com</div>
+    <h1>Plan with purpose.</h1>
+    <p class="subtitle">Financial planning, estate planning, insurance planning, market strategy, and retirement income guidance aligned around the life you are building.</p>
+    <div class="cta-row">
+      <button class="cta primary" data-cursor="hover">Schedule a Planning Review</button>
+      <button class="cta" data-cursor="hover">Explore Services</button>
+    </div>
+  </div>
+</div>
+
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<script>
+(() => {
+  /* ---------- Custom cursor ---------- */
+  const dot = document.getElementById('cursorDot');
+  const ring = document.getElementById('cursorRing');
+  let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+  let rx = mx, ry = my;
+
+  window.addEventListener('mousemove', (e) => { mx = e.clientX; my = e.clientY; });
+
+  document.querySelectorAll('[data-cursor="hover"]').forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+  });
+
+  function tickCursor() {
+    // Dot snaps, ring lags (springy follow)
+    dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    rx += (mx - rx) * 0.18;
+    ry += (my - ry) * 0.18;
+    ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+    requestAnimationFrame(tickCursor);
+  }
+  tickCursor();
+
+  /* ---------- Scene canvas ---------- */
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W, H, DPR;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = canvas.clientWidth = window.innerWidth;
+    H = canvas.clientHeight = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  /* ---------- Particles (3 depth layers) ---------- */
+  const particles = [];
+  const PARTICLE_COUNT = 180;
+  for (let i = 0; i < PARTICLE_COUNT; i++) {
+    const depth = Math.random(); // 0 = far, 1 = near
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.15 * (0.4 + depth),
+      vy: (Math.random() - 0.5) * 0.15 * (0.4 + depth),
+      r: 0.4 + depth * 1.6,
+      alpha: 0.15 + depth * 0.55,
+      depth,
+      tint: Math.random() < 0.25 ? 'blue' : 'white'
+    });
+  }
+
+  /* ---------- Floating shapes (the "antigravity" objects) ---------- */
+  const SHAPE_TYPES = ['triangle', 'square', 'hex', 'ring'];
+  const shapes = [];
+  const SHAPE_COUNT = 7;
+  for (let i = 0; i < SHAPE_COUNT; i++) {
+    shapes.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      size: 30 + Math.random() * 70,
+      rot: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 0.008,
+      type: SHAPE_TYPES[Math.floor(Math.random() * SHAPE_TYPES.length)],
+      hue: 210 + Math.random() * 60,
+      depth: 0.3 + Math.random() * 0.7
+    });
+  }
+
+  /* ---------- Soft glowing orbs (the light wash) ---------- */
+  const orbs = [];
+  for (let i = 0; i < 4; i++) {
+    orbs.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.12,
+      vy: (Math.random() - 0.5) * 0.12,
+      r: 180 + Math.random() * 220,
+      hue: 220 + Math.random() * 40
+    });
+  }
+
+  /* ---------- Cursor influence ---------- */
+  const mouse = { x: W / 2, y: H / 2, active: false };
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.active = true;
+  });
+  window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+  /* ---------- Shape drawing helpers ---------- */
+  function drawShape(s, drawX, drawY) {
+    ctx.save();
+    ctx.translate(drawX, drawY);
+    ctx.rotate(s.rot);
+    ctx.strokeStyle = `hsla(${s.hue}, 80%, 75%, ${0.35 * s.depth})`;
+    ctx.fillStyle = `hsla(${s.hue}, 80%, 70%, ${0.04 * s.depth})`;
+    ctx.lineWidth = 1;
+    const r = s.size;
+
+    ctx.beginPath();
+    if (s.type === 'triangle') {
+      ctx.moveTo(0, -r);
+      ctx.lineTo(r * 0.866, r * 0.5);
+      ctx.lineTo(-r * 0.866, r * 0.5);
+      ctx.closePath();
+    } else if (s.type === 'square') {
+      ctx.rect(-r/2, -r/2, r, r);
+    } else if (s.type === 'hex') {
+      for (let i = 0; i < 6; i++) {
+        const a = (Math.PI / 3) * i;
+        const px = Math.cos(a) * r, py = Math.sin(a) * r;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+    } else { // ring
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ---------- Animation loop ---------- */
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+
+    // 1. Soft orbs (background wash)
+    orbs.forEach(o => {
+      o.x += o.vx; o.y += o.vy;
+      if (o.x < -o.r) o.x = W + o.r;
+      if (o.x > W + o.r) o.x = -o.r;
+      if (o.y < -o.r) o.y = H + o.r;
+      if (o.y > H + o.r) o.y = -o.r;
+
+      const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+      g.addColorStop(0, `hsla(${o.hue}, 85%, 60%, 0.12)`);
+      g.addColorStop(1, `hsla(${o.hue}, 85%, 60%, 0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 2. Connection lines between near particles (constellation)
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i], b = particles[j];
+        if (Math.abs(a.depth - b.depth) > 0.4) continue;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d2 = dx*dx + dy*dy;
+        if (d2 < 110 * 110) {
+          const d = Math.sqrt(d2);
+          ctx.strokeStyle = `rgba(170, 195, 255, ${(1 - d/110) * 0.10 * a.depth})`;
+          ctx.lineWidth = 0.5;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // 3. Particles with cursor repulsion
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+      let drawX = p.x, drawY = p.y;
+      if (mouse.active) {
+        const dx = p.x - mouse.x, dy = p.y - mouse.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const R = 160;
+        if (dist < R && dist > 0) {
+          const force = ((R - dist) / R) * 35 * p.depth;
+          drawX += (dx / dist) * force;
+          drawY += (dy / dist) * force;
+        }
+      }
+
+      ctx.fillStyle = p.tint === 'blue'
+        ? `hsla(220, 90%, 75%, ${p.alpha})`
+        : `rgba(255, 255, 255, ${p.alpha})`;
+      ctx.beginPath();
+      ctx.arc(drawX, drawY, p.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // 4. Floating shapes — drift + rotate + cursor magnetism (attract instead of repel)
+    shapes.forEach(s => {
+      s.x += s.vx;
+      s.y += s.vy;
+      s.rot += s.rotSpeed;
+      if (s.x < -s.size) s.x = W + s.size;
+      if (s.x > W + s.size) s.x = -s.size;
+      if (s.y < -s.size) s.y = H + s.size;
+      if (s.y > H + s.size) s.y = -s.size;
+
+      let drawX = s.x, drawY = s.y;
+      if (mouse.active) {
+        const dx = mouse.x - s.x, dy = mouse.y - s.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const R = 320;
+        if (dist < R && dist > 0) {
+          // Subtle attraction toward cursor — feels like gravity well
+          const force = ((R - dist) / R) * 30 * s.depth;
+          drawX += (dx / dist) * force;
+          drawY += (dy / dist) * force;
+        }
+      }
+      drawShape(s, drawX, drawY);
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+
+</body>
+</html>

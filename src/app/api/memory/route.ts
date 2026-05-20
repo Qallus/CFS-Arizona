@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
-const WORKSPACE_PATH = process.env.OPENCLAW_WORKSPACE || '/root/.openclaw/workspace';
+const WORKSPACE_PATH = process.env.HERMES_WORKSPACE || '/hermes/workspace';
 
 export async function GET() {
   try {

@@ -1,0 +1,143 @@
+{
+  "deals": [
+    {
+      "id": "deal-1",
+      "name": "Renaissance Personnel Group",
+      "description": "Full suite implementation for Acme Corp",
+      "stage": "negotiation",
+      "value": 75000,
+      "currency": "USD",
+      "probability": 75,
+      "expectedCloseDate": "2026-03-15",
+      "actualCloseDate": null,
+      "leadId": null,
+      "contactId": null,
+      "projectId": null,
+      "products": [
+        {
+          "id": "p1",
+          "name": "Software License",
+          "quantity": 50,
+          "unitPrice": 1000,
+          "discount": 0,
+          "total": 50000
+        },
+        {
+          "id": "p2",
+          "name": "Implementation Services",
+          "quantity": 1,
+          "unitPrice": 25000,
+          "discount": 0,
+          "total": 25000
+        }
+      ],
+      "notes": "Decision maker is the CTO. Follow up next week.",
+      "tags": [
+        "enterprise",
+        "software"
+      ],
+      "assignedTo": "Jeremy",
+      "source": "Referral",
+      "lostReason": null,
+      "createdAt": "2026-02-01T10:00:00Z",
+      "updatedAt": "2026-02-18T16:41:00.186Z"
+    },
+    {
+      "id": "deal-2",
+      "name": "Low Voltage Electric",
+      "description": "Monthly marketing services",
+      "stage": "qualified",
+      "value": 25000,
+      "currency": "USD",
+      "probability": 25,
+      "expectedCloseDate": "2026-02-28",
+      "actualCloseDate": null,
+      "leadId": null,
+      "contactId": null,
+      "projectId": null,
+      "products": [
+        {
+          "id": "p3",
+          "name": "Monthly Retainer",
+          "quantity": 12,
+          "unitPrice": 3000,
+          "discount": 0,
+          "total": 36000
+        }
+      ],
+      "notes": "Client wants to start March 1st",
+      "tags": [
+        "marketing",
+        "retainer"
+      ],
+      "assignedTo": "Jeremy",
+      "source": "Website",
+      "lostReason": null,
+      "createdAt": "2026-02-10T09:00:00Z",
+      "updatedAt": "2026-02-18T16:41:14.586Z"
+    },
+    {
+      "id": "deal-3",
+      "name": "Consulting Project",
+      "description": "Strategy consulting engagement",
+      "stage": "lead",
+      "value": 25000,
+      "currency": "USD",
+      "probability": 10,
+      "expectedCloseDate": "2026-04-01",
+      "actualCloseDate": null,
+      "leadId": null,
+      "contactId": null,
+      "projectId": null,
+      "products": [
+        {
+          "id": "p4",
+          "name": "Strategy Workshop",
+          "quantity": 2,
+          "unitPrice": 5000,
+          "discount": 0,
+          "total": 10000
+        },
+        {
+          "id": "p5",
+          "name": "Implementation Support",
+          "quantity": 1,
+          "unitPrice": 15000,
+          "discount": 0,
+          "total": 15000
+        }
+      ],
+      "notes": "",
+      "tags": [
+        "consulting"
+      ],
+      "assignedTo": "Jeremy",
+      "source": "LinkedIn",
+      "lostReason": null,
+      "createdAt": "2026-02-12T15:00:00Z",
+      "updatedAt": "2026-02-18T16:41:07.628Z"
+    },
+    {
+      "id": "deal-1771378018776",
+      "name": "Constructed Matter Inc",
+      "description": "Constructed Matter, Inc. is a Scottsdale-based builder specializing in high-end custom homes, transformative renovations, and select commercial projects throughout the greater Phoenix area — including Arcadia, Paradise Valley, and Central Phoenix.\n\nThis engagement includes the full buildout of Constructed Matter’s digital infrastructure and growth ecosystem. The project covers the development of a modern, performance-driven website aligned with their craftsmanship and brand positioning, along with CRM implementation, automation workflows, lead generation systems, project management integration, email marketing, and CPaaS (Twilio Voice & SMS) integration.\n\nThe objective is to create a scalable, automated business framework that supports:\n\n• Architect, designer, contractor, and realtor lead generation\n• RFP and municipal opportunity tracking\n• Client communication and follow-up automation\n• Project lifecycle management\n• Brand elevation within the luxury residential and commercial markets\n\nThis deal positions Constructed Matter for long-term operational efficiency, stronger referral pipelines, improved lead tracking, and a refined digital presence that reflects the quality and intentionality of their builds.",
+      "stage": "closed_won",
+      "value": 36000,
+      "currency": "USD",
+      "probability": 100,
+      "expectedCloseDate": "2026-02-18",
+      "actualCloseDate": "2026-02-18",
+      "leadId": null,
+      "contactId": null,
+      "projectId": null,
+      "products": [],
+      "notes": "Contact is ready, need to eliminate the small option and print out tomorrow morning. Signing tomorrow morning. ",
+      "tags": [],
+      "assignedTo": null,
+      "source": "Referral",
+      "lostReason": null,
+      "createdAt": "2026-02-18T01:26:58.776Z",
+      "updatedAt": "2026-02-18T16:40:49.555Z"
+    }
+  ]
+}

@@ -173,24 +173,24 @@ export default function CronPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Clock className="w-6 h-6 text-orange-500" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Clock className="w-6 h-6 text-brand" />
             Scheduled Jobs
           </h1>
-          <p className="text-zinc-400">Cron jobs, reminders, and scheduled tasks</p>
+          <p className="text-muted-foreground">Cron jobs, reminders, and scheduled tasks</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={loadJobs}
             disabled={isLoading}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="border-border text-muted-foreground hover:bg-secondary"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
           <Button 
             onClick={() => setShowForm(!showForm)}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
           >
             {showForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
             {showForm ? 'Cancel' : 'New Job'}
@@ -200,27 +200,27 @@ export default function CronPage() {
 
       {/* Add Job Form */}
       {showForm && (
-        <Card className="mb-6 bg-zinc-900/50 border-zinc-800 border-orange-500/30">
+        <Card className="mb-6 bg-card/50 border-border border-brand/30">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Plus className="w-5 h-5 text-orange-500" />
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Plus className="w-5 h-5 text-brand" />
               Create Scheduled Job
             </CardTitle>
             <CardDescription>Set up a reminder or recurring task</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Job Name *</label>
+              <label className="text-sm text-muted-foreground block mb-2">Job Name *</label>
               <Input
                 placeholder="e.g., Daily standup reminder"
                 value={newJob.name}
                 onChange={(e) => setNewJob({ ...newJob, name: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-secondary border-border text-foreground"
               />
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Schedule Type</label>
+              <label className="text-sm text-muted-foreground block mb-2">Schedule Type</label>
               <div className="flex gap-2">
                 {(['at', 'every', 'cron'] as const).map((type) => (
                   <Button
@@ -229,8 +229,8 @@ export default function CronPage() {
                     onClick={() => setNewJob({ ...newJob, scheduleType: type })}
                     className={`flex-1 capitalize ${
                       newJob.scheduleType === type 
-                        ? 'bg-orange-500/20 border-orange-500 text-orange-500' 
-                        : 'border-zinc-700 text-zinc-400'
+                        ? 'bg-brand/20 border-brand text-brand' 
+                        : 'border-border text-muted-foreground'
                     }`}
                   >
                     {scheduleTypeIcons[type]}
@@ -244,27 +244,27 @@ export default function CronPage() {
 
             {newJob.scheduleType === 'at' && (
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Date & Time *</label>
+                <label className="text-sm text-muted-foreground block mb-2">Date & Time *</label>
                 <Input
                   type="datetime-local"
                   value={newJob.dateTime}
                   onChange={(e) => setNewJob({ ...newJob, dateTime: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
               </div>
             )}
 
             {newJob.scheduleType === 'every' && (
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Interval (minutes)</label>
+                <label className="text-sm text-muted-foreground block mb-2">Interval (minutes)</label>
                 <Input
                   type="number"
                   placeholder="60"
                   value={newJob.intervalMinutes}
                   onChange={(e) => setNewJob({ ...newJob, intervalMinutes: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Common: 30 (half hour), 60 (hourly), 1440 (daily)
                 </p>
               </div>
@@ -272,35 +272,35 @@ export default function CronPage() {
 
             {newJob.scheduleType === 'cron' && (
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Cron Expression *</label>
+                <label className="text-sm text-muted-foreground block mb-2">Cron Expression *</label>
                 <Input
                   placeholder="0 9 * * 1-5"
                   value={newJob.cronExpr}
                   onChange={(e) => setNewJob({ ...newJob, cronExpr: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white font-mono"
+                  className="bg-secondary border-border text-foreground font-mono"
                 />
-                <p className="text-xs text-zinc-500 mt-1">
+                <p className="text-xs text-muted-foreground mt-1">
                   Examples: "0 9 * * *" (9am daily), "0 9 * * 1-5" (9am weekdays), "*/30 * * * *" (every 30min)
                 </p>
               </div>
             )}
             
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Message / Reminder Text *</label>
+              <label className="text-sm text-muted-foreground block mb-2">Message / Reminder Text *</label>
               <Textarea
                 placeholder="What should I remind you about?"
                 value={newJob.message}
                 onChange={(e) => setNewJob({ ...newJob, message: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white min-h-[100px]"
+                className="bg-secondary border-border text-foreground min-h-[100px]"
               />
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={addJob} className="bg-orange-500 hover:bg-orange-600">
+              <Button onClick={addJob} className="bg-brand hover:bg-brand/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Job
               </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)} className="border-zinc-700 text-zinc-300">
+              <Button variant="outline" onClick={() => setShowForm(false)} className="border-border text-muted-foreground">
                 Cancel
               </Button>
             </div>
@@ -310,15 +310,15 @@ export default function CronPage() {
 
       {/* Jobs List */}
       {isLoading ? (
-        <div className="flex items-center justify-center h-64 text-zinc-500">
+        <div className="flex items-center justify-center h-64 text-muted-foreground">
           Loading...
         </div>
       ) : jobs.length === 0 ? (
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertCircle className="w-12 h-12 text-zinc-600 mb-4" />
-            <h3 className="text-lg font-medium text-zinc-300 mb-2">No Scheduled Jobs</h3>
-            <p className="text-zinc-500 text-center max-w-md">
+            <AlertCircle className="w-12 h-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No Scheduled Jobs</h3>
+            <p className="text-muted-foreground text-center max-w-md">
               Create a scheduled job to set up reminders or recurring tasks.
             </p>
           </CardContent>
@@ -327,24 +327,24 @@ export default function CronPage() {
         <ScrollArea className="h-[calc(100vh-280px)]">
           <div className="space-y-4">
             {jobs.map((job) => (
-              <Card key={job.id} className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-colors">
+              <Card key={job.id} className="bg-card/50 border-border hover:border-border transition-colors">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
-                        <h3 className="text-lg font-medium text-white">
+                        <h3 className="text-lg font-medium text-foreground">
                           {job.name || 'Unnamed Job'}
                         </h3>
                         <Badge
                           variant="outline"
                           className={job.enabled 
                             ? 'border-green-500 text-green-500' 
-                            : 'border-zinc-500 text-zinc-500'
+                            : 'border-zinc-500 text-muted-foreground'
                           }
                         >
                           {job.enabled ? 'Active' : 'Disabled'}
                         </Badge>
-                        <Badge variant="outline" className="border-zinc-600 text-zinc-400">
+                        <Badge variant="outline" className="border-border text-muted-foreground">
                           {scheduleTypeIcons[job.schedule.kind]}
                           <span className="ml-1">{job.schedule.kind}</span>
                         </Badge>
@@ -352,20 +352,20 @@ export default function CronPage() {
                       
                       <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                         <div>
-                          <span className="text-zinc-500">Schedule:</span>
-                          <span className="text-zinc-300 ml-2">{formatSchedule(job.schedule)}</span>
+                          <span className="text-muted-foreground">Schedule:</span>
+                          <span className="text-muted-foreground ml-2">{formatSchedule(job.schedule)}</span>
                         </div>
                         <div>
-                          <span className="text-zinc-500">Next Run:</span>
-                          <span className="text-zinc-300 ml-2">
+                          <span className="text-muted-foreground">Next Run:</span>
+                          <span className="text-muted-foreground ml-2">
                             {formatNextRun(job.state?.nextRunAtMs)}
                           </span>
                         </div>
                       </div>
                       
                       {job.payload.text && (
-                        <div className="p-3 bg-zinc-800 rounded-lg">
-                          <p className="text-sm text-zinc-300">{job.payload.text}</p>
+                        <div className="p-3 bg-secondary rounded-lg">
+                          <p className="text-sm text-muted-foreground">{job.payload.text}</p>
                         </div>
                       )}
                     </div>
@@ -375,7 +375,7 @@ export default function CronPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => runJob(job.id)}
-                        className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                        className="border-border text-muted-foreground hover:bg-secondary"
                         title="Run Now"
                       >
                         <Play className="w-4 h-4" />

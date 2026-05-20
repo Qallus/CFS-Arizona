@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Client Meeting Journey — SIG V1 (Structured)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:      #0E2971;
+    --navy-deep: #081A4A;
+    --gold:      #C9A46E;
+    --gold-dark: #9E6F2E;
+    --cream:     #FAF7F2;
+    --blue-wash: #EBF0FE;
+    --white:     #FFFFFF;
+    --ink:       #1F2933;
+    --ink-soft:  #4B5563;
+    --muted:     #6B7280;
+    --border:    #E5E7EB;
+    --border-w:  #EFE8DA;
+    --shadow:    0 1px 2px rgba(15,23,42,.04), 0 4px 12px rgba(15,23,42,.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #0a1530; font-family: 'Inter', sans-serif; color: var(--ink); }
+
+  .viewer { display: flex; flex-direction: column; align-items: center; gap: 28px; padding: 40px 32px; }
+  .pg-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,.3); align-self: flex-start; margin-left: max(0px, calc(50% - 408px)); }
+
+  /* Page shell — 8.5 × 11 at 96 dpi */
+  .page {
+    width: 816px; height: 1056px;
+    background: var(--white);
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .page.cream { background: var(--cream); }
+  .page.navy  { background: var(--navy); color: var(--white); }
+
+  /* Topbar */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 15px 52px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .page.cream .topbar { border-color: #ECE3D2; background: var(--cream); }
+  .topbar img { height: 26px; }
+  .topbar-r { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+
+  /* Footer */
+  .footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px 52px; border-top: 1px solid var(--border);
+    font-size: 9px; color: var(--muted); flex-shrink: 0;
+  }
+  .page.cream .footer { border-color: #ECE3D2; background: var(--cream); }
+  .footer .n { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
+
+  /* Content */
+  .body { flex: 1; padding: 32px 52px; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Section label */
+  .sec {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 8.5px;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  }
+  .sec .bar { width: 18px; height: 1px; background: var(--gold-dark); flex-shrink: 0; }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center;
+    height: 19px; padding: 0 8px; border-radius: 999px;
+    font-size: 8px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    background: var(--cream); color: var(--gold-dark); border: 1px solid #EAD9B6;
+  }
+  .badge.nb { background: rgba(14,41,113,.07); color: var(--navy); border-color: rgba(14,41,113,.15); }
+  .badge.wb { background: rgba(255,255,255,.14); color: rgba(255,255,255,.9); border-color: rgba(255,255,255,.28); }
+  .badge.gb { background: rgba(201,164,110,.18); color: var(--gold); border-color: rgba(201,164,110,.38); }
+
+  /* Card */
+  .card {
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 10px; padding: 13px 15px; box-shadow: var(--shadow);
+  }
+  .card.cr { background: var(--cream); border-color: var(--border-w); box-shadow: none; }
+  .card.nv { background: var(--navy); border-color: transparent; color: var(--white); }
+  .card.bw { background: var(--blue-wash); border-color: #DBE3F7; box-shadow: none; }
+
+  /* Meeting item typography */
+  .item-t { font-family: 'Fraunces', serif; font-size: 13.5px; font-weight: 500; line-height: 1.2; letter-spacing: -0.005em; color: var(--ink); }
+  .item-b { font-size: 10.5px; line-height: 1.65; color: var(--ink-soft); }
+  .item-t.w { color: var(--white); }
+  .item-b.w { color: rgba(255,255,255,.82); }
+
+  /* Divider */
+  .div { height: 1px; background: var(--border); }
+  .div.w  { background: rgba(255,255,255,.14); }
+  .div.cr { background: #ECE3D2; }
+
+  /* Stat */
+  .stat-n { font-family: 'Fraunces', serif; font-size: 40px; line-height: 1; letter-spacing: -0.02em; color: var(--gold); }
+
+  /* Step number marker */
+  .step {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: grid; place-items: center; flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+  }
+  .step.nv { background: var(--navy); color: var(--white); }
+  .step.gd { background: var(--gold-dark); color: var(--white); }
+  .step.ol { background: transparent; border: 1px solid var(--border); color: var(--ink); }
+
+  /* Eyebrow */
+  .eyebrow { font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dark); }
+  .eyebrow.w { color: var(--gold); }
+
+  /* Print */
+  /* Lucide icons in cards */
+  .card-icon { display: block; flex-shrink: 0; }
+  .card-icon svg { width: 16px; height: 16px; stroke-width: 1.5; }
+  .card-icon.nv { color: var(--navy); }
+  .card-icon.gd { color: var(--gold-dark); }
+
+  @page { size: 8.5in 11in; margin: 0; }
+  @media print {
+    html, body { background: none; }
+    .viewer { padding: 0; gap: 0; }
+    .pg-label { display: none; }
+    .page { box-shadow: none; break-after: page; page-break-after: always; }
+    .page:last-child { break-after: auto; page-break-after: auto; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div class="viewer">
+
+<!-- ============================================================ -->
+<!-- PAGE 1 · COVER                                               -->
+<!-- ============================================================ -->
+<p class="pg-label">V1 Structured — Page 1 of 6 · Cover</p>
+<div class="page cream">
+  <div style="display:grid; grid-template-columns:1fr 312px; height:100%;">
+
+    <!-- Left: Cream -->
+    <div style="padding:52px 44px 44px; display:flex; flex-direction:column; justify-content:space-between;">
+      <img src="../assets/sig-logo-full-color.svg" style="height:32px; width:auto; align-self:flex-start;" alt="Strategic Income Group">
+
+      <div style="display:flex; flex-direction:column; gap:22px;">
+        <div class="sec"><span class="bar"></span>Client Planning Experience · 2026</div>
+        <h1 style="font-family:'Fraunces',serif; font-weight:400; font-size:56px; line-height:1.0; letter-spacing:-0.022em; color:var(--ink);">
+          Client Meeting<br><em style="font-style:italic; color:var(--gold-dark);">Journey</em>.
+        </h1>
+        <p style="font-size:13.5px; line-height:1.6; color:var(--ink-soft); max-width:360px;">
+          A personalized planning experience designed around your life, goals, and legacy.
+        </p>
+        <p style="font-family:'Fraunces',serif; font-style:italic; font-size:17px; line-height:1.35; color:var(--gold-dark); letter-spacing:-0.005em;">
+          Optimize Your Wealth. Align Your Life.<br>Live with Purpose.
+        </p>
+      </div>
+
+      <div style="border-top:1px solid #ECE3D2; padding-top:18px;">
+        <p style="font-size:11px; line-height:1.7; color:var(--ink-soft);">
+          Our first conversations are complimentary and designed to determine mutual fit. Formal planning begins when both your family and SIG believe there is strong alignment.
+        </p>
+      </div>
+    </div>
+
+    <!-- Right: Navy panel -->
+    <div style="background:var(--navy); padding:52px 32px 44px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;">
+      <div style="position:absolute; top:-80px; right:-80px; width:300px; height:300px; background:radial-gradient(circle, rgba(201,164,110,.18), transparent 65%); pointer-events:none;"></div>
+
+      <div style="position:relative; display:flex; justify-content:center;">
+        <span class="badge wb">Complimentary First Steps</span>
+      </div>
+
+      <div style="position:relative; display:flex; flex-direction:column; align-items:center; gap:24px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; width:100%;">
+          <div style="border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:16px 12px; text-align:center;">
+            <div class="stat-n" style="font-size:36px;">7</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-top:5px;">Planning<br>Stages</div>
+          </div>
+          <div style="border:1px solid rgba(255,255,255,.14); border-radius:10px; padding:16px 12px; text-align:center;">
+            <div class="stat-n" style="font-size:36px;">19</div>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,.55); margin-top:5px;">Meeting<br>Types</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:relative; display:flex; flex-direction:column; align-items:center; gap:6px;">
+        <img src="../assets/sig-logo-mark-white.svg" style="height:25px; opacity:.55;" alt="SIG">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.13em; text-transform:uppercase; color:rgba(255,255,255,.38);">strategicincomegroup.com</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 2 · SECTIONS 1–3                                       -->
+<!-- ============================================================ -->
+<p class="pg-label">Page 2 of 6 · Consultation · Engagement · Financial Plan</p>
+<div class="page cream">
+  <div class="topbar">
+    <img src="../assets/sig-logo-full-color.svg" alt="SIG">
+    <div class="topbar-r"><span class="dot"></span>Client Meeting Journey</div>
+  </div>
+
+  <div class="body" style="gap:26px; padding-top:52px;">
+
+    <!-- SECTION 1 -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="sec"><span class="bar"></span>Complimentary Consultation &amp; Alignment</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span class="item-t">Initial Consultation &amp; Discovery</span>
+            <span class="badge">Complimentary</span>
+          </div>
+          <p class="item-b">A first conversation to understand your goals, questions, and overall financial picture. We may offer secure eMoney vault access so you can optionally share documents before we meet.</p>
+        </div>
+        <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <span class="item-t">Vision Alignment Meeting</span>
+            <span class="badge">Optional</span>
+          </div>
+          <p class="item-b">A second conversation, when helpful, to include other decision-makers, clarify goals, answer questions, and determine mutual fit.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="div cr"></div>
+
+    <!-- SECTION 2 -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="sec"><span class="bar"></span>Client Engagement &amp; Account Setup</div>
+      <div class="card" style="display:flex; gap:14px; align-items:flex-start;">
+        <div class="step nv">CS</div>
+        <div style="flex:1;">
+          <div class="item-t" style="margin-bottom:5px;">Client Engagement &amp; Account Setup</div>
+          <p class="item-b">When both your family and SIG see strong alignment, your Client Service Associate guides agreements, eMoney setup, document collection, account openings/transfers, and the Risk Profile Questionnaire. Virtual or in person.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="div cr"></div>
+
+    <!-- SECTION 3 -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="sec"><span class="bar"></span>Financial Plan &amp; Strategy</div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="item-t">Personalized Financial Plan &amp; Strategy Review</div>
+          <p class="item-b">Your planner reviews your financial plan, key opportunities, risks, recommendations, and initial strategy.</p>
+        </div>
+        <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="item-t">Strategy &amp; Implementation Follow-Up</div>
+          <span class="badge nb" style="width:fit-content; margin-bottom:2px;">As Needed</span>
+          <p class="item-b">A deeper session to refine investment, tax, estate, income, or protection strategies before or during implementation.</p>
+        </div>
+      </div>
+      <div class="card bw" style="display:flex; gap:14px; align-items:flex-start;">
+        <div class="step nv">90</div>
+        <div>
+          <div class="item-t" style="margin-bottom:4px;">90-Day Progress Review</div>
+          <p class="item-b">Review early progress, completed items, next priorities, and confirm the relationship is moving forward well.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="card cr" style="padding:12px 15px; display:flex; align-items:center; gap:12px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-dark); flex-shrink:0;">Your Journey</div>
+      <div class="div cr" style="width:1px; height:24px; margin:0;"></div>
+      <p style="font-size:10px; color:var(--ink-soft); line-height:1.5;">These first three stages establish the foundation. Formal planning begins after mutual alignment is confirmed.</p>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div>Strategic Income Group · Client Meeting Journey</div>
+    <div class="n">02 / 06</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 3 · SECTION 4 · ONGOING PLANNING                       -->
+<!-- ============================================================ -->
+<p class="pg-label">Page 3 of 6 · Ongoing Planning &amp; Optimization</p>
+<div class="page">
+  <div class="topbar">
+    <img src="../assets/sig-logo-full-color.svg" alt="SIG">
+    <div class="topbar-r"><span class="dot"></span>Ongoing Planning &amp; Optimization</div>
+  </div>
+
+  <div class="body" style="gap:16px;">
+
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">04 · Ongoing Planning &amp; Optimization</div>
+      <h2 style="font-family:'Fraunces',serif; font-size:28px; font-weight:400; letter-spacing:-0.01em; color:var(--ink);">Your plan, continuously <em style="font-style:italic; color:var(--gold-dark);">refined</em>.</h2>
+      <p style="font-size:11px; color:var(--ink-soft); line-height:1.6; margin-top:8px; max-width:600px;">Ongoing planning meetings keep your financial life current, coordinated, and aligned with what matters most.</p>
+    </div>
+
+    <div class="div"></div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; flex:1;">
+      <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+          <i data-lucide="refresh-cw" class="card-icon nv"></i>
+          <span class="item-t">Financial Planning Update</span>
+        </div>
+        <p class="item-b">Refresh the plan around life changes, goals, family priorities, and new opportunities.</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+          <i data-lucide="sliders-horizontal" class="card-icon nv"></i>
+          <span class="item-t">Financial Planning Assumptions Review</span>
+        </div>
+        <p class="item-b">Collaboratively review the assumptions driving your plan — retirement age, spending, inflation, longevity, Social Security, and more.</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+          <i data-lucide="trending-up" class="card-icon nv"></i>
+          <span class="item-t">Investment / Portfolio Review</span>
+        </div>
+        <p class="item-b">Review portfolio performance, allocation, market conditions, and alignment with your goals.</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+          <i data-lucide="receipt" class="card-icon nv"></i>
+          <span class="item-t">Tax Planning Meeting</span>
+        </div>
+        <p class="item-b">Identify proactive tax strategies and coordinate with your CPA when appropriate.</p>
+      </div>
+      <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+          <i data-lucide="shield" class="card-icon ik"></i>
+          <span class="item-t">Risk &amp; Protection Review</span>
+        </div>
+        <p class="item-b">Evaluate insurance, liability, and other protection gaps so your family remains protected.</p>
+      </div>
+      <div class="card bw" style="display:flex; flex-direction:column; gap:7px;">
+        <div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+          <i data-lucide="activity" class="card-icon nv"></i>
+          <span class="item-t">Stress Testing / Scenario Planning</span>
+        </div>
+        <p class="item-b">Model market, retirement, income, or life-event scenarios to test plan resilience.</p>
+      </div>
+    </div>
+
+    <div class="card nv" style="padding:14px 16px; display:flex; align-items:center; gap:14px;">
+      <div style="font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold);">Planner Note</div>
+      <div class="div w" style="width:1px; height:20px; margin:0;"></div>
+      <p style="font-size:10.5px; color:rgba(255,255,255,.85); line-height:1.55; flex:1;">These six meeting types recur as your life and plan evolve. Frequency is tailored to your planning tier and current priorities.</p>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div>Strategic Income Group · Client Meeting Journey</div>
+    <div class="n">03 / 06</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 4 · SECTIONS 5–7                                       -->
+<!-- ============================================================ -->
+<p class="pg-label">Page 4 of 6 · Purpose &amp; Legacy · Life Events · Annual Review</p>
+<div class="page cream">
+  <div class="topbar">
+    <img src="../assets/sig-logo-full-color.svg" alt="SIG">
+    <div class="topbar-r"><span class="dot"></span>Purpose, Legacy &amp; Specialized Planning</div>
+  </div>
+
+  <div class="body" style="gap:18px;">
+
+    <!-- SECTION 5: PURPOSE & LEGACY -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="sec"><span class="bar"></span>Purpose &amp; Legacy</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="item-t">Family Investment Policy Statement</div>
+          <p class="item-b">Create your family's financial playbook: goals, priorities, investment philosophy, and decision-making guardrails.</p>
+        </div>
+        <div class="card cr" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="eyebrow" style="font-size:8px; margin-bottom:2px;">Stewardship Blueprint</div>
+          <div class="item-t">Vision &amp; Values</div>
+          <p class="item-b">Clarify values, purpose, and the long-term vision for your life and family.</p>
+        </div>
+        <div class="card cr" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="eyebrow" style="font-size:8px; margin-bottom:2px;">Stewardship Blueprint</div>
+          <div class="item-t">Wealth &amp; Impact</div>
+          <p class="item-b">Align wealth with giving, impact, stewardship, and opportunities to bless others.</p>
+        </div>
+        <div class="card cr" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="eyebrow" style="font-size:8px; margin-bottom:2px;">Stewardship Blueprint</div>
+          <div class="item-t">Legacy &amp; Family</div>
+          <p class="item-b">Shape legacy, family communication, and generational impact.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="div cr"></div>
+
+    <!-- SECTION 6: LIFE EVENTS -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="sec"><span class="bar"></span>Life Events &amp; Specialized Planning</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="item-t">Life Event / Major Decision</div>
+          <p class="item-b">Guidance around major transitions such as retirement, selling a business, loss of a loved one, or family meetings with children and heirs.</p>
+        </div>
+        <div class="card" style="display:flex; flex-direction:column; gap:7px;">
+          <div class="item-t">Philanthropic / Charitable Planning</div>
+          <p class="item-b">Design charitable strategies that align generosity, values, legacy, and tax efficiency.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="div cr"></div>
+
+    <!-- SECTION 7: ANNUAL REVIEW -->
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div class="sec"><span class="bar"></span>Annual Review</div>
+      <div class="card nv" style="display:flex; gap:16px; align-items:center;">
+        <div style="font-family:'Fraunces',serif; font-size:36px; font-weight:400; color:var(--gold); line-height:1; letter-spacing:-0.02em; flex-shrink:0;">★</div>
+        <div>
+          <div class="item-t w" style="margin-bottom:5px;">Annual Stewardship Review</div>
+          <p class="item-b w">A comprehensive annual review of your financial life, progress, priorities, and next steps. The capstone meeting of every planning year.</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:1;"></div>
+
+    <div class="card cr" style="padding:13px 15px; border-left:2px solid var(--gold-dark);">
+      <p style="font-family:'Fraunces',serif; font-style:italic; font-size:15px; line-height:1.45; color:var(--ink);">"Planning isn't anxiety with extra steps. Done well, it's how peace gets built."</p>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:8.5px; color:var(--gold-dark); letter-spacing:0.1em; text-transform:uppercase; margin-top:10px;">— SIG Stewardship Principle</div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div>Strategic Income Group · Client Meeting Journey</div>
+    <div class="n">04 / 06</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 5 · THREE LEVELS OF FINANCIAL ADVICE                   -->
+<!-- ============================================================ -->
+<p class="pg-label">Page 5 of 6 · Three Levels of Financial Advice</p>
+<div class="page navy">
+  <div style="position:absolute; right:-100px; top:-100px; width:400px; height:400px; background:radial-gradient(circle, rgba(201,164,110,.14), transparent 65%); pointer-events:none;"></div>
+  <div style="position:absolute; left:-60px; bottom:-60px; width:280px; height:280px; background:radial-gradient(circle, rgba(30,58,138,.6), transparent 65%); pointer-events:none;"></div>
+
+  <div style="padding:44px 52px; display:flex; flex-direction:column; height:100%; gap:24px; position:relative;">
+
+    <!-- Header -->
+    <div>
+      <div class="sec" style="color:var(--gold); margin-bottom:10px;"><span class="bar" style="background:var(--gold);"></span>How SIG Goes Beyond Traditional Financial Planning</div>
+      <h1 style="font-family:'Fraunces',serif; font-size:40px; font-weight:400; letter-spacing:-0.015em; color:var(--white); line-height:1.05;">Three Levels of<br><em style="font-style:italic; color:var(--gold);">Financial Advice</em>.</h1>
+      <p style="font-size:11.5px; line-height:1.65; color:rgba(255,255,255,.72); margin-top:10px; max-width:560px;">Many advisors stop at investments. Elite firms coordinate the major financial areas. At SIG, optimization is the minimum standard — our greater goal is to help you live your Best Life.</p>
+    </div>
+
+    <!-- Three columns (bottom-aligned staircase) -->
+    <div style="flex:1; display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; align-items:end;">
+
+      <!-- Column 1: Traditional -->
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.45); margin-bottom:10px; text-align:center;">Traditional Advisors</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.15); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.75);">Investments</div>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding:16px; border:1px solid rgba(255,255,255,.1); border-radius:8px; background:rgba(255,255,255,.04);">
+          <div style="font-family:'Fraunces',serif; font-size:14px; color:rgba(255,255,255,.65); margin-bottom:6px;">Portfolio Management</div>
+          <p style="font-size:9.5px; color:rgba(255,255,255,.42); line-height:1.5;">Risk tolerance · market updates · investment selection</p>
+          <div style="margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,255,255,.3); letter-spacing:0.1em;">STOPS HERE ↑</div>
+        </div>
+      </div>
+
+      <!-- Column 2: Elite Firms -->
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:8.5px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.45); margin-bottom:10px; text-align:center;">Elite Planning Firms</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Tax Planning</div>
+          </div>
+          <div style="background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.16); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Insurance</div>
+          </div>
+          <div style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Estate Planning</div>
+          </div>
+          <div style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.75);">Investments</div>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding:16px; border:1px solid rgba(255,255,255,.1); border-radius:8px; background:rgba(255,255,255,.04);">
+          <div style="font-family:'Fraunces',serif; font-size:14px; color:rgba(255,255,255,.65); margin-bottom:6px;">Optimized Financial Life</div>
+          <p style="font-size:9.5px; color:rgba(255,255,255,.42); line-height:1.5;">Coordinates the major areas of your financial life</p>
+          <div style="margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:8px; color:rgba(255,255,255,.3); letter-spacing:0.1em;">STOPS HERE ↑</div>
+        </div>
+      </div>
+
+      <!-- Column 3: SIG -->
+      <div style="display:flex; flex-direction:column; gap:0;">
+        <div style="height:2px; background:var(--gold); border-radius:2px; margin-bottom:12px; opacity:.8;"></div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:9.5px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; text-align:center;">Strategic Income Group</div>
+        <div style="display:flex; flex-direction:column; gap:7px;">
+          <div style="background:rgba(201,164,110,.28); border:1px solid rgba(201,164,110,.55); border-radius:8px; padding:18px 12px; text-align:center;">
+            <div style="font-size:12px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:var(--gold);">Best Life ★</div>
+          </div>
+          <div style="background:rgba(201,164,110,.15); border:1px solid rgba(201,164,110,.32); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(201,164,110,.88);">Legacy &amp; Generosity</div>
+          </div>
+          <div style="background:rgba(201,164,110,.1); border:1px solid rgba(201,164,110,.24); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Purpose &amp; Values</div>
+          </div>
+          <div style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Tax Planning</div>
+          </div>
+          <div style="background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.16); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Insurance</div>
+          </div>
+          <div style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.88);">Estate Planning</div>
+          </div>
+          <div style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); border-radius:6px; padding:15px 12px; text-align:center;">
+            <div style="font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:rgba(255,255,255,.75);">Investments</div>
+          </div>
+        </div>
+        <div style="margin-top:14px; padding:16px; border:1px solid rgba(201,164,110,.24); border-radius:8px; background:rgba(201,164,110,.07);">
+          <div style="font-family:'Fraunces',serif; font-size:14px; color:var(--gold); margin-bottom:6px;">Optimized + Best Life</div>
+          <p style="font-size:9.5px; color:rgba(255,255,255,.55); line-height:1.5;">Wealth aligned with purpose, values, family &amp; legacy</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer bar -->
+    <div class="div w"></div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <p style="font-size:9.5px; color:rgba(255,255,255,.45); line-height:1.5; max-width:480px;">At SIG, optimization is the minimum standard. Our greater goal is to help clients align their wealth with their life, values, family, and purpose — so they can live their Best Life.</p>
+      <img src="../assets/sig-logo-mark-white.svg" style="height:34px; opacity:.55;" alt="">
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 6 · FIVE-STEP JOURNEY + WHAT MAKES SIG DIFFERENT       -->
+<!-- ============================================================ -->
+<p class="pg-label">Page 6 of 6 · Five-Step Journey &amp; What Makes SIG Different</p>
+<div class="page">
+  <div class="topbar">
+    <img src="../assets/sig-logo-full-color.svg" alt="SIG">
+    <div class="topbar-r"><span class="dot"></span>Our Five-Step Client Journey</div>
+  </div>
+
+  <div class="body" style="gap:18px;">
+
+    <div>
+      <div class="eyebrow" style="margin-bottom:8px;">Our Five-Step Client Journey</div>
+      <h2 style="font-family:'Fraunces',serif; font-size:30px; font-weight:400; letter-spacing:-0.01em; color:var(--ink);">From alignment to <em style="font-style:italic; color:var(--gold-dark);">your Best Life</em>.</h2>
+    </div>
+
+    <!-- Five steps -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+
+      <div class="card" style="display:flex; gap:14px; align-items:flex-start; padding:16px 14px;">
+        <div class="step nv" style="font-size:12px;">01</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px;">
+            <span class="item-t">Start with Alignment</span>
+          </div>
+          <p class="item-b">We begin by understanding your goals, priorities, and what matters most — while determining whether there is strong mutual fit.</p>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex; gap:14px; align-items:flex-start; padding:16px 14px;">
+        <div class="step nv" style="font-size:12px;">02</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px;">
+            <span class="item-t">Understand Your Life</span>
+          </div>
+          <p class="item-b">We take time to understand your family, financial picture, values, concerns, and the assumptions that shape your future.</p>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex; gap:14px; align-items:flex-start; padding:16px 14px;">
+        <div class="step nv" style="font-size:12px;">03</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px;">
+            <span class="item-t">Build Your Financial Blueprint</span>
+            <span class="badge nb" style="flex-shrink:0; font-size:7.5px;">Most advisors stop here</span>
+          </div>
+          <p class="item-b">We create a personalized financial plan designed around your specific goals and circumstances.</p>
+        </div>
+      </div>
+
+      <div class="card" style="display:flex; gap:14px; align-items:flex-start; padding:16px 14px;">
+        <div class="step gd" style="font-size:12px;">04</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px;">
+            <span class="item-t">Optimize Your Financial Life</span>
+            <span class="badge" style="flex-shrink:0; font-size:7.5px;">Elite firms stop here</span>
+          </div>
+          <p class="item-b">We coordinate Investments · Estate · Insurance · Taxes — so every area works together intentionally.</p>
+        </div>
+      </div>
+
+      <div class="card nv" style="display:flex; gap:14px; align-items:flex-start; padding:16px 14px;">
+        <div class="step" style="background:var(--gold); color:var(--navy); font-size:12px;">05</div>
+        <div style="flex:1;">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:4px;">
+            <span class="item-t w">Live Your Best Life — A Purposeful Life</span>
+            <span class="badge gb" style="flex-shrink:0; font-size:7.5px;">Where SIG stands apart</span>
+          </div>
+          <p class="item-b w">We help align your wealth with your life, purpose, generosity, family, and legacy.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="div"></div>
+
+    <!-- What Makes SIG Different -->
+    <div style="display:flex; flex-direction:column; gap:20px; margin-top:12px;">
+      <div>
+        <div class="sec" style="margin-bottom:16px;"><span class="bar"></span>What Makes SIG Different</div>
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="item-b">Optimization is the minimum, not the finish line</p></div>
+          <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="item-b">We focus on goals before risk</p></div>
+          <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="item-b">Planning assumptions are transparent and intentional</p></div>
+          <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="item-b">We coordinate investments, taxes, insurance, and estate planning</p></div>
+        </div>
+      </div>
+      <div class="card cr" style="padding:18px 20px; border-left:2px solid var(--gold-dark); display:flex; flex-direction:column; gap:8px;">
+        <div class="eyebrow" style="font-size:8px; margin-bottom:2px;">Our Promise</div>
+        <p style="font-family:'Fraunces',serif; font-style:italic; font-size:15px; line-height:1.45; color:var(--ink);">A life of clarity, confidence, purpose, and lasting impact.</p>
+        <p style="font-family:'Fraunces',serif; font-style:italic; font-size:12.5px; line-height:1.4; color:var(--gold-dark);">Optimize Your Wealth. Align Your Life. Live with Purpose.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <div>strategicincomegroup.com · © 2026 Strategic Income Group, LLC</div>
+    <div class="n">06 / 06</div>
+  </div>
+</div>
+
+</div><!-- /viewer -->
+<script>lucide.createIcons();</script>
+</body>
+</html>

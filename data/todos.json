@@ -1,5 +1,19 @@
 [
   {
+    "id": "1771047669123",
+    "title": "Key Future Projects",
+    "description": "Leads - Lead Generation - Lead Touch Points - Social Ads - Digital Displays - Audio Device - Visual Recognition Audio - Lead to Client Journey - Digital Gift Cards - Crowdfunding - Profile - Appointment Link \"Share\" - Email Templates - Ai Voice Agent - Invoices - Quotes - SOW - Landing Pages - Stock Trading - NFT - Inventory - Product Page - Team - Campaign - CSV Data Analysis & Charts - SEO - SEM - Google Ads - AI Ads - AI SEO - Blog Posts - Figma - Affine Notes - CMS - CRM - User Management - Project Management - Project Workflow - CCT - CPT - Database Management & Analysis - LinkedIn - Facebook Crawl - Social Crawl - Google Maps - Data Enrichment - Customer Service - Tech Support - Print Cue - QR Code Generation - Digital Scratch Card - Crowdfunding - Fundraiser ",
+    "completed": false,
+    "priority": "high",
+    "dueDate": "2026-02-14",
+    "tags": [
+      "Work",
+      "Projects",
+      "AI"
+    ],
+    "createdAt": "2026-02-14T05:41:09.123Z"
+  },
+  {
     "id": "1770768600000",
     "title": "🚀 Communications Section Setup",
     "description": "Build Twilio-powered communications section with voice calls and SMS.\n\n**Credentials needed from Jeremy:**\n• Twilio Account SID\n• Twilio Auth Token\n• Twilio Phone Number(s)\n• Supabase URL + Keys (anon + service role)\n• NocoDB connection details\n\n**Features to build:**\n• Dialpad for outbound/inbound voice calls\n• SMS inbox with conversation threads\n• Bulk SMS sender with templates\n• Call/message history in Supabase",

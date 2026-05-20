@@ -104,24 +104,24 @@ export default function SkillsPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Wrench className="w-6 h-6 text-orange-500" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Wrench className="w-6 h-6 text-brand" />
             Skills & Tools
           </h1>
-          <p className="text-zinc-400">Installed skills and tool configuration</p>
+          <p className="text-muted-foreground">Installed skills and tool configuration</p>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
             onClick={loadSkills}
             disabled={isLoading}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="border-border text-muted-foreground hover:bg-secondary"
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
           <Button 
             onClick={() => setShowForm(!showForm)}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
           >
             {showForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
             {showForm ? 'Cancel' : 'Add Skill'}
@@ -131,10 +131,10 @@ export default function SkillsPage() {
 
       {/* Add Skill Form */}
       {showForm && (
-        <Card className="mb-6 bg-zinc-900/50 border-zinc-800 border-orange-500/30">
+        <Card className="mb-6 bg-card/50 border-border border-brand/30">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Plus className="w-5 h-5 text-orange-500" />
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Plus className="w-5 h-5 text-brand" />
               Add New Skill
             </CardTitle>
             <CardDescription>Create a custom skill or upload a SKILL.md file</CardDescription>
@@ -142,16 +142,16 @@ export default function SkillsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Skill Name *</label>
+                <label className="text-sm text-muted-foreground block mb-2">Skill Name *</label>
                 <Input
                   placeholder="e.g., my-custom-skill"
                   value={newSkill.name}
                   onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Upload SKILL.md</label>
+                <label className="text-sm text-muted-foreground block mb-2">Upload SKILL.md</label>
                 <div className="flex gap-2">
                   <input
                     type="file"
@@ -163,7 +163,7 @@ export default function SkillsPage() {
                   <Button
                     variant="outline"
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex-1 border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                    className="flex-1 border-border text-muted-foreground hover:bg-secondary"
                   >
                     <Upload className="w-4 h-4 mr-2" />
                     {uploadedFile ? uploadedFile.name : 'Choose File'}
@@ -175,7 +175,7 @@ export default function SkillsPage() {
                         setUploadedFile(null);
                         setNewSkill({ ...newSkill, content: '' });
                       }}
-                      className="border-zinc-700 text-zinc-400"
+                      className="border-border text-muted-foreground"
                     >
                       <X className="w-4 h-4" />
                     </Button>
@@ -185,34 +185,34 @@ export default function SkillsPage() {
             </div>
             
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Description</label>
+              <label className="text-sm text-muted-foreground block mb-2">Description</label>
               <Input
                 placeholder="What does this skill do?"
                 value={newSkill.description}
                 onChange={(e) => setNewSkill({ ...newSkill, description: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-secondary border-border text-foreground"
               />
             </div>
 
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">
+              <label className="text-sm text-muted-foreground block mb-2">
                 Skill Content (SKILL.md)
-                {uploadedFile && <span className="text-orange-500 ml-2">— Loaded from file</span>}
+                {uploadedFile && <span className="text-brand ml-2">— Loaded from file</span>}
               </label>
               <Textarea
                 placeholder="# Skill Name&#10;&#10;Instructions for how to use this skill..."
                 value={newSkill.content}
                 onChange={(e) => setNewSkill({ ...newSkill, content: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white min-h-[200px] font-mono text-sm"
+                className="bg-secondary border-border text-foreground min-h-[200px] font-mono text-sm"
               />
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={addSkill} className="bg-orange-500 hover:bg-orange-600">
+              <Button onClick={addSkill} className="bg-brand hover:bg-brand/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Skill
               </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)} className="border-zinc-700 text-zinc-300">
+              <Button variant="outline" onClick={() => setShowForm(false)} className="border-border text-muted-foreground">
                 Cancel
               </Button>
             </div>
@@ -222,26 +222,26 @@ export default function SkillsPage() {
 
       {/* Skills Grid */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Package className="w-5 h-5 text-zinc-400" />
+        <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+          <Package className="w-5 h-5 text-muted-foreground" />
           Installed Skills
         </h2>
         
         {isLoading ? (
-          <div className="text-center py-8 text-zinc-500">Loading...</div>
+          <div className="text-center py-8 text-muted-foreground">Loading...</div>
         ) : skills.length === 0 ? (
-          <Card className="bg-zinc-900/50 border-zinc-800">
-            <CardContent className="py-8 text-center text-zinc-500">
-              No skills installed. Add one above or install from ClawdHub.
+          <Card className="bg-card/50 border-border">
+            <CardContent className="py-8 text-center text-muted-foreground">
+              No skills installed. Add one above or install from AgentSkills.
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {skills.map((skill) => (
-              <Card key={skill.name} className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-colors">
+              <Card key={skill.name} className="bg-card/50 border-border hover:border-border transition-colors">
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-white text-lg">{skill.name}</CardTitle>
+                    <CardTitle className="text-foreground text-lg">{skill.name}</CardTitle>
                     <Badge variant="outline" className="border-green-500 text-green-500">
                       Active
                     </Badge>
@@ -249,7 +249,7 @@ export default function SkillsPage() {
                   <CardDescription>{skill.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <code className="text-xs text-zinc-500 break-all block p-2 bg-zinc-800 rounded">
+                  <code className="text-xs text-muted-foreground break-all block p-2 bg-secondary rounded">
                     {skill.location}
                   </code>
                 </CardContent>
@@ -260,13 +260,13 @@ export default function SkillsPage() {
         
         <div className="mt-4 flex justify-center">
           <a
-            href="https://clawdhub.com"
+            href="https://agentskills.io"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-orange-500 hover:text-orange-400"
+            className="inline-flex items-center gap-2 text-sm text-brand hover:text-brand/90"
           >
             <ExternalLink className="w-4 h-4" />
-            Browse more skills on ClawdHub
+            Browse more skills on AgentSkills
           </a>
         </div>
       </div>
@@ -274,25 +274,25 @@ export default function SkillsPage() {
       {/* TOOLS.md */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-zinc-400" />
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <FileText className="w-5 h-5 text-muted-foreground" />
             TOOLS.md
           </h2>
           <Button
             onClick={saveTools}
             disabled={isSaving}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
+            className="bg-brand hover:bg-brand/90 text-white"
           >
             {isSaving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="p-4">
             <Textarea
               value={toolsContent}
               onChange={(e) => setToolsContent(e.target.value)}
               placeholder="# TOOLS.md - Local Notes&#10;&#10;Add your tool-specific notes here..."
-              className="min-h-[300px] font-mono text-sm bg-zinc-900 border-zinc-700 text-zinc-100"
+              className="min-h-[300px] font-mono text-sm bg-card border-border text-foreground"
             />
           </CardContent>
         </Card>

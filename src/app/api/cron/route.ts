@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const GATEWAY_URL = process.env.OPENCLAW_GATEWAY_URL || 'http://localhost:18789';
-const GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || '';
+const GATEWAY_URL = process.env.HERMES_GATEWAY_URL || 'http://localhost:18789';
+const GATEWAY_TOKEN = process.env.HERMES_GATEWAY_TOKEN || '';
 
 async function gatewayRequest(endpoint: string, method: string = 'GET', body?: unknown) {
   const headers: Record<string, string> = {

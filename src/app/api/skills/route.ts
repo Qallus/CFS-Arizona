@@ -2,32 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
-const WORKSPACE_PATH = process.env.OPENCLAW_WORKSPACE || '/root/.openclaw/workspace';
+const WORKSPACE_PATH = process.env.HERMES_WORKSPACE || '/hermes/workspace';
 const SKILLS_DIR = path.join(WORKSPACE_PATH, 'skills');
-
-// Bundled skills from system prompt
-const BUNDLED_SKILLS = [
-  {
-    name: 'bluebubbles',
-    description: 'Build or update the BlueBubbles external channel plugin for OpenClaw.',
-    location: '/www/server/nodejs/v22.22.0/lib/node_modules/openclaw/skills/bluebubbles/SKILL.md',
-  },
-  {
-    name: 'skill-creator',
-    description: 'Create or update AgentSkills with scripts, references, and assets.',
-    location: '/www/server/nodejs/v22.22.0/lib/node_modules/openclaw/skills/skill-creator/SKILL.md',
-  },
-  {
-    name: 'tmux',
-    description: 'Remote-control tmux sessions for interactive CLIs.',
-    location: '/www/server/nodejs/v22.22.0/lib/node_modules/openclaw/skills/tmux/SKILL.md',
-  },
-  {
-    name: 'weather',
-    description: 'Get current weather and forecasts (no API key required).',
-    location: '/www/server/nodejs/v22.22.0/lib/node_modules/openclaw/skills/weather/SKILL.md',
-  },
-];
 
 async function getLocalSkills(): Promise<{ name: string; description: string; location: string }[]> {
   const skills: { name: string; description: string; location: string }[] = [];
@@ -78,13 +54,13 @@ export async function GET() {
     // Get local skills
     const localSkills = await getLocalSkills();
 
-    return NextResponse.json({ 
-      skills: [...BUNDLED_SKILLS, ...localSkills],
+    return NextResponse.json({
+      skills: localSkills,
       tools,
     });
   } catch (error) {
     console.error('Error loading skills:', error);
-    return NextResponse.json({ skills: BUNDLED_SKILLS, tools: '' });
+    return NextResponse.json({ skills: [], tools: '' });
   }
 }
 

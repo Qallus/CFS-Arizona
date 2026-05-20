@@ -1,0 +1,20 @@
+{
+  "payments": [
+    {
+      "id": "pay-1771385736960-0",
+      "paymentId": "SQ-PD3FJTZY",
+      "squarePaymentId": "jrtAShJlvDUk4JhlzhMpDPD3fjTZY",
+      "clientName": "meza.fernando45678@gmail.com",
+      "clientEmail": "meza.fernando45678@gmail.com",
+      "amount": 161.68,
+      "currency": "USD",
+      "status": "completed",
+      "paymentMethod": "card",
+      "cardBrand": "VISA",
+      "lastFour": "8548",
+      "notes": "",
+      "receiptUrl": "https://squareup.com/receipt/preview/jrtAShJlvDUk4JhlzhMpDPD3fjTZY",
+      "createdAt": "2026-01-09T16:23:37.836Z"
+    }
+  ]
+}

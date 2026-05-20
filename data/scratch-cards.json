@@ -1,0 +1,156 @@
+{
+  "campaigns": [
+    {
+      "id": "sc_1772497841131_l54v2bv94",
+      "name": "Test Scratch Card",
+      "description": "This is a test scratch card 3-2-2026",
+      "prizes": [
+        {
+          "id": "prize_1772497730937",
+          "name": "Grand Prize",
+          "description": "",
+          "value": "$100",
+          "odds": 5,
+          "quantity": 1,
+          "claimed": 0,
+          "color": "#FFD700"
+        },
+        {
+          "id": "prize_1772497730938",
+          "name": "10% Off",
+          "description": "Discount on next purchase",
+          "value": "$50",
+          "odds": 25,
+          "quantity": -1,
+          "claimed": 0,
+          "color": "#22C55E"
+        },
+        {
+          "id": "prize_1772497730939",
+          "name": "Better Luck Next Time",
+          "description": "No prize this time",
+          "value": "$10",
+          "odds": 70,
+          "quantity": -1,
+          "claimed": 1,
+          "color": "#6B7280"
+        }
+      ],
+      "status": "active",
+      "startDate": "2026-03-03",
+      "endDate": "2026-03-04",
+      "maxScratches": -1,
+      "scratchesPerUser": 1,
+      "requireEmail": false,
+      "terms": "Must use by expiration date. ",
+      "createdAt": "2026-03-03T00:30:41.131Z",
+      "updatedAt": "2026-03-03T00:30:41.131Z",
+      "stats": {
+        "totalScratches": 1,
+        "uniqueUsers": 1,
+        "prizesWon": 1,
+        "prizesClaimed": 0
+      }
+    },
+    {
+      "id": "sc_1772499768700_2yzdpf2mb",
+      "name": "Luck of the Irish Fundraiser",
+      "description": "Celebrate the spirit of St. Patrick’s Day while supporting a great cause! The Luck of the Irish Scratch Card gives participants a fun chance to win exciting prizes — all while helping us raise funds for our mission. Every card purchased directly supports our programs and community impact. Scratch, reveal, and see if luck is on your side!",
+      "prizes": [
+        {
+          "id": "prize_1772499219925",
+          "name": "Pot of Gold Grand Prize",
+          "description": "Win our grand prize package valued at $500! A premium gift bundle filled with exclusive items, gift cards, and surprise treasures.",
+          "value": "$100",
+          "odds": 20,
+          "quantity": 1,
+          "claimed": 0,
+          "color": "#FFD700"
+        },
+        {
+          "id": "prize_1772499219926",
+          "name": "Lucky Clover Prize",
+          "description": "A $100 gift card to a local business or restaurant — enjoy a night out on us!",
+          "value": "10% OFF",
+          "odds": 35,
+          "quantity": -1,
+          "claimed": 0,
+          "color": "#A855F7"
+        },
+        {
+          "id": "prize_1772499219927",
+          "name": "Shamrock Surprise",
+          "description": "A festive St. Patrick’s Day gift basket packed with themed goodies, treats, and fun Irish-inspired items.",
+          "value": "",
+          "odds": 45,
+          "quantity": -1,
+          "claimed": 2,
+          "color": "#22C55E"
+        }
+      ],
+      "status": "active",
+      "startDate": "2026-03-03",
+      "endDate": "2026-03-31",
+      "maxScratches": -1,
+      "scratchesPerUser": 4,
+      "requireEmail": false,
+      "terms": "• Must be 18 years or older to participate (or have parent/guardian permission).\n• Each scratch card provides one opportunity to win a listed prize.\n• Prizes are non-transferable and have no cash value unless otherwise stated.\n• Winning cards must be presented to claim prize.\n• Campaign runs from [Start Date] to [End Date] or until cards are sold out.\n• Organization reserves the right to substitute prizes of equal or greater value.\n• Participation supports fundraising efforts and is considered a charitable contribution.",
+      "createdAt": "2026-03-03T01:02:48.700Z",
+      "updatedAt": "2026-03-03T01:02:48.700Z",
+      "stats": {
+        "totalScratches": 2,
+        "uniqueUsers": 1,
+        "prizesWon": 2,
+        "prizesClaimed": 0
+      },
+      "cardTitle": "🍀 Luck of the Irish 🍀",
+      "cardSubtitle": "Scratch & Reveal Your Fortune!",
+      "cardLogo": "/api/uploads/contacts/contact-1772499543700.png",
+      "primaryColor": "#004d46",
+      "secondaryColor": "#1d3a38",
+      "textColor": "#ffffff",
+      "font": "system-ui",
+      "backgroundImage": "/api/uploads/contacts/contact-1772499641115.jpg",
+      "revealThreshold": 55,
+      "allowSharing": true,
+      "allowGifting": true,
+      "generateWinnerCodes": true,
+      "sendWinnerSms": true,
+      "sendWinnerEmail": true,
+      "isFundraiser": false,
+      "cardPrice": 0
+    }
+  ],
+  "scratches": [
+    {
+      "id": "scratch_1772497852456_hsk5qnzhq",
+      "campaignId": "sc_1772497841131_l54v2bv94",
+      "visitorId": "visitor_1772497850369_gg4nxoe72",
+      "prizeId": "prize_1772497730939",
+      "prizeName": "Better Luck Next Time",
+      "won": true,
+      "claimed": false,
+      "scratchedAt": "2026-03-03T00:30:52.456Z"
+    },
+    {
+      "id": "scratch_1772499779286_72t718pgo",
+      "campaignId": "sc_1772499768700_2yzdpf2mb",
+      "visitorId": "visitor_1772497850369_gg4nxoe72",
+      "prizeId": "prize_1772499219927",
+      "prizeName": "Shamrock Surprise",
+      "won": true,
+      "claimed": false,
+      "scratchedAt": "2026-03-03T01:02:59.286Z"
+    },
+    {
+      "id": "scratch_1773787743786_rzwg924qe",
+      "campaignId": "sc_1772499768700_2yzdpf2mb",
+      "visitorId": "visitor_1772497850369_gg4nxoe72",
+      "prizeId": "prize_1772499219927",
+      "prizeName": "Shamrock Surprise",
+      "won": true,
+      "claimed": false,
+      "scratchedAt": "2026-03-17T22:49:03.786Z"
+    }
+  ]
+}

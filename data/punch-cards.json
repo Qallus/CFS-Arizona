@@ -1,0 +1,216 @@
+{
+  "templates": [
+    {
+      "id": "tpl-1",
+      "name": "Water Refill Card",
+      "type": "value",
+      "totalPunches": 10,
+      "valuePerPunch": "5 gallons",
+      "price": 25,
+      "reward": null,
+      "styling": {
+        "title": "Water Station Refill Card",
+        "backgroundColor": "#130057",
+        "backgroundImage": null,
+        "textColor": "#ffffff",
+        "logo": null
+      },
+      "restrictions": {
+        "expirationDays": 365,
+        "terms": "Valid for water refills only. No cash value. Non-transferable."
+      },
+      "contactInfo": {
+        "business": "JWATERS",
+        "phone": "(480) 999-9906",
+        "email": "water@example.com",
+        "address": "3605 W Harrison St Chandler, AZ 85226"
+      },
+      "status": "active",
+      "createdAt": "2026-01-15T10:00:00.000Z"
+    },
+    {
+      "id": "tpl-2",
+      "name": "Coffee Loyalty Card",
+      "type": "loyalty",
+      "totalPunches": 10,
+      "valuePerPunch": null,
+      "price": null,
+      "reward": "Free Large Coffee",
+      "styling": {
+        "title": "☕ Coffee Rewards",
+        "backgroundColor": "#78350f",
+        "backgroundImage": null,
+        "textColor": "#fef3c7",
+        "logo": null
+      },
+      "restrictions": {
+        "expirationDays": 180,
+        "terms": "Buy 10 coffees, get 1 free. Must show card at purchase."
+      },
+      "contactInfo": {
+        "business": "SIG360 Demo Coffee",
+        "phone": "(555) 123-4567",
+        "email": "coffee@example.com",
+        "address": "123 Main St, Anytown, USA"
+      },
+      "status": "active",
+      "createdAt": "2026-02-01T10:00:00.000Z"
+    },
+    {
+      "id": "tpl-1771974709635",
+      "name": "Water & Ice",
+      "type": "value",
+      "totalPunches": 20,
+      "valuePerPunch": "5 Gallons",
+      "price": 20,
+      "reward": null,
+      "styling": {
+        "title": "Water & Ice | Chandler, AZ",
+        "backgroundColor": "#000e3d",
+        "backgroundImage": null,
+        "textColor": "#ffffff",
+        "logo": "https://waterstorergv.com/wp-content/uploads/2025/09/WATER-STORE-LOGO-with-white-scaled.png"
+      },
+      "restrictions": {
+        "expirationDays": 365,
+        "terms": "This card is valued at $20.00 dollars and is non-refundable. This card will provide you with a total of 100 gallons of water. Each punch is valued at 5 gallons. To use the card there is a 5 (five) gallon minimum. "
+      },
+      "contactInfo": {
+        "business": "Water & Ice | Chandler, AZ",
+        "phone": "(480) 999-9906",
+        "email": "jwaters@qallus.co",
+        "address": "3605 W Harrison St. Chandler, AZ 85226"
+      },
+      "status": "active",
+      "createdAt": "2026-02-24T23:11:49.635Z"
+    }
+  ],
+  "cards": [
+    {
+      "id": "card-1",
+      "templateId": "tpl-1",
+      "uniqueCode": "WTR-A1B2C3",
+      "customerName": "John Doe",
+      "customerEmail": "john@example.com",
+      "customerPhone": "(555) 987-6543",
+      "punchesRemaining": 2,
+      "punchesUsed": 8,
+      "status": "active",
+      "issuedAt": "2026-02-10T14:30:00.000Z",
+      "expiresAt": "2027-02-10T14:30:00.000Z"
+    },
+    {
+      "id": "card-2",
+      "templateId": "tpl-2",
+      "uniqueCode": "CFE-X9Y8Z7",
+      "customerName": "Jane Smith",
+      "customerEmail": "jane@example.com",
+      "customerPhone": null,
+      "punchesRemaining": 2,
+      "punchesUsed": 8,
+      "status": "active",
+      "issuedAt": "2026-01-20T09:00:00.000Z",
+      "expiresAt": "2026-07-20T09:00:00.000Z"
+    },
+    {
+      "id": "card-1771974752665",
+      "templateId": "tpl-1771974709635",
+      "uniqueCode": "VAL-VF3J73",
+      "customerName": "Jeremy Waters",
+      "customerEmail": "jw@controlp.io",
+      "customerPhone": "4803527598",
+      "punchesRemaining": 18,
+      "punchesUsed": 2,
+      "status": "active",
+      "issuedAt": "2026-02-24T23:12:32.665Z",
+      "expiresAt": "2027-02-24T23:12:32.665Z"
+    },
+    {
+      "id": "card-1773787682691",
+      "templateId": "tpl-1771974709635",
+      "uniqueCode": "VAL-KH6685",
+      "customerName": "Marilyn Manfred",
+      "customerEmail": "jwaters@qallus.co",
+      "customerPhone": "4803527598",
+      "punchesRemaining": 20,
+      "punchesUsed": 0,
+      "status": "active",
+      "issuedAt": "2026-03-17T22:48:02.691Z",
+      "expiresAt": "2027-03-17T22:48:02.691Z"
+    }
+  ],
+  "history": [
+    {
+      "id": "hist-1",
+      "cardId": "card-1",
+      "templateId": "tpl-1",
+      "punchesDeducted": 2,
+      "note": "10 gallon refill",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-15T11:00:00.000Z"
+    },
+    {
+      "id": "hist-2",
+      "cardId": "card-1",
+      "templateId": "tpl-1",
+      "punchesDeducted": 1,
+      "note": "5 gallon refill",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-20T15:30:00.000Z"
+    },
+    {
+      "id": "hist-1771964666933",
+      "cardId": "card-1",
+      "templateId": "tpl-1",
+      "punchesDeducted": 1,
+      "note": "Manual entry test WTR-A1B2C3 - Test 1",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-24T20:24:26.933Z"
+    },
+    {
+      "id": "hist-1771966287358",
+      "cardId": "card-1",
+      "templateId": "tpl-1",
+      "punchesDeducted": 1,
+      "note": "This is test 2 - Manual Punch",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-24T20:51:27.358Z"
+    },
+    {
+      "id": "hist-1771971160489",
+      "cardId": "card-1",
+      "templateId": "tpl-1",
+      "punchesDeducted": 1,
+      "note": "",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-24T22:12:40.489Z"
+    },
+    {
+      "id": "hist-1771975168416",
+      "cardId": "card-1",
+      "templateId": "tpl-1",
+      "punchesDeducted": 2,
+      "note": "Camera Scan QR Code Punch x 2 Punches (Second Punch)",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-24T23:19:28.416Z"
+    },
+    {
+      "id": "hist-1771975349314",
+      "cardId": "card-1771974752665",
+      "templateId": "tpl-1771974709635",
+      "punchesDeducted": 1,
+      "note": "5 Gallon (1 Punch Test) ",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-24T23:22:29.314Z"
+    },
+    {
+      "id": "hist-1772079941164",
+      "cardId": "card-1771974752665",
+      "templateId": "tpl-1771974709635",
+      "punchesDeducted": 1,
+      "note": "",
+      "redeemedBy": "staff",
+      "redeemedAt": "2026-02-26T04:25:41.164Z"
+    }
+  ]
+}

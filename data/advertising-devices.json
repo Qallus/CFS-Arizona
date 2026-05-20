@@ -1,0 +1,46 @@
+{
+  "devices": [
+    {
+      "id": "dev-minipc-homehq",
+      "deviceId": "MINIPC-HOMEHQ-001",
+      "name": "Mini PC Channel Cast Home HQ",
+      "description": "Windows Mini PC at home HQ for testing and development",
+      "locationId": "ad-1771894334865",
+      "locationName": "Mini PC Channel Cast Home HQ",
+      "locationAddress": "3605 W. Harrison St., Chandler, AZ 85226",
+      "lat": 33.3062,
+      "lng": -111.8413,
+      "region": "Chandler",
+      "groupIds": [],
+      "status": "online",
+      "lastHeartbeat": "2026-02-26T03:20:00.000Z",
+      "firmwareVersion": "1.0.0",
+      "hardwareModel": "KAMRUI Mini PC (Intel N150)",
+      "ipAddress": "100.127.129.69",
+      "wifiStrength": 100,
+      "volume": 80,
+      "sshEnabled": true,
+      "sshUser": "jwate",
+      "assignedMediaIds": [
+        "media-1771893889518"
+      ],
+      "schedule": {
+        "enabled": true,
+        "startTime": "06:00",
+        "endTime": "22:00",
+        "daysOfWeek": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "spotsPerHour": 24
+      },
+      "createdAt": "2026-02-26T03:20:00.000Z",
+      "updatedAt": "2026-02-26T04:23:45.941Z"
+    }
+  ]
+}

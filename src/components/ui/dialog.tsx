@@ -4,6 +4,11 @@ import * as React from "react"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
+// Context to pass onOpenChange down to children
+const DialogContext = React.createContext<{
+  onClose: () => void;
+} | null>(null);
+
 interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -14,46 +19,54 @@ const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50">
-      {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={() => onOpenChange(false)}
-      />
-      {/* Content */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        {children}
+    <DialogContext.Provider value={{ onClose: () => onOpenChange(false) }}>
+      <div className="fixed inset-0 z-50">
+        {/* Backdrop */}
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          onClick={() => onOpenChange(false)}
+        />
+        {/* Content */}
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          {children}
+        </div>
       </div>
-    </div>
+    </DialogContext.Provider>
   );
 };
 
 interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
-  onClose?: () => void;
+  hideCloseButton?: boolean;
 }
 
 const DialogContent = React.forwardRef<HTMLDivElement, DialogContentProps>(
-  ({ className, children, onClose, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn(
-        "relative bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-auto",
-        className
-      )}
-      onClick={(e) => e.stopPropagation()}
-      {...props}
-    >
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-zinc-400 hover:text-white transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-      )}
-      {children}
-    </div>
-  )
+  ({ className, children, hideCloseButton = false, ...props }, ref) => {
+    const context = React.useContext(DialogContext);
+    
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "relative bg-zinc-900 border border-zinc-800 rounded-lg shadow-xl w-full max-w-lg max-h-[90vh] overflow-auto",
+          className
+        )}
+        onClick={(e) => e.stopPropagation()}
+        {...props}
+      >
+        {/* Always show close button unless explicitly hidden */}
+        {!hideCloseButton && context && (
+          <button
+            onClick={context.onClose}
+            className="absolute right-4 top-4 z-10 p-1 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        )}
+        {children}
+      </div>
+    );
+  }
 );
 DialogContent.displayName = "DialogContent";
 
@@ -62,7 +75,7 @@ const DialogHeader = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("px-6 pt-6 pb-4", className)}
+    className={cn("px-6 pt-6 pb-4 pr-12", className)}
     {...props}
   />
 );
@@ -102,7 +115,7 @@ const DialogFooter = ({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
-    className={cn("px-6 pb-6 pt-2 flex justify-end gap-2", className)}
+    className={cn("px-6 pb-6 pt-4 flex justify-end gap-3", className)}
     {...props}
   />
 );

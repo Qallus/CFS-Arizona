@@ -1,0 +1,1607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Siggey · 3D Character System · SIG360</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,300..600;1,300..600&family=Roboto+Mono:wght@400;500&family=Roboto:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  /* SIG360 palette */
+  --navy-deep: #0A1628;
+  --navy: #11243F;
+  --navy-soft: #1C3556;
+  --navy-line: #284060;
+  --royal: #3B6FE0;
+  --gold: #C9A35C;
+  --gold-soft: #E5D0A0;
+  --gold-deep: #9C7C3D;
+  --ivory: #F5EFE3;
+  --ivory-warm: #FAF7F0;
+  --tan: #E6D9BF;
+  --tan-soft: #EFE7D2;
+  --ai: #5B8DEF;
+  --success: #3B8E63;
+  --warning: #C99535;
+  --danger: #B23F3F;
+
+  --font-serif: "Newsreader", "Source Serif Pro", Georgia, serif;
+  --font-sans: "Roboto", "Inter", system-ui, sans-serif;
+  --font-mono: "Roboto Mono", "JetBrains Mono", monospace;
+
+  /* mode */
+  --bg: var(--ivory-warm);
+  --bg-deep: var(--ivory);
+  --panel: #ffffff;
+  --panel-line: #E4DDCD;
+  --text: var(--navy-deep);
+  --text-muted: #5E6478;
+  --text-soft: #8A8E9E;
+  --hairline: #E8E2D2;
+  --chip: #F3ECDC;
+  --chip-active: var(--navy-deep);
+  --shadow-1: 0 1px 0 rgba(10,22,40,0.04), 0 10px 30px -16px rgba(10,22,40,0.18);
+}
+
+body.dark {
+  --bg: var(--navy-deep);
+  --bg-deep: #06101E;
+  --panel: #112135;
+  --panel-line: #1F3554;
+  --text: #f7f3dd;
+  --text-muted: #B2B8C8;
+  --text-soft: #7F889C;
+  --hairline: #1B2E48;
+  --chip: #16294A;
+  --chip-active: var(--gold);
+  --shadow-1: 0 1px 0 rgba(0,0,0,0.4), 0 18px 40px -18px rgba(0,0,0,0.6);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-sans); }
+body {
+  min-height: 100vh;
+  font-feature-settings: "ss01","cv11";
+  transition: background 400ms ease, color 400ms ease;
+}
+
+/* ============ Layout ============ */
+.shell {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  grid-template-rows: 64px 1fr;
+  gap: 0;
+  min-height: 100vh;
+}
+
+header {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 30;
+  backdrop-filter: blur(8px);
+}
+.wm {
+  display: inline-flex; align-items: baseline; gap: 8px;
+  font-family: var(--font-serif); font-weight: 500;
+  letter-spacing: -0.005em; color: var(--text);
+}
+.wm .sig { font-size: 22px; }
+.wm .num { font-family: var(--font-sans); font-weight: 600; font-size: 18px; color: var(--gold); margin-left: 2px; }
+.wm .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); margin: 0 12px; opacity: 0.8; }
+.wm .meta { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
+
+.head-right { display: flex; align-items: center; gap: 8px; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1px solid var(--hairline); background: transparent;
+  color: var(--text); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background 160ms, border-color 160ms;
+}
+.icon-btn:hover { background: var(--chip); border-color: var(--panel-line); }
+.icon-btn svg { width: 18px; height: 18px; }
+
+main {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* canvas stage */
+#stage {
+  position: absolute; inset: 0;
+}
+#stage canvas { width: 100% !important; height: 100% !important; display: block; }
+
+/* meta overlay (top-left of canvas) */
+.stage-meta {
+  position: absolute; top: 24px; left: 28px;
+  display: flex; align-items: center; gap: 14px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--text-muted);
+  pointer-events: none;
+}
+.stage-meta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
+
+.stage-foot {
+  position: absolute; bottom: 24px; left: 28px; right: 28px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.stage-foot .copy { font-family: var(--font-serif); font-style: italic; font-weight: 300; font-size: 22px; letter-spacing: -0.01em; color: var(--text); max-width: 480px; }
+.stage-foot .copy em { color: var(--gold-deep); font-style: italic; }
+body.dark .stage-foot .copy em { color: var(--gold-soft); }
+
+.stage-hint {
+  pointer-events: none;
+  position: absolute; bottom: 24px; right: 28px;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--text-soft);
+}
+.stage-hint .kbd {
+  border: 1px solid var(--hairline); padding: 2px 6px; border-radius: 4px;
+  font-size: 10px; color: var(--text-muted);
+}
+
+/* ============ Side panel ============ */
+aside {
+  border-left: 1px solid var(--hairline);
+  background: var(--bg-deep);
+  overflow-y: auto;
+  padding: 24px 22px 36px;
+  display: flex; flex-direction: column; gap: 26px;
+}
+
+.panel-section .lbl {
+  font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--gold-deep);
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+body.dark .panel-section .lbl { color: var(--gold); }
+.panel-section .lbl .hair { flex: 1; height: 1px; background: var(--hairline); }
+
+/* expression grid */
+.exp-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+}
+.exp {
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--text);
+  display: flex; flex-direction: column; gap: 2px;
+  transition: border-color 140ms, background 140ms, transform 140ms;
+  position: relative;
+}
+.exp:hover { border-color: var(--panel-line); }
+.exp.active {
+  border-color: var(--navy-deep);
+  background: var(--navy-deep);
+  color: var(--ivory);
+}
+body.dark .exp.active { border-color: var(--gold); background: var(--gold); color: var(--navy-deep); }
+.exp .nm { font-family: var(--font-serif); font-size: 16px; line-height: 1.1; }
+.exp .sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+
+/* segmented controls */
+.seg { display: inline-flex; background: var(--panel); border: 1px solid var(--hairline); border-radius: 9px; padding: 3px; gap: 2px; }
+.seg button {
+  border: 0; background: transparent; color: var(--text-muted);
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 8px 12px; border-radius: 7px; cursor: pointer;
+  transition: background 140ms, color 140ms;
+}
+.seg button.on { background: var(--chip-active); color: var(--bg); }
+body.dark .seg button.on { color: var(--navy-deep); }
+
+/* toggle rows */
+.row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.row:last-child { border-bottom: 0; }
+.row .lab { font-size: 14px; color: var(--text); }
+.row .sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-soft); margin-top: 1px; letter-spacing: 0.04em; }
+
+.switch {
+  position: relative;
+  width: 38px; height: 22px;
+  background: var(--chip); border-radius: 11px;
+  border: 1px solid var(--hairline);
+  cursor: pointer;
+  transition: background 160ms;
+}
+.switch::after {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  background: var(--panel); border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.18);
+  transition: transform 200ms cubic-bezier(.5,.1,.3,1.3);
+}
+.switch.on { background: var(--navy-deep); }
+body.dark .switch.on { background: var(--gold); }
+.switch.on::after { transform: translateX(16px); background: #fff; }
+body.dark .switch.on::after { background: var(--navy-deep); }
+
+/* slider */
+.slider-row { display: flex; flex-direction: column; gap: 6px; }
+.slider-row .top { display: flex; justify-content: space-between; align-items: center; }
+.slider-row .val { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+input[type=range] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px; background: var(--hairline); border-radius: 2px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; background: var(--navy-deep); border: 2px solid var(--bg-deep); border-radius: 50%;
+  cursor: pointer;
+}
+body.dark input[type=range]::-webkit-slider-thumb { background: var(--gold); }
+input[type=range]::-moz-range-thumb {
+  width: 14px; height: 14px; background: var(--navy-deep); border: 2px solid var(--bg-deep); border-radius: 50%;
+}
+
+/* exports */
+.export-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.exp-btn {
+  background: var(--panel); border: 1px solid var(--hairline);
+  border-radius: 10px; padding: 14px 12px;
+  cursor: pointer; color: var(--text);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  transition: border-color 140ms, transform 140ms, background 140ms;
+  text-align: left;
+}
+.exp-btn:hover { border-color: var(--navy-deep); }
+body.dark .exp-btn:hover { border-color: var(--gold); }
+.exp-btn .ext { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--gold-deep); }
+body.dark .exp-btn .ext { color: var(--gold); }
+.exp-btn .nm { font-family: var(--font-serif); font-size: 14px; }
+.exp-btn .desc { font-size: 11.5px; color: var(--text-soft); line-height: 1.3; }
+
+.copy-block {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: 10px;
+  padding: 14px;
+  font-family: var(--font-serif);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+.copy-block strong { color: var(--gold-deep); font-weight: 500; }
+body.dark .copy-block strong { color: var(--gold); }
+.copy-block .mono { display: block; margin-top: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; color: var(--text-muted); }
+
+/* toast */
+.toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--navy-deep); color: var(--ivory);
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.06em;
+  padding: 10px 16px; border-radius: 8px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 180ms, transform 180ms;
+  z-index: 100;
+  border: 1px solid var(--navy-line);
+}
+body.dark .toast { background: var(--gold); color: var(--navy-deep); border-color: var(--gold-deep); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 1024px) {
+  .shell { grid-template-columns: 1fr; grid-template-rows: 64px minmax(440px, 60vh) auto; }
+  aside { border-left: 0; border-top: 1px solid var(--hairline); }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <header>
+    <div class="wm">
+      <span class="sig">SIG</span><span class="num">360</span>
+      <span class="dot"></span>
+      <span class="meta">Siggey · 3D Character System</span>
+    </div>
+    <div class="head-right">
+      <button class="icon-btn" id="resetView" title="Reset view">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+      </button>
+      <button class="icon-btn" id="modeToggle" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <div id="stage"></div>
+    <div class="stage-meta">
+      <span class="dot"></span>
+      <span>09 · Siggey</span>
+      <span style="opacity:.5;">/</span>
+      <span id="expressionMeta">Expression · Idle</span>
+    </div>
+    <div class="stage-foot">
+      <div class="copy">
+        Meet <em>Siggey.</em> SIG360's calm, intelligent companion — now in three dimensions, with eight expressions and a hat.
+      </div>
+      <div class="stage-hint">
+        <span class="kbd">drag</span><span>spin</span>
+        <span style="margin: 0 10px; opacity:.4;">·</span>
+        <span class="kbd">scroll</span><span>zoom</span>
+      </div>
+    </div>
+  </main>
+
+  <aside>
+
+    <div class="panel-section">
+      <div class="lbl"><span>Expression states</span><span class="hair"></span><span>8</span></div>
+      <div class="exp-grid" id="expGrid"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="lbl"><span>Character</span><span class="hair"></span></div>
+
+      <div class="row">
+        <div>
+          <div class="lab">Fedora hat</div>
+          <div class="sub">Navy felt · gold band</div>
+        </div>
+        <button class="switch on" id="hatToggle" aria-pressed="true"></button>
+      </div>
+
+      <div class="row">
+        <div>
+          <div class="lab">North star</div>
+          <div class="sub">Above the head, always</div>
+        </div>
+        <button class="switch on" id="starToggle" aria-pressed="true"></button>
+      </div>
+
+      <div class="row">
+        <div>
+          <div class="lab">Auto spin</div>
+          <div class="sub">Slow 360° around Y</div>
+        </div>
+        <button class="switch" id="spinToggle" aria-pressed="false"></button>
+      </div>
+
+      <div class="row" style="border-bottom: 0; padding-bottom: 0;">
+        <div class="slider-row" style="width: 100%;">
+          <div class="top">
+            <span class="lab">Spin speed</span>
+            <span class="val" id="spinVal">0.30 rad/s</span>
+          </div>
+          <input type="range" id="spinSpeed" min="0" max="200" value="30" />
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="lbl"><span>Theme</span><span class="hair"></span></div>
+      <div class="seg" role="tablist">
+        <button data-mode="light" class="on">Light</button>
+        <button data-mode="dark">Dark</button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="lbl"><span>Export</span><span class="hair"></span><span>5</span></div>
+      <div class="export-grid">
+        <button class="exp-btn" data-export="glb">
+          <span class="ext">.GLB</span>
+          <span class="nm">3D · binary</span>
+          <span class="desc">glTF binary, drops into Blender, Unity, USD pipelines.</span>
+        </button>
+        <button class="exp-btn" data-export="gltf">
+          <span class="ext">.GLTF</span>
+          <span class="nm">3D · text</span>
+          <span class="desc">JSON + buffers, human‑readable scene.</span>
+        </button>
+        <button class="exp-btn" data-export="obj">
+          <span class="ext">.OBJ</span>
+          <span class="nm">3D · classic</span>
+          <span class="desc">Wavefront mesh for legacy tools &amp; print.</span>
+        </button>
+        <button class="exp-btn" data-export="stl">
+          <span class="ext">.STL</span>
+          <span class="nm">3D · print</span>
+          <span class="desc">Solid mesh for 3D printing.</span>
+        </button>
+        <button class="exp-btn" data-export="png">
+          <span class="ext">.PNG</span>
+          <span class="nm">Snapshot</span>
+          <span class="desc">2× pixel‑density render of current view.</span>
+        </button>
+        <button class="exp-btn" data-export="svg">
+          <span class="ext">.SVG</span>
+          <span class="nm">Flat pose</span>
+          <span class="desc">2D Siggey for the current expression.</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="lbl"><span>Notes</span><span class="hair"></span></div>
+      <div class="copy-block">
+        Spin Siggey to feel the dimensionality. The face is a live canvas — switch the expression and watch it repaint. The fedora rides on top in both 2D &amp; 3D exports.
+        <span class="mono">motion · siggey · 480–800ms · always returns to idle</span>
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+
+<div class="toast" id="toast">Exported</div>
+
+<!-- ================== Three.js modules ================== -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { STLExporter } from 'three/addons/exporters/STLExporter.js';
+
+// =============================================================
+// Palette
+// =============================================================
+const P = {
+  navyDeep: 0x0A1628,
+  navy: 0x11243F,
+  navySoft: 0x1C3556,
+  navyLine: 0x284060,
+  royal: 0x3B6FE0,
+  gold: 0xC9A35C,
+  goldSoft: 0xE5D0A0,
+  goldDeep: 0x9C7C3D,
+  ivory: 0xF5EFE3,
+  ivoryWarm: 0xFAF7F0,
+  tan: 0xE6D9BF,
+  tanSoft: 0xEFE7D2,
+  ai: 0x5B8DEF,
+  faceTone: 0xF6EFDD,
+  faceShade: 0xD8C9A5,
+  inkDark: 0x0A1628,
+  blush: 0xC97858,
+  danger: 0xB23F3F,
+};
+
+// =============================================================
+// Expressions definitions
+// =============================================================
+const EXPRESSIONS = [
+  { id: 'idle',       label: 'Idle',       sub: 'Default presence' },
+  { id: 'greeting',   label: 'Greeting',   sub: 'Welcome moments' },
+  { id: 'thinking',   label: 'Thinking',   sub: 'AI processing' },
+  { id: 'working',    label: 'Working',    sub: 'Long task running' },
+  { id: 'success',    label: 'Success',    sub: 'Action complete' },
+  { id: 'warning',    label: 'Warning',    sub: 'Gentle nudge' },
+  { id: 'compliance', label: 'Compliance', sub: 'Compliance only' },
+  { id: 'background', label: 'Background', sub: 'Quiet mode' },
+];
+
+// =============================================================
+// Face Texture · canvas painter
+// One canvas per Siggey, repainted on expression / theme change.
+// The face is painted at canvas center; body rotated so that
+// canvas-U=0.5 faces the camera at start (rot.y = -π/2).
+// =============================================================
+const TEX_W = 2048;
+const TEX_H = 1024;
+
+function makeFaceCanvas() {
+  const c = document.createElement('canvas');
+  c.width = TEX_W; c.height = TEX_H;
+  return c;
+}
+
+function fillBodyBg(ctx) {
+  // Background = body color (covers the full sphere).
+  // The face wraps around U=0.5 of the sphere (since body is rotated -π/2 on Y).
+  const grad = ctx.createLinearGradient(0, 0, 0, TEX_H);
+  grad.addColorStop(0,    '#1C3556');
+  grad.addColorStop(0.42, '#11243F');
+  grad.addColorStop(1,    '#06101E');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, TEX_W, TEX_H);
+
+  // Vertical seam highlight (subtle specular band) ~ U=0.25 (~ +X side)
+  // and U=0.75 (~ -X side) — rim light effect
+  const rim1 = ctx.createLinearGradient(TEX_W * 0.18, 0, TEX_W * 0.32, 0);
+  rim1.addColorStop(0, 'rgba(255,255,255,0)');
+  rim1.addColorStop(0.5, 'rgba(255,255,255,0.10)');
+  rim1.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = rim1;
+  ctx.fillRect(TEX_W * 0.18, 0, TEX_W * 0.14, TEX_H);
+
+  const rim2 = ctx.createLinearGradient(TEX_W * 0.70, 0, TEX_W * 0.82, 0);
+  rim2.addColorStop(0, 'rgba(201,163,92,0)');
+  rim2.addColorStop(0.5, 'rgba(201,163,92,0.18)');
+  rim2.addColorStop(1, 'rgba(201,163,92,0)');
+  ctx.fillStyle = rim2;
+  ctx.fillRect(TEX_W * 0.70, 0, TEX_W * 0.14, TEX_H);
+}
+
+function paintFace(canvas, expressionId) {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, TEX_W, TEX_H);
+
+  // ---- base body shade across the whole sphere
+  fillBodyBg(ctx);
+
+  // ---- the face region.
+  // Place at canvas-center (CX, CY). The body is rotated -π/2 on Y so
+  // canvas U=0.5 lands on +Z (camera-facing) at scene start.
+  const CX = TEX_W / 2;
+  const CY = TEX_H * 0.46;
+  const S  = 1.0;            // scale factor for face features
+
+  // Face plate (oval ivory)
+  const facePlateW = 820;
+  const facePlateH = 540;
+  const faceGrad = ctx.createRadialGradient(CX - 60, CY - 80, 40, CX, CY - 20, 460);
+  faceGrad.addColorStop(0, '#FAF3DF');
+  faceGrad.addColorStop(0.55, '#F1E7CC');
+  faceGrad.addColorStop(1, '#D8C9A5');
+  ctx.fillStyle = faceGrad;
+  ellipse(ctx, CX, CY + 10, facePlateW * 0.5, facePlateH * 0.5);
+  ctx.fill();
+
+  // Cheek blush
+  ctx.fillStyle = 'rgba(201,120,80,0.30)';
+  ellipse(ctx, CX - 260, CY + 130, 64, 30); ctx.fill();
+  ellipse(ctx, CX + 260, CY + 130, 64, 30); ctx.fill();
+
+  // Glasses temples (painted on the body, behind 3D glasses)
+  ctx.strokeStyle = '#0A1628';
+  ctx.lineWidth = 22;
+  ctx.lineCap = 'round';
+  // bridge
+  line(ctx, CX - 70, CY, CX + 70, CY);
+  // outer temples (continue past 3D lens edge)
+  ctx.beginPath();
+  ctx.moveTo(CX - 320, CY + 6);
+  ctx.quadraticCurveTo(CX - 380, CY - 10, CX - 430, CY + 14);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(CX + 320, CY + 6);
+  ctx.quadraticCurveTo(CX + 380, CY - 10, CX + 430, CY + 14);
+  ctx.stroke();
+
+  // Gold shimmer above each lens
+  ctx.strokeStyle = 'rgba(201,163,92,0.75)';
+  ctx.lineWidth = 10;
+  ctx.beginPath();
+  ctx.moveTo(CX - 260, CY - 60);
+  ctx.quadraticCurveTo(CX - 180, CY - 90, CX - 90, CY - 78);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(CX + 90, CY - 78);
+  ctx.quadraticCurveTo(CX + 180, CY - 90, CX + 260, CY - 60);
+  ctx.stroke();
+
+  // Lens fills (translucent gold-ivory, drawn under the eye details)
+  const lensFill = ctx.createRadialGradient(CX - 195, CY - 12, 8, CX - 175, CY, 130);
+  lensFill.addColorStop(0, 'rgba(255,255,255,0.95)');
+  lensFill.addColorStop(0.55, 'rgba(240,232,210,0.9)');
+  lensFill.addColorStop(1, 'rgba(201,185,137,0.85)');
+  ctx.fillStyle = lensFill;
+  ctx.beginPath(); ctx.arc(CX - 175, CY + 6, 122, 0, Math.PI * 2); ctx.fill();
+
+  const lensFill2 = ctx.createRadialGradient(CX + 155, CY - 12, 8, CX + 175, CY, 130);
+  lensFill2.addColorStop(0, 'rgba(255,255,255,0.95)');
+  lensFill2.addColorStop(0.55, 'rgba(240,232,210,0.9)');
+  lensFill2.addColorStop(1, 'rgba(201,185,137,0.85)');
+  ctx.fillStyle = lensFill2;
+  ctx.beginPath(); ctx.arc(CX + 175, CY + 6, 122, 0, Math.PI * 2); ctx.fill();
+
+  // Lens ring (drawn 2D under the 3D lens too, for subtle integration)
+  ctx.strokeStyle = '#0A1628';
+  ctx.lineWidth = 26;
+  ctx.beginPath(); ctx.arc(CX - 175, CY + 6, 122, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(CX + 175, CY + 6, 122, 0, Math.PI * 2); ctx.stroke();
+
+  // ---- Per-expression details ----
+  drawExpression(ctx, CX, CY, expressionId);
+}
+
+function drawExpression(ctx, CX, CY, id) {
+  const eyeL = { x: CX - 175, y: CY + 6 };
+  const eyeR = { x: CX + 175, y: CY + 6 };
+
+  // helpers
+  const drawPupil = (e, r, dx=0, dy=0) => {
+    ctx.fillStyle = '#0F2240';
+    ctx.beginPath(); ctx.arc(e.x + dx, e.y + dy, r, 0, Math.PI*2); ctx.fill();
+  };
+  const drawHighlight = (e, r, dx, dy) => {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath(); ctx.arc(e.x + dx, e.y + dy, r, 0, Math.PI*2); ctx.fill();
+  };
+  const drawGoldSpec = (e, r, dx, dy) => {
+    ctx.fillStyle = '#C9A35C';
+    ctx.beginPath(); ctx.arc(e.x + dx, e.y + dy, r, 0, Math.PI*2); ctx.fill();
+  };
+  const closedEye = (e, w=58, lift=0) => {
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 18; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(e.x - w, e.y + lift);
+    ctx.quadraticCurveTo(e.x, e.y + 30 + lift, e.x + w, e.y + lift);
+    ctx.stroke();
+  };
+  const happyEye = (e, w=68) => {
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 20; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(e.x - w, e.y + 8);
+    ctx.quadraticCurveTo(e.x, e.y - 50, e.x + w, e.y + 8);
+    ctx.stroke();
+  };
+
+  // Smile / mouth helpers
+  const MOUTH_Y = CY + 175;
+  const smile = (w=170, h=60, lift=0, weight=18) => {
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = weight; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(CX - w/2, MOUTH_Y - lift);
+    ctx.quadraticCurveTo(CX, MOUTH_Y + h - lift, CX + w/2, MOUTH_Y - lift);
+    ctx.stroke();
+  };
+
+  if (id === 'idle') {
+    drawPupil(eyeL, 46);
+    drawPupil(eyeR, 46);
+    drawHighlight(eyeL, 16, 18, -18);
+    drawHighlight(eyeR, 16, 18, -18);
+    drawGoldSpec(eyeL, 7, -14, 22);
+    drawGoldSpec(eyeR, 7, -14, 22);
+    smile(160, 70, 0, 18);
+  }
+  else if (id === 'greeting') {
+    drawPupil(eyeL, 52);
+    drawPupil(eyeR, 52);
+    drawHighlight(eyeL, 22, 22, -22);
+    drawHighlight(eyeR, 22, 22, -22);
+    drawGoldSpec(eyeL, 9, -16, 22);
+    drawGoldSpec(eyeR, 9, -16, 22);
+    // Open smile (mouth shape)
+    ctx.fillStyle = '#0A1628';
+    ctx.beginPath();
+    ctx.moveTo(CX - 110, CY + 170);
+    ctx.quadraticCurveTo(CX, CY + 280, CX + 110, CY + 170);
+    ctx.quadraticCurveTo(CX + 60, CY + 270, CX, CY + 278);
+    ctx.quadraticCurveTo(CX - 60, CY + 270, CX - 110, CY + 170);
+    ctx.closePath(); ctx.fill();
+    // tongue/lip warmth
+    ctx.fillStyle = 'rgba(201,120,80,0.7)';
+    ctx.beginPath();
+    ctx.moveTo(CX - 50, CY + 245);
+    ctx.quadraticCurveTo(CX, CY + 275, CX + 50, CY + 245);
+    ctx.lineTo(CX + 50, CY + 253);
+    ctx.lineTo(CX - 50, CY + 253);
+    ctx.closePath(); ctx.fill();
+  }
+  else if (id === 'thinking') {
+    drawPupil(eyeL, 44);
+    drawPupil(eyeR, 44);
+    // pupils glance up & to the side
+    ctx.fillStyle = '#F5EFE3';
+    ctx.beginPath(); ctx.arc(eyeL.x + 6, eyeL.y - 28, 22, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(eyeR.x + 6, eyeR.y - 28, 22, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#0F2240';
+    ctx.beginPath(); ctx.arc(eyeL.x + 6, eyeL.y - 28, 11, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(eyeR.x + 6, eyeR.y - 28, 11, 0, Math.PI*2); ctx.fill();
+    // raised brows
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 14; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(eyeL.x - 100, eyeL.y - 140); ctx.quadraticCurveTo(eyeL.x, eyeL.y - 170, eyeL.x + 80, eyeL.y - 145);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(eyeR.x - 80, eyeR.y - 145); ctx.quadraticCurveTo(eyeR.x, eyeR.y - 170, eyeR.x + 100, eyeR.y - 140);
+    ctx.stroke();
+    // small mouth
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 16;
+    line(ctx, CX - 40, CY + 185, CX + 40, CY + 185);
+    // thought bubble (in body texture above-right of head)
+    ctx.fillStyle = '#F5EFE3';
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 8;
+    ctx.beginPath(); ctx.arc(CX + 340, CY - 280, 78, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(CX + 270, CY - 200, 24, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(CX + 230, CY - 150, 12, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#C9A35C';
+    drawStar(ctx, CX + 340, CY - 280, 46);
+  }
+  else if (id === 'working') {
+    closedEye(eyeL, 70, 0);
+    closedEye(eyeR, 70, 0);
+    smile(150, 50, 0, 18);
+    // Gold orbital arc around face area
+    ctx.strokeStyle = 'rgba(201,163,92,0.85)';
+    ctx.lineWidth = 11;
+    ctx.setLineDash([220, 280]);
+    ctx.beginPath();
+    ctx.arc(CX, CY + 30, 500, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // dots
+    ctx.fillStyle = '#C9A35C';
+    [0, 1.1, 2.3].forEach((a) => {
+      const x = CX + Math.cos(a) * 500;
+      const y = CY + 30 + Math.sin(a) * 500;
+      ctx.beginPath(); ctx.arc(x, y, 14, 0, Math.PI*2); ctx.fill();
+    });
+  }
+  else if (id === 'success') {
+    happyEye(eyeL, 78);
+    happyEye(eyeR, 78);
+    // big smile w teeth
+    ctx.fillStyle = '#0A1628';
+    ctx.beginPath();
+    ctx.moveTo(CX - 130, CY + 170);
+    ctx.quadraticCurveTo(CX, CY + 310, CX + 130, CY + 170);
+    ctx.quadraticCurveTo(CX + 70, CY + 295, CX, CY + 300);
+    ctx.quadraticCurveTo(CX - 70, CY + 295, CX - 130, CY + 170);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#F5EFE3';
+    ctx.beginPath();
+    ctx.moveTo(CX - 90, CY + 185);
+    ctx.quadraticCurveTo(CX - 50, CY + 210, CX, CY + 210);
+    ctx.quadraticCurveTo(CX + 50, CY + 210, CX + 90, CY + 185);
+    ctx.lineTo(CX + 90, CY + 195);
+    ctx.lineTo(CX - 90, CY + 195);
+    ctx.closePath(); ctx.fill();
+    // Sparkles painted on body
+    ctx.fillStyle = '#C9A35C';
+    drawSpark(ctx, CX - 480, CY - 280, 32);
+    drawSpark(ctx, CX + 460, CY + 40, 24);
+    drawSpark(ctx, CX - 520, CY + 120, 22);
+    drawSpark(ctx, CX + 540, CY - 220, 28);
+  }
+  else if (id === 'warning') {
+    drawPupil(eyeL, 46);
+    drawPupil(eyeR, 46);
+    drawHighlight(eyeL, 16, 16, -18);
+    drawHighlight(eyeR, 16, 16, -18);
+    // concerned brows (angled down toward center)
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 16; ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(eyeL.x - 100, eyeL.y - 155);
+    ctx.quadraticCurveTo(eyeL.x - 30, eyeL.y - 175, eyeL.x + 80, eyeL.y - 130);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(eyeR.x - 80, eyeR.y - 130);
+    ctx.quadraticCurveTo(eyeR.x + 30, eyeR.y - 175, eyeR.x + 100, eyeR.y - 155);
+    ctx.stroke();
+    // small wavering mouth
+    ctx.strokeStyle = '#0A1628';
+    ctx.lineWidth = 18;
+    ctx.beginPath();
+    ctx.moveTo(CX - 80, CY + 200);
+    ctx.quadraticCurveTo(CX - 40, CY + 180, CX, CY + 200);
+    ctx.quadraticCurveTo(CX + 40, CY + 220, CX + 80, CY + 200);
+    ctx.stroke();
+  }
+  else if (id === 'compliance') {
+    drawPupil(eyeL, 56);
+    drawPupil(eyeR, 56);
+    drawHighlight(eyeL, 22, 18, -22);
+    drawHighlight(eyeR, 22, 18, -22);
+    // surprised O mouth
+    ctx.fillStyle = '#0A1628';
+    ctx.beginPath();
+    ctx.ellipse(CX, CY + 210, 30, 40, 0, 0, Math.PI*2);
+    ctx.fill();
+    // alert badge on body (upper-right of face)
+    ctx.fillStyle = '#B23F3F';
+    ctx.beginPath(); ctx.arc(CX + 360, CY - 240, 64, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#F5EFE3';
+    ctx.font = 'bold 90px "Roboto", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('!', CX + 360, CY - 230);
+  }
+  else if (id === 'background') {
+    // half-closed eyes (sleepy)
+    ctx.fillStyle = '#0F2240';
+    ctx.beginPath();
+    ctx.moveTo(eyeL.x - 60, eyeL.y);
+    ctx.quadraticCurveTo(eyeL.x, eyeL.y + 36, eyeL.x + 60, eyeL.y);
+    ctx.quadraticCurveTo(eyeL.x, eyeL.y - 4, eyeL.x - 60, eyeL.y);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(eyeR.x - 60, eyeR.y);
+    ctx.quadraticCurveTo(eyeR.x, eyeR.y + 36, eyeR.x + 60, eyeR.y);
+    ctx.quadraticCurveTo(eyeR.x, eyeR.y - 4, eyeR.x - 60, eyeR.y);
+    ctx.closePath(); ctx.fill();
+    // small smile
+    smile(120, 40, 0, 14);
+    // zZz painted on body to upper-right
+    ctx.fillStyle = '#C9A35C';
+    ctx.font = 'italic 110px "Newsreader", serif';
+    ctx.fillText('z', CX + 340, CY - 200);
+    ctx.font = 'italic 80px "Newsreader", serif';
+    ctx.fillText('z', CX + 420, CY - 280);
+    ctx.font = 'italic 56px "Newsreader", serif';
+    ctx.fillText('z', CX + 480, CY - 350);
+  }
+}
+
+function ellipse(ctx, cx, cy, rx, ry) {
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI*2);
+}
+function line(ctx, x1,y1,x2,y2) {
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+}
+function drawStar(ctx, cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 - Math.PI/2;
+    const rr = (i % 2 === 0) ? r : r * 0.42;
+    const x = cx + Math.cos(a) * rr;
+    const y = cy + Math.sin(a) * rr;
+    if (i === 0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+function drawSpark(ctx, cx, cy, r) {
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r);
+  ctx.quadraticCurveTo(cx, cy, cx + r, cy);
+  ctx.quadraticCurveTo(cx, cy, cx, cy + r);
+  ctx.quadraticCurveTo(cx, cy, cx - r, cy);
+  ctx.quadraticCurveTo(cx, cy, cx, cy - r);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// =============================================================
+// Scene
+// =============================================================
+const stageEl = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+stageEl.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = null; // transparent — page bg shows through
+
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+camera.position.set(0, 0.4, 7.2);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.07;
+controls.minDistance = 4;
+controls.maxDistance = 14;
+controls.target.set(0, 0.1, 0);
+controls.minPolarAngle = Math.PI * 0.18;
+controls.maxPolarAngle = Math.PI * 0.78;
+controls.enablePan = false;
+
+// Lights ------------------------------------------------------
+const hemi = new THREE.HemisphereLight(0xFCEFD0, 0x132238, 0.55);
+scene.add(hemi);
+
+const key = new THREE.DirectionalLight(0xFFF3D8, 1.6);
+key.position.set(3.2, 5.0, 4.5);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 0.5;
+key.shadow.camera.far = 25;
+key.shadow.camera.left = -4;
+key.shadow.camera.right = 4;
+key.shadow.camera.top = 4;
+key.shadow.camera.bottom = -4;
+key.shadow.bias = -0.0004;
+key.shadow.normalBias = 0.02;
+scene.add(key);
+
+const rim = new THREE.DirectionalLight(0xC9A35C, 0.6);
+rim.position.set(-4.5, 2.5, -2.5);
+scene.add(rim);
+
+const fill = new THREE.DirectionalLight(0xBBD2F0, 0.35);
+fill.position.set(-2.5, 1.6, 4.5);
+scene.add(fill);
+
+// Ground (shadow catcher) -------------------------------------
+const groundMat = new THREE.ShadowMaterial({ opacity: 0.22 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), groundMat);
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -1.45;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// =============================================================
+// SIGGEY CHARACTER
+// =============================================================
+const siggey = new THREE.Group();
+scene.add(siggey);
+
+// ---- Body (sphere stretched into a squircle ellipsoid)
+const faceCanvas = makeFaceCanvas();
+paintFace(faceCanvas, 'idle');
+const faceTex = new THREE.CanvasTexture(faceCanvas);
+faceTex.colorSpace = THREE.SRGBColorSpace;
+faceTex.anisotropy = 8;
+faceTex.needsUpdate = true;
+
+const bodyGeo = new THREE.SphereGeometry(1.0, 96, 96);
+const bodyMat = new THREE.MeshPhysicalMaterial({
+  map: faceTex,
+  roughness: 0.42,
+  metalness: 0.04,
+  clearcoat: 0.35,
+  clearcoatRoughness: 0.55,
+  sheen: 0.4,
+  sheenRoughness: 0.7,
+  sheenColor: new THREE.Color(0xC9A35C),
+});
+const body = new THREE.Mesh(bodyGeo, bodyMat);
+body.scale.set(1.08, 1.18, 1.04);
+body.rotation.y = -Math.PI / 2; // bring canvas-U=0.5 to face camera (+Z)
+body.castShadow = true;
+body.receiveShadow = true;
+siggey.add(body);
+
+// ---- North star (above head)
+const starGroup = new THREE.Group();
+siggey.add(starGroup);
+
+const starStem = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.012, 0.012, 0.18, 12),
+  new THREE.MeshStandardMaterial({ color: P.gold, roughness: 0.6, metalness: 0.2 })
+);
+starStem.position.y = 1.3;
+starGroup.add(starStem);
+
+const starGeo = new THREE.SphereGeometry(0.085, 36, 36);
+const starMat = new THREE.MeshPhysicalMaterial({
+  color: P.gold,
+  roughness: 0.25,
+  metalness: 0.7,
+  clearcoat: 0.6,
+  emissive: new THREE.Color(P.goldSoft),
+  emissiveIntensity: 0.25,
+});
+const star = new THREE.Mesh(starGeo, starMat);
+star.position.y = 1.46;
+star.castShadow = true;
+starGroup.add(star);
+
+// star halo (small ring)
+const halo = new THREE.Mesh(
+  new THREE.RingGeometry(0.13, 0.16, 64),
+  new THREE.MeshBasicMaterial({ color: P.goldSoft, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+);
+halo.position.y = 1.46;
+halo.rotation.x = -Math.PI / 2;
+starGroup.add(halo);
+
+// ---- Glasses (3D frames sitting in front of the face)
+const glasses = new THREE.Group();
+siggey.add(glasses);
+
+const FRAME_Z = 1.022; // sit just outside body surface
+const lensRadius = 0.255;
+const lensTube = 0.034;
+
+const frameMat = new THREE.MeshPhysicalMaterial({
+  color: 0x0A1628,
+  roughness: 0.35,
+  metalness: 0.25,
+  clearcoat: 0.4,
+});
+
+const lensL = new THREE.Mesh(new THREE.TorusGeometry(lensRadius, lensTube, 32, 96), frameMat);
+lensL.position.set(-0.36, 0.05, FRAME_Z * 0.96);
+lensL.rotation.x = 0; // facing +Z
+glasses.add(lensL);
+
+const lensR = lensL.clone();
+lensR.position.x = 0.36;
+glasses.add(lensR);
+
+// Bridge
+const bridge = new THREE.Mesh(
+  new THREE.CylinderGeometry(lensTube * 0.85, lensTube * 0.85, 0.22, 16),
+  frameMat
+);
+bridge.rotation.z = Math.PI / 2;
+bridge.position.set(0, 0.05, FRAME_Z * 0.96);
+glasses.add(bridge);
+
+// Faint lens reflection — very subtle so the canvas-painted eyes show through
+const lensFillMat = new THREE.MeshPhysicalMaterial({
+  color: 0xFFF8E0,
+  roughness: 0.05,
+  metalness: 0.0,
+  transparent: true,
+  opacity: 0.08,
+  side: THREE.DoubleSide,
+});
+const lensFillL = new THREE.Mesh(new THREE.CircleGeometry(lensRadius * 0.94, 64), lensFillMat);
+lensFillL.position.set(-0.36, 0.05, FRAME_Z * 0.96 + 0.002);
+glasses.add(lensFillL);
+const lensFillR = lensFillL.clone();
+lensFillR.position.x = 0.36;
+glasses.add(lensFillR);
+
+// ---- Fedora HAT
+const hatGroup = new THREE.Group();
+hatGroup.position.set(0, 1.04, 0);
+hatGroup.rotation.set(-0.05, 0.0, -0.04);
+siggey.add(hatGroup);
+
+const hatMat = new THREE.MeshPhysicalMaterial({
+  color: 0x0E1F38,
+  roughness: 0.72,
+  sheen: 0.6,
+  sheenRoughness: 0.5,
+  sheenColor: new THREE.Color(0x4F7CB8),
+  clearcoat: 0.1,
+});
+const hatBandMat = new THREE.MeshPhysicalMaterial({
+  color: P.gold,
+  roughness: 0.45,
+  metalness: 0.4,
+});
+
+// Crown (slight taper using two cylinders, or use lathe)
+const crownGeo = new THREE.CylinderGeometry(0.42, 0.5, 0.4, 64, 1, false);
+const crown = new THREE.Mesh(crownGeo, hatMat);
+crown.position.y = 0.2;
+crown.castShadow = true;
+hatGroup.add(crown);
+
+// Crown top dimple — a slightly smaller disc set down a bit
+const dimple = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.32, 0.42, 0.06, 64),
+  hatMat
+);
+dimple.position.y = 0.37;
+hatGroup.add(dimple);
+// indent line (subtle)
+const indent = new THREE.Mesh(
+  new THREE.TorusGeometry(0.28, 0.012, 16, 64),
+  new THREE.MeshBasicMaterial({ color: 0x06101E, transparent: true, opacity: 0.5 })
+);
+indent.position.y = 0.404;
+indent.rotation.x = Math.PI / 2;
+hatGroup.add(indent);
+
+// Band
+const band = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.503, 0.503, 0.08, 64, 1, true),
+  hatBandMat
+);
+band.position.y = 0.04;
+hatGroup.add(band);
+
+// Brim (flattened torus / disc)
+const brim = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.78, 0.84, 0.04, 96, 1),
+  hatMat
+);
+brim.position.y = 0.0;
+brim.castShadow = true;
+brim.receiveShadow = true;
+hatGroup.add(brim);
+
+// Subtle brim curl (slight upward bias on back, downward on front)
+// — implemented by scaling Y of vertices around X axis. Skip for cleanliness.
+
+// ---- Feet
+const footMat = new THREE.MeshPhysicalMaterial({
+  color: 0x11243F,
+  roughness: 0.5,
+  metalness: 0.05,
+  clearcoat: 0.2,
+});
+function makeFoot() {
+  const g = new THREE.SphereGeometry(0.22, 32, 24);
+  g.scale(1.0, 0.55, 1.4);
+  const m = new THREE.Mesh(g, footMat);
+  m.castShadow = true;
+  return m;
+}
+const footL = makeFoot();
+footL.position.set(-0.32, -1.18, 0.05);
+siggey.add(footL);
+
+const footR = makeFoot();
+footR.position.set(0.32, -1.18, 0.05);
+siggey.add(footR);
+
+// ---- Subtle base disk ring on ground for SIG character feel
+const baseRing = new THREE.Mesh(
+  new THREE.RingGeometry(1.05, 1.18, 96),
+  new THREE.MeshBasicMaterial({ color: P.gold, transparent: true, opacity: 0.16, side: THREE.DoubleSide })
+);
+baseRing.rotation.x = -Math.PI / 2;
+baseRing.position.y = -1.44;
+scene.add(baseRing);
+const baseRingInner = new THREE.Mesh(
+  new THREE.RingGeometry(0.86, 0.88, 96),
+  new THREE.MeshBasicMaterial({ color: P.gold, transparent: true, opacity: 0.35, side: THREE.DoubleSide })
+);
+baseRingInner.rotation.x = -Math.PI / 2;
+baseRingInner.position.y = -1.439;
+scene.add(baseRingInner);
+// north-star dot on the ring
+const ringDot = new THREE.Mesh(
+  new THREE.SphereGeometry(0.025, 16, 16),
+  new THREE.MeshBasicMaterial({ color: P.gold })
+);
+ringDot.position.set(0, -1.43, -1.12);
+scene.add(ringDot);
+
+// =============================================================
+// State + UI
+// =============================================================
+const state = {
+  expression: 'idle',
+  hat: true,
+  star: true,
+  spin: false,
+  spinSpeed: 0.30,
+  theme: 'light',
+};
+
+// Build expression grid
+const expGrid = document.getElementById('expGrid');
+EXPRESSIONS.forEach(e => {
+  const b = document.createElement('button');
+  b.className = 'exp' + (e.id === state.expression ? ' active' : '');
+  b.dataset.id = e.id;
+  b.innerHTML = `<span class="nm">${e.label}</span><span class="sub">${e.sub}</span>`;
+  b.addEventListener('click', () => setExpression(e.id));
+  expGrid.appendChild(b);
+});
+
+function setExpression(id) {
+  state.expression = id;
+  paintFace(faceCanvas, id);
+  faceTex.needsUpdate = true;
+  [...expGrid.children].forEach(c => c.classList.toggle('active', c.dataset.id === id));
+  document.getElementById('expressionMeta').textContent =
+    'Expression · ' + EXPRESSIONS.find(x => x.id === id).label;
+}
+
+// Hat / star toggles
+const hatToggle = document.getElementById('hatToggle');
+hatToggle.addEventListener('click', () => {
+  state.hat = !state.hat;
+  hatToggle.classList.toggle('on', state.hat);
+  hatGroup.visible = state.hat;
+});
+
+const starToggle = document.getElementById('starToggle');
+starToggle.addEventListener('click', () => {
+  state.star = !state.star;
+  starToggle.classList.toggle('on', state.star);
+  starGroup.visible = state.star;
+});
+
+const spinToggle = document.getElementById('spinToggle');
+spinToggle.addEventListener('click', () => {
+  state.spin = !state.spin;
+  spinToggle.classList.toggle('on', state.spin);
+});
+
+const spinSlider = document.getElementById('spinSpeed');
+const spinVal = document.getElementById('spinVal');
+spinSlider.addEventListener('input', () => {
+  state.spinSpeed = parseFloat(spinSlider.value) / 100;
+  spinVal.textContent = state.spinSpeed.toFixed(2) + ' rad/s';
+});
+
+// Theme controls
+function setTheme(mode) {
+  state.theme = mode;
+  document.body.classList.toggle('dark', mode === 'dark');
+  [...document.querySelectorAll('.seg [data-mode]')].forEach(b => {
+    b.classList.toggle('on', b.dataset.mode === mode);
+  });
+
+  // Adjust lights for mood
+  if (mode === 'dark') {
+    hemi.color.set(0x9CB8E4);
+    hemi.groundColor.set(0x0A1628);
+    hemi.intensity = 0.4;
+    key.color.set(0xFFE9C0);
+    key.intensity = 1.1;
+    rim.intensity = 0.9;
+    fill.intensity = 0.25;
+    groundMat.opacity = 0.36;
+    renderer.toneMappingExposure = 0.95;
+  } else {
+    hemi.color.set(0xFCEFD0);
+    hemi.groundColor.set(0x132238);
+    hemi.intensity = 0.55;
+    key.color.set(0xFFF3D8);
+    key.intensity = 1.6;
+    rim.intensity = 0.6;
+    fill.intensity = 0.35;
+    groundMat.opacity = 0.22;
+    renderer.toneMappingExposure = 1.05;
+  }
+}
+
+document.querySelectorAll('.seg [data-mode]').forEach(b => {
+  b.addEventListener('click', () => setTheme(b.dataset.mode));
+});
+document.getElementById('modeToggle').addEventListener('click', () => {
+  setTheme(state.theme === 'dark' ? 'light' : 'dark');
+});
+document.getElementById('resetView').addEventListener('click', () => {
+  camera.position.set(0, 0.4, 7.2);
+  controls.target.set(0, 0.1, 0);
+  siggey.rotation.set(0, 0, 0);
+  controls.update();
+});
+
+// =============================================================
+// Resize
+// =============================================================
+function resize() {
+  const r = stageEl.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false);
+  camera.aspect = r.width / r.height;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize);
+resize();
+
+// =============================================================
+// Animate
+// =============================================================
+const clock = new THREE.Clock();
+let bob = 0;
+function tick() {
+  const dt = clock.getDelta();
+  bob += dt;
+
+  if (state.spin) {
+    siggey.rotation.y += state.spinSpeed * dt;
+  }
+
+  // gentle idle bob
+  siggey.position.y = Math.sin(bob * 1.6) * 0.018;
+  hatGroup.rotation.z = -0.04 + Math.sin(bob * 1.1) * 0.008;
+  // star slight float
+  star.position.y = 1.46 + Math.sin(bob * 2.2) * 0.015;
+  halo.rotation.z += dt * 0.4;
+  halo.position.y = star.position.y;
+
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(tick);
+}
+tick();
+
+// =============================================================
+// EXPORT
+// =============================================================
+const toast = document.getElementById('toast');
+function flash(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(flash._t);
+  flash._t = setTimeout(() => toast.classList.remove('show'), 1800);
+}
+
+function download(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1200);
+}
+
+document.querySelectorAll('[data-export]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const kind = btn.dataset.export;
+    const stamp = state.expression + (state.hat ? '-hat' : '') + '-' + state.theme;
+
+    if (kind === 'glb') {
+      const ex = new GLTFExporter();
+      ex.parse(siggey, (result) => {
+        const blob = new Blob([result], { type: 'model/gltf-binary' });
+        download(blob, `siggey-${stamp}.glb`);
+        flash('Exported siggey-' + stamp + '.glb');
+      }, (err) => console.error(err), { binary: true, embedImages: true });
+    }
+    else if (kind === 'gltf') {
+      const ex = new GLTFExporter();
+      ex.parse(siggey, (result) => {
+        const json = JSON.stringify(result, null, 2);
+        const blob = new Blob([json], { type: 'model/gltf+json' });
+        download(blob, `siggey-${stamp}.gltf`);
+        flash('Exported siggey-' + stamp + '.gltf');
+      }, (err) => console.error(err), { binary: false, embedImages: true });
+    }
+    else if (kind === 'obj') {
+      const ex = new OBJExporter();
+      const txt = ex.parse(siggey);
+      const blob = new Blob([txt], { type: 'text/plain' });
+      download(blob, `siggey-${stamp}.obj`);
+      flash('Exported siggey-' + stamp + '.obj');
+    }
+    else if (kind === 'stl') {
+      const ex = new STLExporter();
+      const txt = ex.parse(siggey, { binary: false });
+      const blob = new Blob([txt], { type: 'model/stl' });
+      download(blob, `siggey-${stamp}.stl`);
+      flash('Exported siggey-' + stamp + '.stl');
+    }
+    else if (kind === 'png') {
+      // High-quality render at 2x current size
+      const oldSize = renderer.getSize(new THREE.Vector2());
+      const w = Math.round(oldSize.x * 2), h = Math.round(oldSize.y * 2);
+      const oldPR = renderer.getPixelRatio();
+      renderer.setPixelRatio(1);
+      renderer.setSize(w, h, false);
+      camera.aspect = w / h; camera.updateProjectionMatrix();
+      // give scene a solid bg colour for snapshot
+      const bgPrev = scene.background;
+      scene.background = new THREE.Color(state.theme === 'dark' ? 0x06101E : 0xFAF7F0);
+      renderer.render(scene, camera);
+      renderer.domElement.toBlob((blob) => {
+        download(blob, `siggey-${stamp}.png`);
+        flash('Exported siggey-' + stamp + '.png');
+        // restore
+        scene.background = bgPrev;
+        renderer.setPixelRatio(oldPR);
+        resize();
+      });
+    }
+    else if (kind === 'svg') {
+      const svg = buildSVG(state.expression, state.hat, state.theme);
+      const blob = new Blob([svg], { type: 'image/svg+xml' });
+      download(blob, `siggey-${stamp}.svg`);
+      flash('Exported siggey-' + stamp + '.svg');
+    }
+  });
+});
+
+// =============================================================
+// SVG poses — 2D flat exports for each expression
+// Built from the design-system character with optional hat
+// =============================================================
+function svgDefs() {
+  return `
+  <defs>
+    <radialGradient id="sg-body" cx="0.38" cy="0.28" r="0.92">
+      <stop offset="0%" stop-color="#4F7CB8"/>
+      <stop offset="42%" stop-color="#1C3556"/>
+      <stop offset="100%" stop-color="#0A1628"/>
+    </radialGradient>
+    <radialGradient id="sg-face" cx="0.5" cy="0.42" r="0.65">
+      <stop offset="0%" stop-color="#F8F2E5"/>
+      <stop offset="100%" stop-color="#D8C9A5" stop-opacity="0.9"/>
+    </radialGradient>
+    <radialGradient id="sg-lens" cx="0.3" cy="0.3" r="0.85">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F0E8D2"/>
+      <stop offset="100%" stop-color="#C9B989"/>
+    </radialGradient>
+    <linearGradient id="sg-foot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#11243F"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </linearGradient>
+    <radialGradient id="sg-star" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#F5E3B8"/>
+      <stop offset="60%" stop-color="#C9A35C"/>
+      <stop offset="100%" stop-color="#9C7C3D"/>
+    </radialGradient>
+    <linearGradient id="sg-hat" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1C3556"/>
+      <stop offset="100%" stop-color="#0A1628"/>
+    </linearGradient>
+  </defs>`;
+}
+
+function svgBaseBody() {
+  // The character without facial expression details (idle base)
+  return `
+  <ellipse cx="160" cy="340" rx="98" ry="9" fill="rgba(10,22,40,0.32)"/>
+  <ellipse cx="118" cy="320" rx="20" ry="14" fill="url(#sg-foot)"/>
+  <ellipse cx="202" cy="320" rx="20" ry="14" fill="url(#sg-foot)"/>
+  <path d="M40 130 C40 60 90 30 160 30 C230 30 280 60 280 130 L280 220 C280 290 230 320 160 320 C90 320 40 290 40 220 Z" fill="url(#sg-body)"/>
+  <ellipse cx="100" cy="98" rx="42" ry="26" fill="rgba(255,255,255,0.20)" transform="rotate(-25 100 98)"/>
+  <path d="M270 80 Q288 175 270 270" stroke="rgba(201,163,92,0.55)" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="160" cy="295" rx="105" ry="32" fill="rgba(10,22,40,0.42)" opacity="0.5"/>
+  <ellipse cx="160" cy="158" rx="100" ry="68" fill="url(#sg-face)" opacity="0.96"/>
+  <ellipse cx="76" cy="205" rx="13" ry="6.5" fill="rgba(201,120,80,0.32)"/>
+  <ellipse cx="244" cy="205" rx="13" ry="6.5" fill="rgba(201,120,80,0.32)"/>
+  <line x1="146" y1="158" x2="174" y2="158" stroke="#0A1628" stroke-width="6" stroke-linecap="round"/>
+  <path d="M84 159 Q70 156 58 162" stroke="#0A1628" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M236 159 Q250 156 262 162" stroke="#0A1628" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <circle cx="118" cy="158" r="34" fill="url(#sg-lens)" stroke="#0A1628" stroke-width="7"/>
+  <circle cx="202" cy="158" r="34" fill="url(#sg-lens)" stroke="#0A1628" stroke-width="7"/>
+  <path d="M94 142 Q112 134 138 138" stroke="rgba(201,163,92,0.75)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+  <path d="M182 138 Q204 134 224 142" stroke="rgba(201,163,92,0.75)" stroke-width="2.5" stroke-linecap="round" fill="none"/>`;
+}
+
+function svgStar() {
+  return `
+  <line x1="160" y1="28" x2="160" y2="38" stroke="rgba(201,163,92,0.6)" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="160" cy="20" r="8" fill="url(#sg-star)"/>
+  <circle cx="160" cy="18" r="2.4" fill="#FBF4DC"/>`;
+}
+
+function svgHat() {
+  // a tidy fedora drawn on top of the body
+  return `
+  <g transform="translate(0 0)">
+    <!-- brim shadow under hat on body -->
+    <ellipse cx="160" cy="58" rx="120" ry="10" fill="rgba(10,22,40,0.35)"/>
+    <!-- brim -->
+    <path d="M30 56 Q160 30 290 56 Q160 80 30 56 Z" fill="url(#sg-hat)" stroke="#06101E" stroke-width="1"/>
+    <!-- crown -->
+    <path d="M85 50 Q90 -8 160 -8 Q230 -8 235 50 Z" fill="url(#sg-hat)" stroke="#06101E" stroke-width="1"/>
+    <!-- crown dimple highlight -->
+    <path d="M105 40 Q160 22 215 40" stroke="rgba(255,255,255,0.16)" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- band -->
+    <rect x="85" y="42" width="150" height="14" fill="#C9A35C"/>
+    <rect x="85" y="42" width="150" height="2" fill="#9C7C3D"/>
+    <rect x="85" y="54" width="150" height="2" fill="#9C7C3D"/>
+  </g>`;
+}
+
+function svgFace(expression) {
+  // expressions overlay (eyes / mouth / extras)
+  const e = expression;
+  // pupils default
+  if (e === 'idle') {
+    return `
+    <circle cx="118" cy="160" r="13" fill="#0F2240"/>
+    <circle cx="202" cy="160" r="13" fill="#0F2240"/>
+    <circle cx="123" cy="155" r="4.5" fill="#FFFFFF"/>
+    <circle cx="207" cy="155" r="4.5" fill="#FFFFFF"/>
+    <circle cx="114" cy="167" r="2" fill="#C9A35C"/>
+    <circle cx="198" cy="167" r="2" fill="#C9A35C"/>
+    <path d="M137 222 Q160 240 183 222" stroke="#0A1628" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  }
+  if (e === 'greeting') {
+    return `
+    <circle cx="118" cy="158" r="15" fill="#0F2240"/>
+    <circle cx="202" cy="158" r="15" fill="#0F2240"/>
+    <circle cx="124" cy="153" r="5.5" fill="#FFFFFF"/>
+    <circle cx="208" cy="153" r="5.5" fill="#FFFFFF"/>
+    <circle cx="113" cy="166" r="2.5" fill="#C9A35C"/>
+    <circle cx="197" cy="166" r="2.5" fill="#C9A35C"/>
+    <path d="M130 218 Q160 250 190 218 Q180 245 160 248 Q140 245 130 218 Z" fill="#0A1628"/>
+    <path d="M148 240 Q160 246 172 240" stroke="#C97858" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <ellipse cx="32" cy="170" rx="14" ry="10" fill="#1C3556" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+    <ellipse cx="28" cy="166" rx="6" ry="4" fill="rgba(255,255,255,0.18)"/>`;
+  }
+  if (e === 'thinking') {
+    return `
+    <circle cx="118" cy="160" r="13" fill="#0F2240"/>
+    <circle cx="202" cy="160" r="13" fill="#0F2240"/>
+    <circle cx="119" cy="151" r="6" fill="#F5EFE3"/>
+    <circle cx="203" cy="151" r="6" fill="#F5EFE3"/>
+    <circle cx="119" cy="151" r="3" fill="#0F2240"/>
+    <circle cx="203" cy="151" r="3" fill="#0F2240"/>
+    <path d="M92 119 Q120 113 142 122" stroke="#0A1628" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <path d="M178 122 Q200 113 228 119" stroke="#0A1628" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <path d="M148 228 L172 228" stroke="#0A1628" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <circle cx="252" cy="80" r="22" fill="#F5EFE3" stroke="#0A1628" stroke-width="3"/>
+    <circle cx="232" cy="105" r="6" fill="#F5EFE3" stroke="#0A1628" stroke-width="2"/>
+    <circle cx="222" cy="118" r="3" fill="#F5EFE3" stroke="#0A1628" stroke-width="1.5"/>
+    <text x="252" y="88" text-anchor="middle" font-family="Newsreader, serif" font-size="22" fill="#C9A35C">★</text>`;
+  }
+  if (e === 'working') {
+    return `
+    <path d="M104 160 Q118 168 132 160" stroke="#0A1628" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M188 160 Q202 168 216 160" stroke="#0A1628" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <path d="M140 220 Q160 232 180 220" stroke="#0A1628" stroke-width="5" stroke-linecap="round" fill="none"/>
+    <circle cx="160" cy="175" r="148" fill="none" stroke="rgba(201,163,92,0.55)" stroke-width="3" stroke-dasharray="180 250" stroke-linecap="round"/>`;
+  }
+  if (e === 'success') {
+    return `
+    <path d="M100 162 Q118 144 136 162" stroke="#0A1628" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+    <path d="M184 162 Q202 144 220 162" stroke="#0A1628" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+    <path d="M126 218 Q160 252 194 218 Q175 248 160 248 Q145 248 126 218 Z" fill="#0A1628"/>
+    <path d="M132 222 Q146 230 160 230 Q174 230 188 222" fill="#F5EFE3" opacity="0.95"/>
+    <text x="60" y="60" font-family="Newsreader, serif" font-size="18" fill="#C9A35C">✦</text>
+    <text x="270" y="200" font-family="Newsreader, serif" font-size="16" fill="#C9A35C">✦</text>
+    <text x="40" y="200" font-family="Newsreader, serif" font-size="14" fill="#C9A35C">✦</text>`;
+  }
+  if (e === 'warning') {
+    return `
+    <circle cx="118" cy="160" r="13" fill="#0F2240"/>
+    <circle cx="202" cy="160" r="13" fill="#0F2240"/>
+    <circle cx="122" cy="156" r="4.5" fill="#FFFFFF"/>
+    <circle cx="206" cy="156" r="4.5" fill="#FFFFFF"/>
+    <path d="M88 116 Q108 110 140 124" stroke="#0A1628" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M180 124 Q212 110 232 116" stroke="#0A1628" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <text x="160" y="232" text-anchor="middle" font-family="Newsreader, serif" font-weight="500" font-size="36" fill="#0A1628">?</text>`;
+  }
+  if (e === 'compliance') {
+    return `
+    <circle cx="118" cy="158" r="16" fill="#0F2240"/>
+    <circle cx="202" cy="158" r="16" fill="#0F2240"/>
+    <circle cx="124" cy="154" r="6.5" fill="#FFFFFF"/>
+    <circle cx="208" cy="154" r="6.5" fill="#FFFFFF"/>
+    <ellipse cx="160" cy="228" rx="9" ry="11" fill="#0A1628"/>
+    <circle cx="160" cy="20" r="11" fill="none" stroke="#B23F3F" stroke-width="2"/>
+    <circle cx="246" cy="80" r="14" fill="#B23F3F"/>
+    <text x="246" y="86" text-anchor="middle" font-family="Roboto, sans-serif" font-weight="700" font-size="18" fill="#F5EFE3">!</text>`;
+  }
+  if (e === 'background') {
+    return `
+    <path d="M104 162 Q118 168 132 162 Q132 158 118 158 Q104 158 104 162 Z" fill="#0F2240"/>
+    <path d="M188 162 Q202 168 216 162 Q216 158 202 158 Q188 158 188 162 Z" fill="#0F2240"/>
+    <text x="246" y="86" font-family="Newsreader, serif" font-style="italic" font-size="26" fill="#C9A35C">z</text>
+    <text x="266" y="68" font-family="Newsreader, serif" font-style="italic" font-size="20" fill="#C9A35C">z</text>
+    <path d="M148 224 Q160 230 172 224" stroke="#0A1628" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+  }
+  return '';
+}
+
+function buildSVG(expression, withHat, theme) {
+  const bg = theme === 'dark'
+    ? `<rect width="320" height="360" fill="#0A1628"/>`
+    : `<rect width="320" height="360" fill="#F5EFE3"/>`;
+  const e = EXPRESSIONS.find(x => x.id === expression);
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" width="640" height="720">
+  <title>Siggey · ${e ? e.label : expression}${withHat ? ' · with hat' : ''}</title>
+  <desc>SIG360 Siggey character — ${e ? e.sub : ''}. Generated from the SIG360 3D Character System.</desc>
+  ${svgDefs()}
+  ${bg}
+  ${svgBaseBody()}
+  ${svgFace(expression)}
+  ${withHat ? svgHat() : svgStar()}
+</svg>`;
+}
+
+// init
+setTheme('light');
+setExpression('idle');
+</script>
+
+</body>
+</html>

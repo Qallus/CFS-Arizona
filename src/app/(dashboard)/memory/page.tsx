@@ -127,18 +127,18 @@ export default function MemoryPage() {
   return (
     <div className="flex h-full p-8 gap-6">
       {/* Sidebar - File List */}
-      <Card className="w-72 flex-shrink-0 bg-zinc-900/50 border-zinc-800">
-        <CardHeader className="border-b border-zinc-800">
+      <Card className="w-72 flex-shrink-0 bg-card/50 border-border">
+        <CardHeader className="border-b border-border">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-white flex items-center gap-2">
-              <Brain className="w-5 h-5 text-orange-500" />
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Brain className="w-5 h-5 text-brand" />
               Memory
             </CardTitle>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setShowForm(!showForm)}
-              className="text-orange-500 hover:text-orange-400"
+              className="text-brand hover:text-brand/90"
             >
               {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
             </Button>
@@ -153,21 +153,21 @@ export default function MemoryPage() {
                 onClick={() => selectFile(null)}
                 className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                   !selectedFile
-                    ? 'bg-orange-500/20 text-orange-500'
-                    : 'text-zinc-300 hover:bg-zinc-800'
+                    ? 'bg-brand/20 text-brand'
+                    : 'text-muted-foreground hover:bg-secondary'
                 }`}
               >
                 <Brain className="w-4 h-4" />
                 <span className="font-medium">MEMORY.md</span>
-                <Badge variant="outline" className="ml-auto text-xs border-orange-500 text-orange-500">
+                <Badge variant="outline" className="ml-auto text-xs border-brand text-brand">
                   Main
                 </Badge>
               </button>
 
-              <Separator className="my-3 bg-zinc-800" />
+              <Separator className="my-3 bg-secondary" />
 
               {/* Daily Files */}
-              <div className="px-3 py-1 text-xs text-zinc-500 uppercase tracking-wider">
+              <div className="px-3 py-1 text-xs text-muted-foreground uppercase tracking-wider">
                 Daily Logs
               </div>
               {dailyFiles.map((file) => (
@@ -176,8 +176,8 @@ export default function MemoryPage() {
                   onClick={() => selectFile(file)}
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-colors ${
                     selectedFile === file.name
-                      ? 'bg-zinc-700 text-white'
-                      : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-300'
+                      ? 'bg-secondary text-foreground'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-muted-foreground'
                   }`}
                 >
                   <Calendar className="w-4 h-4" />
@@ -185,7 +185,7 @@ export default function MemoryPage() {
                 </button>
               ))}
               {dailyFiles.length === 0 && (
-                <div className="px-3 py-4 text-sm text-zinc-500">
+                <div className="px-3 py-4 text-sm text-muted-foreground">
                   No daily logs yet
                 </div>
               )}
@@ -198,10 +198,10 @@ export default function MemoryPage() {
       <div className="flex-1 flex flex-col gap-6">
         {/* New Entry Form */}
         {showForm && (
-          <Card className="bg-zinc-900/50 border-zinc-800 border-orange-500/30">
+          <Card className="bg-card/50 border-border border-brand/30">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Plus className="w-5 h-5 text-orange-500" />
+              <CardTitle className="text-foreground flex items-center gap-2">
+                <Plus className="w-5 h-5 text-brand" />
                 Create Memory Entry
               </CardTitle>
               <CardDescription>Add a new memory log or note</CardDescription>
@@ -213,8 +213,8 @@ export default function MemoryPage() {
                   onClick={() => setNewEntry({ ...newEntry, type: 'daily' })}
                   className={`flex-1 ${
                     newEntry.type === 'daily' 
-                      ? 'bg-orange-500/20 border-orange-500 text-orange-500' 
-                      : 'border-zinc-700 text-zinc-400'
+                      ? 'bg-brand/20 border-brand text-brand' 
+                      : 'border-border text-muted-foreground'
                   }`}
                 >
                   <Calendar className="w-4 h-4 mr-2" />
@@ -225,8 +225,8 @@ export default function MemoryPage() {
                   onClick={() => setNewEntry({ ...newEntry, type: 'note' })}
                   className={`flex-1 ${
                     newEntry.type === 'note' 
-                      ? 'bg-orange-500/20 border-orange-500 text-orange-500' 
-                      : 'border-zinc-700 text-zinc-400'
+                      ? 'bg-brand/20 border-brand text-brand' 
+                      : 'border-border text-muted-foreground'
                   }`}
                 >
                   <FileText className="w-4 h-4 mr-2" />
@@ -237,54 +237,54 @@ export default function MemoryPage() {
               <div className="grid grid-cols-2 gap-4">
                 {newEntry.type === 'daily' ? (
                   <div>
-                    <label className="text-sm text-zinc-400 block mb-2">Date</label>
+                    <label className="text-sm text-muted-foreground block mb-2">Date</label>
                     <Input
                       type="date"
                       value={newEntry.date}
                       onChange={(e) => setNewEntry({ ...newEntry, date: e.target.value })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-secondary border-border text-foreground"
                     />
                   </div>
                 ) : (
                   <div>
-                    <label className="text-sm text-zinc-400 block mb-2">Note Name *</label>
+                    <label className="text-sm text-muted-foreground block mb-2">Note Name *</label>
                     <Input
                       placeholder="e.g., project-ideas"
                       value={newEntry.title}
                       onChange={(e) => setNewEntry({ ...newEntry, title: e.target.value })}
-                      className="bg-zinc-800 border-zinc-700 text-white"
+                      className="bg-secondary border-border text-foreground"
                     />
                   </div>
                 )}
                 <div>
-                  <label className="text-sm text-zinc-400 block mb-2">
+                  <label className="text-sm text-muted-foreground block mb-2">
                     {newEntry.type === 'daily' ? 'Entry Title (optional)' : 'Section Title'}
                   </label>
                   <Input
                     placeholder={newEntry.type === 'daily' ? 'e.g., Morning standup' : 'e.g., Overview'}
                     value={newEntry.title}
                     onChange={(e) => setNewEntry({ ...newEntry, title: e.target.value })}
-                    className="bg-zinc-800 border-zinc-700 text-white"
+                    className="bg-secondary border-border text-foreground"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Content *</label>
+                <label className="text-sm text-muted-foreground block mb-2">Content *</label>
                 <Textarea
                   placeholder="Write your memory entry..."
                   value={newEntry.content}
                   onChange={(e) => setNewEntry({ ...newEntry, content: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white min-h-[120px]"
+                  className="bg-secondary border-border text-foreground min-h-[120px]"
                 />
               </div>
 
               <div className="flex gap-2">
-                <Button onClick={createEntry} className="bg-orange-500 hover:bg-orange-600">
+                <Button onClick={createEntry} className="bg-brand hover:bg-brand/90">
                   <Plus className="w-4 h-4 mr-2" />
                   Create Entry
                 </Button>
-                <Button variant="outline" onClick={() => setShowForm(false)} className="border-zinc-700 text-zinc-300">
+                <Button variant="outline" onClick={() => setShowForm(false)} className="border-border text-muted-foreground">
                   Cancel
                 </Button>
               </div>
@@ -293,14 +293,14 @@ export default function MemoryPage() {
         )}
 
         {/* Editor */}
-        <Card className="flex-1 flex flex-col bg-zinc-900/50 border-zinc-800">
-          <CardHeader className="flex-row items-center justify-between border-b border-zinc-800">
+        <Card className="flex-1 flex flex-col bg-card/50 border-border">
+          <CardHeader className="flex-row items-center justify-between border-b border-border">
             <div>
-              <CardTitle className="text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-zinc-400" />
+              <CardTitle className="text-foreground flex items-center gap-2">
+                <FileText className="w-5 h-5 text-muted-foreground" />
                 {selectedFile || 'MEMORY.md'}
                 {hasChanges && (
-                  <Badge variant="outline" className="border-orange-500 text-orange-500">
+                  <Badge variant="outline" className="border-brand text-brand">
                     Modified
                   </Badge>
                 )}
@@ -314,14 +314,14 @@ export default function MemoryPage() {
                 variant="outline"
                 onClick={loadMemory}
                 disabled={isLoading}
-                className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+                className="border-border text-muted-foreground hover:bg-secondary"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
               <Button
                 onClick={saveMemory}
                 disabled={isSaving || !hasChanges}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="bg-brand hover:bg-brand/90 text-white"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {isSaving ? 'Saving...' : 'Save'}
@@ -330,14 +330,14 @@ export default function MemoryPage() {
           </CardHeader>
           <CardContent className="flex-1 p-4">
             {isLoading ? (
-              <div className="flex items-center justify-center h-full text-zinc-500">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 Loading...
               </div>
             ) : (
               <Textarea
                 value={selectedFile ? selectedContent : memoryMd}
                 onChange={(e) => handleContentChange(e.target.value)}
-                className="h-full min-h-[400px] font-mono text-sm bg-zinc-900 border-zinc-700 text-zinc-100 resize-none"
+                className="h-full min-h-[400px] font-mono text-sm bg-card border-border text-foreground resize-none"
                 placeholder="Memory content..."
               />
             )}

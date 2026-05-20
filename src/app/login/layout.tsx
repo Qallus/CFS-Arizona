@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Login - JDub Dashboard",
-  description: "Sign in to JDub Dashboard",
+  title: "Login - SIG360",
+  description: "Sign in to SIG360",
 };
 
 export default function LoginLayout({

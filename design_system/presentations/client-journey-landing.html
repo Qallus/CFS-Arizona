@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Meeting Journey — Strategic Income Group</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:      #0E2971;
+    --navy-deep: #081A4A;
+    --navy-soft: #1E3A8A;
+    --gold:      #C9A46E;
+    --gold-dark: #9E6F2E;
+    --gold-soft: #E8D8BD;
+    --cream:     #FAF7F2;
+    --blue-wash: #EBF0FE;
+    --white:     #FFFFFF;
+    --ink:       #1F2933;
+    --ink-soft:  #4B5563;
+    --muted:     #6B7280;
+    --border:    #E5E7EB;
+    --border-w:  #EFE8DA;
+    --max:       1200px;
+    --shadow:    0 1px 2px rgba(15,23,42,.04), 0 8px 24px rgba(15,23,42,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; color: var(--ink); background: var(--white); line-height: 1; }
+
+  /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  nav img { height: 22px; }
+  .nav-links { display: flex; gap: 28px; align-items: center; }
+  .nav-links a { font-size: 13px; color: var(--muted); text-decoration: none; letter-spacing: 0.01em; transition: color .18s; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 34px; padding: 0 16px; border-radius: 999px;
+    background: var(--navy); color: var(--white);
+    font-size: 12px; font-weight: 600; letter-spacing: 0.04em;
+    text-decoration: none; transition: background .18s;
+  }
+  .nav-cta:hover { background: var(--navy-soft); }
+
+  /* Section wrapper */
+  .section { padding: 88px 40px; }
+  .section.cream  { background: var(--cream); }
+  .section.navy   { background: var(--navy); color: var(--white); }
+  .section.deep   { background: var(--navy-deep); color: var(--white); }
+  .inner { max-width: var(--max); margin: 0 auto; }
+
+  /* Typography */
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--gold-dark); }
+  .section.navy .eyebrow, .section.deep .eyebrow { color: var(--gold); }
+  .section.navy .eyebrow::before, .section.deep .eyebrow::before { background: var(--gold); }
+
+  h1 { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(44px, 5.5vw, 72px); line-height: 1.0; letter-spacing: -0.022em; }
+  h2 { font-family: 'Fraunces', serif; font-weight: 400; font-size: clamp(32px, 4vw, 52px); line-height: 1.05; letter-spacing: -0.018em; }
+  h3 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 22px; line-height: 1.2; letter-spacing: -0.008em; }
+  .lead { font-size: 18px; line-height: 1.65; color: var(--ink-soft); }
+  .body { font-size: 15px; line-height: 1.7; color: var(--ink-soft); }
+  .sm { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  em { font-style: italic; color: var(--gold-dark); }
+  .section.navy em, .section.deep em { color: var(--gold); }
+  .section.navy .lead, .section.deep .lead { color: rgba(255,255,255,.75); }
+  .section.navy .body, .section.deep .body { color: rgba(255,255,255,.7); }
+  .section.navy .sm, .section.deep .sm { color: rgba(255,255,255,.45); }
+
+  /* Divider */
+  .div { height: 1px; background: var(--border); }
+  .section.cream .div { background: var(--border-w); }
+  .section.navy .div, .section.deep .div { background: rgba(255,255,255,.14); }
+
+  /* Badge */
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    height: 24px; padding: 0 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase;
+    background: var(--cream); color: var(--gold-dark); border: 1px solid #EAD9B6;
+  }
+  .badge.nb { background: rgba(14,41,113,.07); color: var(--navy); border-color: rgba(14,41,113,.15); }
+  .badge.wb { background: rgba(255,255,255,.14); color: rgba(255,255,255,.88); border-color: rgba(255,255,255,.28); }
+  .badge.gb { background: rgba(201,164,110,.18); color: var(--gold); border-color: rgba(201,164,110,.38); }
+
+  /* Card */
+  .card { background: var(--white); border: 1px solid var(--border); border-radius: 14px; padding: 20px 22px; box-shadow: var(--shadow); }
+  .card.cr { background: var(--cream); border-color: var(--border-w); box-shadow: none; }
+  .card.nv { background: var(--navy); border-color: transparent; color: var(--white); }
+  .card.bw { background: var(--blue-wash); border-color: #DBE3F7; box-shadow: none; }
+  .card.ol { background: transparent; border-color: rgba(255,255,255,.18); }
+
+  /* Journey section block */
+  .journey-section { display: flex; flex-direction: column; gap: 20px; }
+  .journey-section-header { display: flex; align-items: center; gap: 12px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .section.cream .journey-section-header { border-color: var(--border-w); }
+  .journey-sec-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; color: var(--white); background: var(--navy); border-radius: 5px; width: 22px; height: 22px; display: grid; place-items: center; flex-shrink: 0; letter-spacing: 0; }
+  .journey-sec-label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+
+  /* Meeting item */
+  .meeting-grid { display: grid; gap: 12px; }
+  .meeting-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .meeting-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  @media (max-width: 860px) {
+    .meeting-grid.cols-2, .meeting-grid.cols-3 { grid-template-columns: 1fr; }
+  }
+
+  /* Hero */
+  .hero-section {
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: space-between;
+    padding: 0; overflow: hidden; position: relative;
+  }
+  .hero-glow-r { position: absolute; right: -100px; top: -100px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(201,164,110,.18), transparent 65%); pointer-events: none; }
+  .hero-glow-l { position: absolute; left: -80px; bottom: 100px; width: 320px; height: 320px; background: radial-gradient(circle, rgba(30,58,138,.5), transparent 65%); pointer-events: none; }
+
+  .hero-inner { padding: 80px 40px 60px; max-width: 1320px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 0; flex: 1; }
+  .hero-grid { display: grid; grid-template-columns: 1fr 400px; gap: 80px; align-items: center; flex: 1; }
+  @media (max-width: 1024px) { .hero-grid { grid-template-columns: 1fr; } }
+
+  .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid rgba(255,255,255,.14); border-radius: 14px; overflow: hidden; }
+  .hero-stat { padding: 24px 20px; border-right: 1px solid rgba(255,255,255,.12); }
+  .hero-stat:last-child { border-right: 0; }
+  .hero-stat-n { font-family: 'Fraunces', serif; font-size: 44px; font-weight: 400; line-height: 1; letter-spacing: -0.02em; color: var(--gold); }
+  .hero-stat-l { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,.45); margin-top: 6px; line-height: 1.4; }
+
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 24px; border-radius: 999px;
+    background: var(--gold); color: var(--navy);
+    font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+    text-decoration: none; transition: opacity .18s;
+  }
+  .hero-cta:hover { opacity: .9; }
+  .hero-cta-outline {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 24px; border-radius: 999px;
+    background: transparent; color: rgba(255,255,255,.85);
+    border: 1px solid rgba(255,255,255,.32);
+    font-size: 14px; font-weight: 600; letter-spacing: 0.04em;
+    text-decoration: none; transition: border-color .18s;
+  }
+  .hero-cta-outline:hover { border-color: rgba(255,255,255,.55); }
+
+  /* Three levels */
+  .level-col { border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+  .level-header { padding: 22px 22px 18px; border-bottom: 1px solid; }
+  .level-body { padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .level-item { padding: 10px 12px; border-radius: 8px; font-size: 13.5px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+  .level-footer { padding: 16px 22px; border-top: 1px solid; font-size: 12px; line-height: 1.5; }
+
+  /* Five steps */
+  .step-row { display: flex; gap: 20px; align-items: flex-start; padding: 20px 0; border-bottom: 1px solid var(--border); }
+  .step-row:last-child { border-bottom: 0; }
+  .step-num-big { font-family: 'Fraunces', serif; font-size: 48px; font-weight: 300; line-height: 1; letter-spacing: -0.025em; width: 64px; flex-shrink: 0; text-align: right; color: rgba(14,41,113,.18); }
+  .step-row.active .step-num-big { color: var(--gold-dark); }
+
+  /* CTA section */
+  .contact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 700px) { .contact-grid { grid-template-columns: 1fr; } }
+  .contact-item { border: 1px solid rgba(255,255,255,.14); border-radius: 12px; padding: 18px 16px; }
+
+  /* Utilities */
+  .flex-gap-sm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .flex-gap { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mt-32 { margin-top: 32px; }
+  .mt-40 { margin-top: 40px; }
+  .mt-48 { margin-top: 48px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <img src="../assets/sig-logo-full-color.svg" alt="Strategic Income Group">
+  <div class="nav-links">
+    <a href="#journey">Client Journey</a>
+    <a href="#levels">How We're Different</a>
+    <a href="#steps">Our Process</a>
+    <a href="#contact">Contact</a>
+    <a href="#contact" class="nav-cta">Schedule a Conversation →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero-section">
+  <div class="hero-glow-r"></div>
+  <div class="hero-glow-l"></div>
+  <div class="hero-inner" style="position:relative;">
+
+    <div class="hero-grid" style="flex:1; padding-top:20px;">
+      <div>
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:28px;">
+          <div style="width:20px; height:1px; background:var(--gold);"></div>
+          <span style="font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.16em; text-transform:uppercase; color:rgba(255,255,255,.55);">Client Planning Experience · 2026</span>
+        </div>
+        <h1 style="color:var(--white); font-size:clamp(52px,7vw,84px); line-height:0.97; max-width:840px;">
+          Client Meeting<br><em style="color:var(--gold);">Journey</em>.
+        </h1>
+        <p class="lead" style="margin-top:28px; max-width:560px; font-size:19px;">A personalized planning experience designed around your life, goals, and legacy.</p>
+        <p style="font-family:'Fraunces',serif; font-style:italic; font-size:20px; color:var(--gold); margin-top:20px; line-height:1.35; letter-spacing:-0.005em;">Optimize Your Wealth. Align Your Life. Live with Purpose.</p>
+        <div style="display:flex; gap:12px; margin-top:36px; flex-wrap:wrap;">
+          <a href="https://strategicincomegroup.com/schedule/" target="_blank" rel="noopener" class="hero-cta">Schedule a Complimentary Consultation →</a>
+          <a href="#journey" class="hero-cta-outline">See the full journey</a>
+        </div>
+        <p style="font-size:12px; color:rgba(255,255,255,.42); margin-top:14px; line-height:1.6; max-width:480px;">Our first conversations are complimentary. Formal planning begins when both your family and SIG believe there is strong alignment.</p>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:14px;">
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-n">7</div>
+            <div class="hero-stat-l">Planning<br>Stages</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-n">19</div>
+            <div class="hero-stat-l">Meeting<br>Types</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-n">2</div>
+            <div class="hero-stat-l">Complimentary<br>First Meetings</div>
+          </div>
+        </div>
+        <div style="background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px; padding:20px 22px;">
+          <img src="../assets/sig-logo-mark-white.svg" style="height:26px; opacity:.6; margin-bottom:16px; display:block;" alt="">
+          <p style="font-family:'Fraunces',serif; font-style:italic; font-size:18px; line-height:1.4; color:rgba(255,255,255,.75);">"We build plans that align your financial resources with what matters most."</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- CLIENT MEETING JOURNEY                                        -->
+<!-- ============================================================ -->
+<section class="section cream" id="journey">
+  <div class="inner">
+
+    <div class="eyebrow">Client Meeting Journey</div>
+    <h2>A plan built around <em>your life</em>.</h2>
+    <p class="lead mt-16" style="max-width:600px;">Seven stages covering every dimension of your financial life — from your first conversation to your lasting legacy.</p>
+
+    <div style="display:flex; flex-direction:column; gap:64px; margin-top:52px;">
+
+      <!-- Stage 01 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num">01</div>
+          <span class="journey-sec-label">Complimentary Consultation &amp; Alignment</span>
+          <span class="badge mt-0" style="margin-left:auto;">Complimentary</span>
+        </div>
+        <div class="meeting-grid cols-2">
+          <div class="card" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+              <h3>Initial Consultation &amp; Discovery</h3>
+              <span class="badge">Complimentary</span>
+            </div>
+            <p class="body">A first conversation to understand your goals, questions, and overall financial picture. We may offer secure eMoney vault access so you can optionally share documents before we meet.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap;">
+              <h3>Vision Alignment Meeting</h3>
+              <span class="badge">Optional</span>
+            </div>
+            <p class="body">A second conversation, when helpful, to include other decision-makers, clarify goals, answer questions, and determine mutual fit.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- Stage 02 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num">02</div>
+          <span class="journey-sec-label">Client Engagement &amp; Account Setup</span>
+        </div>
+        <div class="card bw" style="display:flex; gap:16px; align-items:flex-start;">
+          <div style="width:36px; height:36px; border-radius:8px; background:var(--navy); color:var(--white); display:grid; place-items:center; font-family:'JetBrains Mono',monospace; font-size:12px; flex-shrink:0; font-weight:500;">CE</div>
+          <div>
+            <h3 class="mt-0" style="margin-bottom:8px;">Client Engagement &amp; Account Setup</h3>
+            <p class="body">When both your family and SIG see strong alignment, your Client Service Associate guides agreements, eMoney setup, document collection, account openings/transfers, and the Risk Profile Questionnaire. Virtual or in person.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- Stage 03 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num">03</div>
+          <span class="journey-sec-label">Financial Plan &amp; Strategy</span>
+        </div>
+        <div class="meeting-grid cols-3">
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <h3>Personalized Financial Plan &amp; Strategy Review</h3>
+            <p class="body">Your planner reviews your financial plan, key opportunities, risks, recommendations, and initial strategy.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <h3>Strategy &amp; Implementation Follow-Up</h3>
+              <span class="badge nb">As Needed</span>
+            </div>
+            <p class="body">A deeper session to refine investment, tax, estate, income, or protection strategies before or during implementation.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <h3>90-Day Progress Review</h3>
+            <p class="body">Review early progress, completed items, next priorities, and confirm the relationship is moving forward well.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- Stage 04 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num" style="background:var(--gold-dark);">04</div>
+          <span class="journey-sec-label">Ongoing Planning &amp; Optimization</span>
+        </div>
+        <div class="meeting-grid cols-3">
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:var(--navy);"></div>
+            <h3>Financial Planning Update</h3>
+            <p class="body">Refresh the plan around life changes, goals, family priorities, and new opportunities.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:var(--navy);"></div>
+            <h3>Financial Planning Assumptions Review</h3>
+            <p class="body">Collaboratively review the assumptions driving your plan — retirement age, spending, inflation, longevity, Social Security, and more.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:var(--gold-dark);"></div>
+            <h3>Investment / Portfolio Review</h3>
+            <p class="body">Review portfolio performance, allocation, market conditions, and alignment with your goals.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:var(--gold-dark);"></div>
+            <h3>Tax Planning Meeting</h3>
+            <p class="body">Identify proactive tax strategies and coordinate with your CPA when appropriate.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:var(--ink);"></div>
+            <h3>Risk &amp; Protection Review</h3>
+            <p class="body">Evaluate insurance, liability, and other protection gaps so your family remains protected.</p>
+          </div>
+          <div class="card bw" style="display:flex; flex-direction:column; gap:8px;">
+            <div style="width:8px; height:8px; border-radius:50%; background:var(--navy);"></div>
+            <h3>Stress Testing / Scenario Planning</h3>
+            <p class="body">Model market, retirement, income, or life-event scenarios to test plan resilience.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- Stage 05 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num" style="background:var(--gold-dark);">05</div>
+          <span class="journey-sec-label">Purpose &amp; Legacy</span>
+          <span class="badge" style="margin-left:auto;">Distinctive to SIG</span>
+        </div>
+        <div class="meeting-grid cols-2">
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <h3>Family Investment Policy Statement</h3>
+            <p class="body">Create your family's financial playbook: goals, priorities, investment philosophy, and decision-making guardrails.</p>
+          </div>
+          <div class="card cr" style="display:flex; flex-direction:column; gap:6px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--gold-dark); letter-spacing:0.12em; text-transform:uppercase;">Stewardship Blueprint</div>
+            <h3>Vision &amp; Values</h3>
+            <p class="body">Clarify values, purpose, and the long-term vision for your life and family.</p>
+          </div>
+          <div class="card cr" style="display:flex; flex-direction:column; gap:6px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--gold-dark); letter-spacing:0.12em; text-transform:uppercase;">Stewardship Blueprint</div>
+            <h3>Wealth &amp; Impact</h3>
+            <p class="body">Align wealth with giving, impact, stewardship, and opportunities to bless others.</p>
+          </div>
+          <div class="card cr" style="display:flex; flex-direction:column; gap:6px;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--gold-dark); letter-spacing:0.12em; text-transform:uppercase;">Stewardship Blueprint</div>
+            <h3>Legacy &amp; Family</h3>
+            <p class="body">Shape legacy, family communication, and generational impact.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- Stage 06 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num">06</div>
+          <span class="journey-sec-label">Life Events &amp; Specialized Planning</span>
+        </div>
+        <div class="meeting-grid cols-2">
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <h3>Life Event / Major Decision Meeting</h3>
+            <p class="body">Guidance around major transitions such as retirement, selling a business, loss of a loved one, or family meetings with children and heirs.</p>
+          </div>
+          <div class="card" style="display:flex; flex-direction:column; gap:8px;">
+            <h3>Philanthropic / Charitable Planning Meeting</h3>
+            <p class="body">Design charitable strategies that align generosity, values, legacy, and tax efficiency.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="div"></div>
+
+      <!-- Stage 07 -->
+      <div class="journey-section">
+        <div class="journey-section-header">
+          <div class="journey-sec-num">07</div>
+          <span class="journey-sec-label">Annual Review</span>
+        </div>
+        <div class="card nv" style="display:flex; gap:20px; align-items:center; max-width:640px;">
+          <div style="font-family:'Fraunces',serif; font-size:40px; color:var(--gold); line-height:1; flex-shrink:0;">★</div>
+          <div>
+            <h3 style="color:var(--white); margin-bottom:8px;">Annual Stewardship Review</h3>
+            <p style="font-size:14px; color:rgba(255,255,255,.75); line-height:1.65;">A comprehensive annual review of your financial life, progress, priorities, and next steps. The capstone meeting of every planning year.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- THREE LEVELS                                                  -->
+<!-- ============================================================ -->
+<section class="section navy" id="levels">
+  <div style="position:absolute; right:-100px; top:0; width:400px; height:400px; background:radial-gradient(circle, rgba(201,164,110,.14), transparent 65%); pointer-events:none;"></div>
+  <div class="inner" style="position:relative;">
+
+    <div class="eyebrow">How SIG Goes Beyond</div>
+    <h2 style="color:var(--white);">Three Levels of <em>Financial Advice</em>.</h2>
+    <p class="lead mt-16" style="max-width:600px;">Many advisors stop at investments. Elite firms coordinate major financial areas. At SIG, optimization is the minimum standard.</p>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:52px; align-items:stretch;">
+
+      <!-- Level 1 -->
+      <div class="level-col" style="background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);">
+        <div class="level-header" style="border-color:rgba(255,255,255,.1); padding:22px 22px 18px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:10px;">Level 01</div>
+          <h3 style="color:rgba(255,255,255,.72); font-size:20px;">Traditional<br>Investment Advisors</h3>
+        </div>
+        <div class="level-body">
+          <div class="level-item" style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.75);">Investments</div>
+        </div>
+        <div class="level-footer" style="border-color:rgba(255,255,255,.1);">
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:6px;">Stops Here</div>
+          <p style="color:rgba(255,255,255,.45);">Helping clients build and manage an investment portfolio.</p>
+        </div>
+      </div>
+
+      <!-- Level 2 -->
+      <div class="level-col" style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18);">
+        <div class="level-header" style="border-color:rgba(255,255,255,.14); padding:22px 22px 18px;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:rgba(255,255,255,.5); margin-bottom:10px;">Level 02</div>
+          <h3 style="color:rgba(255,255,255,.85); font-size:20px;">Elite Financial<br>Planning Firms</h3>
+        </div>
+        <div class="level-body">
+          <div class="level-item" style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.8);">Tax Planning</div>
+          <div class="level-item" style="background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15); color:rgba(255,255,255,.78);">Insurance</div>
+          <div class="level-item" style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.13); color:rgba(255,255,255,.75);">Estate Planning</div>
+          <div class="level-item" style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.11); color:rgba(255,255,255,.72);">Investments</div>
+        </div>
+        <div class="level-footer" style="border-color:rgba(255,255,255,.12);">
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,.45); margin-bottom:6px;">Stops Here</div>
+          <p style="color:rgba(255,255,255,.5);">Helping clients organize and optimize the major areas of their financial life.</p>
+        </div>
+      </div>
+
+      <!-- Level 3: SIG -->
+      <div class="level-col" style="background:rgba(201,164,110,.08); border:1px solid rgba(201,164,110,.3); position:relative; overflow:hidden;">
+        <div style="position:absolute; right:-30px; top:-30px; width:160px; height:160px; background:radial-gradient(circle, rgba(201,164,110,.2), transparent 65%); pointer-events:none;"></div>
+        <div class="level-header" style="border-color:rgba(201,164,110,.22); padding:22px 22px 18px; position:relative;">
+          <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:10px;">Level 03</div>
+          <h3 style="color:var(--white); font-size:20px;">Strategic<br>Income Group</h3>
+        </div>
+        <div class="level-body" style="position:relative;">
+          <div class="level-item" style="background:rgba(201,164,110,.22); border:1px solid rgba(201,164,110,.4); color:var(--gold); font-size:15px;">Best Life ★</div>
+          <div class="level-item" style="background:rgba(201,164,110,.15); border:1px solid rgba(201,164,110,.3); color:rgba(201,164,110,.9);">Legacy &amp; Generosity</div>
+          <div class="level-item" style="background:rgba(201,164,110,.1); border:1px solid rgba(201,164,110,.22); color:rgba(255,255,255,.8);">Purpose &amp; Values</div>
+          <div class="level-item" style="background:rgba(255,255,255,.15); border:1px solid rgba(255,255,255,.18); color:rgba(255,255,255,.8);">Tax Planning</div>
+          <div class="level-item" style="background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.15); color:rgba(255,255,255,.78);">Insurance</div>
+          <div class="level-item" style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.13); color:rgba(255,255,255,.75);">Estate Planning</div>
+          <div class="level-item" style="background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.11); color:rgba(255,255,255,.72);">Investments</div>
+        </div>
+        <div class="level-footer" style="border-color:rgba(201,164,110,.22); position:relative;">
+          <div style="font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:6px;">Goes Further</div>
+          <p style="color:rgba(255,255,255,.6);">Helping clients move beyond optimization toward a life of purpose, stewardship, and lasting legacy.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="div mt-40"></div>
+    <div style="display:flex; align-items:center; gap:16px; margin-top:28px; flex-wrap:wrap;">
+      <p style="font-size:14px; color:rgba(255,255,255,.5); line-height:1.6; max-width:640px;">Our mission: Empowering individuals to live their best lives and leave a lasting legacy of financial security and positive impact.</p>
+      <a href="#contact" class="hero-cta" style="margin-left:auto; white-space:nowrap;">Begin the Conversation →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- FIVE-STEP JOURNEY                                             -->
+<!-- ============================================================ -->
+<section class="section" id="steps">
+  <div class="inner">
+
+    <div class="eyebrow">Our Five-Step Client Journey</div>
+    <h2>From alignment to <em>your Best Life</em>.</h2>
+    <p class="lead mt-16" style="max-width:560px;">A clear path from first conversation to purposeful living.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 360px; gap:64px; margin-top:52px; align-items:start;">
+
+      <div style="display:flex; flex-direction:column;">
+        <div class="step-row">
+          <div class="step-num-big">01</div>
+          <div style="flex:1; padding-top:8px;">
+            <h3 style="margin-bottom:8px;">Start with Alignment</h3>
+            <p class="body">We begin by understanding your goals, priorities, and what matters most — while determining whether there is strong mutual fit.</p>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num-big">02</div>
+          <div style="flex:1; padding-top:8px;">
+            <h3 style="margin-bottom:8px;">Understand Your Life</h3>
+            <p class="body">We take time to understand your family, financial picture, values, concerns, and the assumptions that shape your future.</p>
+          </div>
+        </div>
+        <div class="step-row">
+          <div class="step-num-big">03</div>
+          <div style="flex:1; padding-top:8px;">
+            <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+              <h3>Build Your Financial Blueprint</h3>
+              <span class="badge nb" style="font-size:9px;">Most advisors stop here</span>
+            </div>
+            <p class="body">We create a personalized financial plan designed around your specific goals and circumstances.</p>
+          </div>
+        </div>
+        <div class="step-row active">
+          <div class="step-num-big">04</div>
+          <div style="flex:1; padding-top:8px;">
+            <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+              <h3>Optimize Your Financial Life</h3>
+              <span class="badge" style="font-size:9px;">Elite firms stop here</span>
+            </div>
+            <p class="body">We coordinate Investments · Estate · Insurance · Taxes — so every area works together intentionally.</p>
+          </div>
+        </div>
+        <div class="step-row active" style="background:rgba(14,41,113,.03); border-radius:12px; padding:20px 20px 20px 0; margin:-4px; border-bottom:0;">
+          <div class="step-num-big" style="color:var(--gold-dark); padding-left:20px;">05</div>
+          <div style="flex:1; padding-top:8px;">
+            <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:8px;">
+              <h3 style="color:var(--navy);">Live Your Best Life — A Purposeful Life</h3>
+              <span class="badge gb" style="font-size:9px;">Where SIG stands apart</span>
+            </div>
+            <p class="body">We help align your wealth with your life, purpose, generosity, family, and legacy.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side card -->
+      <div style="position:sticky; top:80px; display:flex; flex-direction:column; gap:14px;">
+        <div class="card nv" style="padding:24px; position:relative; overflow:hidden;">
+          <div style="position:absolute; right:-30px; top:-30px; width:160px; height:160px; background:radial-gradient(circle, rgba(201,164,110,.16), transparent 65%);"></div>
+          <div style="position:relative;">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--gold); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:12px;">Our Promise</div>
+            <p style="font-family:'Fraunces',serif; font-style:italic; font-size:20px; color:var(--white); line-height:1.4;">A life of clarity, confidence, purpose, and lasting impact.</p>
+            <p style="font-family:'Fraunces',serif; font-style:italic; font-size:15px; color:var(--gold); margin-top:14px; line-height:1.4;">Optimize Your Wealth. Align Your Life. Live with Purpose.</p>
+          </div>
+        </div>
+        <div class="card cr" style="padding:20px;">
+          <div style="font-size:11px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--muted); margin-bottom:12px;">What Makes SIG Different</div>
+          <div style="display:flex; flex-direction:column; gap:9px;">
+            <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="body">Optimization is the minimum, not the finish line</p></div>
+            <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="body">We focus on goals before risk</p></div>
+            <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="body">Transparent and intentional planning assumptions</p></div>
+            <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="body">Investments, taxes, insurance, and estate — coordinated</p></div>
+            <div style="display:flex; gap:8px; align-items:baseline;"><div style="width:5px; height:5px; border-radius:50%; background:var(--gold-dark); flex-shrink:0; margin-top:5px;"></div><p class="body">Wealth aligned with purpose, impact, and legacy</p></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- CTA / CONTACT                                                 -->
+<!-- ============================================================ -->
+<section class="section deep" id="contact" style="position:relative; overflow:hidden;">
+  <div style="position:absolute; right:-100px; bottom:-100px; width:440px; height:440px; background:radial-gradient(circle, rgba(201,164,110,.14), transparent 65%); pointer-events:none;"></div>
+  <div style="position:absolute; left:-80px; top:-60px; width:280px; height:280px; background:radial-gradient(circle, rgba(30,58,138,.5), transparent 65%); pointer-events:none;"></div>
+
+  <div class="inner" style="position:relative;">
+    <div style="display:grid; grid-template-columns:1fr 380px; gap:80px; align-items:center;">
+      <div>
+        <span class="badge gb mt-0" style="margin-bottom:20px; display:inline-flex;">Let's Talk</span>
+        <h2 style="color:var(--white);">Begin a <em>conversation</em>,<br>not a sales call.</h2>
+        <p class="lead mt-20">Thirty minutes, no obligation. We'll listen first, share where we'd start, and you decide what's next.</p>
+        <div style="display:flex; gap:12px; margin-top:36px; flex-wrap:wrap;">
+          <a href="tel:+14804667070" class="hero-cta">Call (480) 466-7070</a>
+          <a href="https://strategicincomegroup.com" target="_blank" rel="noopener" class="hero-cta-outline">Visit strategicincomegroup.com</a>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <div class="contact-grid" style="grid-template-columns:1fr;">
+          <div class="contact-item">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:8px;">Phone</div>
+            <div style="font-family:'Fraunces',serif; font-size:24px; color:var(--white);">(480) 466-7070</div>
+          </div>
+          <div class="contact-item">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:8px;">Web</div>
+            <div style="font-family:'Fraunces',serif; font-size:22px; color:var(--white);">strategicincomegroup.com</div>
+          </div>
+          <div class="contact-item">
+            <div style="font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:8px;">Office</div>
+            <div style="font-family:'Fraunces',serif; font-size:20px; color:var(--white);">Chandler & Peoria</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer style="background:var(--navy-deep); padding:28px 40px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+  <img src="../assets/sig-logo-full-white.svg" style="height:18px; opacity:.7;" alt="Strategic Income Group">
+  <div style="font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; color:rgba(255,255,255,.35); text-align:center;">
+    © 2026 Strategic Income Group, LLC &nbsp;·&nbsp; Investment advisory services offered through SIG, a registered investment advisor.
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace; font-size:9px; color:rgba(255,255,255,.3); letter-spacing:0.08em;">For educational purposes. Not investment advice.</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,855 @@
+<style>
+/* =========================================================
+   ANTIGRAVITY-STYLE HERO FOR BRICKS BUILDER
+   HTML + CSS + JS in one copy/paste file
+========================================================= */
+
+.ag-hero {
+  --ag-bg: #05070d;
+  --ag-bg-2: #080c16;
+  --ag-text: #f7f9ff;
+  --ag-muted: rgba(247, 249, 255, 0.68);
+  --ag-soft: rgba(247, 249, 255, 0.12);
+  --ag-line: rgba(255, 255, 255, 0.12);
+  --ag-blue: #7db7ff;
+  --ag-cyan: #86fff4;
+  --ag-violet: #b88cff;
+  --ag-green: #b7ff8a;
+  --ag-radius: 28px;
+
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(125, 183, 255, 0.12), transparent 32%),
+    radial-gradient(circle at 75% 20%, rgba(184, 140, 255, 0.14), transparent 28%),
+    radial-gradient(circle at 20% 75%, rgba(134, 255, 244, 0.1), transparent 30%),
+    linear-gradient(180deg, var(--ag-bg), var(--ag-bg-2));
+  color: var(--ag-text);
+  font-family: Inter, Arial, sans-serif;
+  isolation: isolate;
+}
+
+.ag-hero *,
+.ag-hero *::before,
+.ag-hero *::after {
+  box-sizing: border-box;
+}
+
+.ag-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.ag-cursor-glow {
+  position: absolute;
+  inset: auto;
+  left: var(--cursor-x, 50%);
+  top: var(--cursor-y, 50%);
+  width: 460px;
+  height: 460px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(134, 255, 244, 0.16), rgba(125, 183, 255, 0.09) 38%, transparent 68%);
+  filter: blur(10px);
+  opacity: 0.9;
+  z-index: 2;
+  mix-blend-mode: screen;
+  transition: opacity 0.25s ease;
+}
+
+.ag-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.34;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 75%);
+}
+
+.ag-noise {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image:
+    repeating-radial-gradient(circle at 17% 32%, rgba(255,255,255,0.7) 0 1px, transparent 1px 4px);
+  mix-blend-mode: screen;
+}
+
+.ag-nav {
+  position: relative;
+  z-index: 10;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.ag-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ag-text);
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.ag-brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 30% 30%, #ffffff, transparent 20%),
+    conic-gradient(from 120deg, var(--ag-blue), var(--ag-violet), var(--ag-cyan), var(--ag-green), var(--ag-blue));
+  box-shadow: 0 0 35px rgba(125,183,255,0.35);
+}
+
+.ag-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--ag-line);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.045);
+  backdrop-filter: blur(18px);
+}
+
+.ag-nav-links a {
+  color: rgba(255,255,255,0.72);
+  text-decoration: none;
+  font-size: 0.88rem;
+  padding: 10px 14px;
+  border-radius: 999px;
+  transition: all 0.25s ease;
+}
+
+.ag-nav-links a:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+
+.ag-nav-cta {
+  color: #08101d;
+  background: #ffffff;
+  text-decoration: none;
+  padding: 11px 18px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition: all 0.25s ease;
+}
+
+.ag-nav-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(255,255,255,0.16);
+}
+
+.ag-hero-inner {
+  position: relative;
+  z-index: 5;
+  width: min(1180px, calc(100% - 32px));
+  min-height: calc(100vh - 92px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  padding: clamp(56px, 8vw, 110px) 0 clamp(104px, 11vw, 138px);
+}
+
+.ag-copy {
+  position: relative;
+  z-index: 6;
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 9px 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.055);
+  color: rgba(255,255,255,0.78);
+  font-size: 0.86rem;
+  backdrop-filter: blur(20px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.ag-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ag-cyan);
+  box-shadow: 0 0 18px var(--ag-cyan);
+}
+
+.ag-title {
+  margin: 0;
+  color: var(--ag-text);
+  font-size: clamp(4rem, 12vw, 11.5rem);
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  font-weight: 900;
+}
+
+.ag-title span {
+  display: block;
+}
+
+.ag-title-gradient {
+  background: linear-gradient(90deg, #ffffff, var(--ag-blue), var(--ag-cyan), var(--ag-violet));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 34px rgba(125,183,255,0.25));
+}
+
+.ag-subtitle {
+  max-width: 760px;
+  margin: 28px auto 0;
+  color: var(--ag-muted);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.65;
+}
+
+.ag-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 34px;
+}
+
+.ag-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 24px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 850;
+  overflow: hidden;
+  transition: all 0.28s ease;
+}
+
+.ag-btn-primary {
+  color: #06101d;
+  background: #ffffff;
+  box-shadow: 0 22px 70px rgba(255,255,255,0.13);
+}
+
+.ag-btn-primary::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(125,183,255,0.35), transparent);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+}
+
+.ag-btn-primary:hover::before {
+  transform: translateX(120%);
+}
+
+.ag-btn-secondary {
+  color: #ffffff;
+  border: 1px solid var(--ag-line);
+  background: rgba(255,255,255,0.055);
+  backdrop-filter: blur(18px);
+}
+
+.ag-btn:hover {
+  transform: translateY(-3px);
+}
+
+.ag-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.ag-orbit {
+  position: absolute;
+  width: min(72vw, 760px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: agSpin 24s linear infinite;
+  opacity: 0.78;
+}
+
+.ag-orbit::before,
+.ag-orbit::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow:
+    0 0 24px rgba(255,255,255,0.9),
+    0 0 60px rgba(125,183,255,0.65);
+}
+
+.ag-orbit::before {
+  top: 13%;
+  left: 18%;
+}
+
+.ag-orbit::after {
+  bottom: 10%;
+  right: 24%;
+  background: var(--ag-cyan);
+}
+
+.ag-orbit:nth-child(2) {
+  width: min(58vw, 610px);
+  transform: rotate(52deg);
+  animation-duration: 30s;
+  animation-direction: reverse;
+  border-color: rgba(134,255,244,0.13);
+}
+
+.ag-orbit:nth-child(3) {
+  width: min(42vw, 460px);
+  transform: rotate(-28deg);
+  animation-duration: 18s;
+  border-color: rgba(184,140,255,0.14);
+}
+
+@keyframes agSpin {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+.ag-floating-card {
+  position: absolute;
+  z-index: 6;
+  width: min(280px, 34vw);
+  padding: 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 22px;
+  background: rgba(10, 14, 24, 0.52);
+  color: rgba(255,255,255,0.82);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.3);
+  animation: agFloat 5.5s ease-in-out infinite;
+}
+
+.ag-floating-card strong {
+  display: block;
+  color: #ffffff;
+  margin-bottom: 6px;
+}
+
+.ag-floating-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.ag-card-one {
+  left: clamp(16px, 7vw, 90px);
+  bottom: clamp(80px, 15vh, 150px);
+}
+
+.ag-card-two {
+  right: clamp(16px, 7vw, 90px);
+  top: clamp(140px, 24vh, 220px);
+  animation-delay: -1.8s;
+}
+
+@keyframes agFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-18px) rotate(1deg); }
+}
+
+.sig-ticker {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  min-height: 76px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  background:
+    linear-gradient(90deg, rgba(5,7,13,0.92), rgba(8,12,22,0.76) 48%, rgba(5,7,13,0.92)),
+    radial-gradient(circle at 50% 0%, rgba(134,255,244,0.14), transparent 52%);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 -28px 90px rgba(0,0,0,0.26);
+}
+
+.sig-ticker__label {
+  position: relative;
+  z-index: 2;
+  min-height: 76px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  padding: 0 clamp(18px, 4vw, 42px);
+  border-right: 1px solid rgba(255,255,255,0.1);
+  background: rgba(5,7,13,0.38);
+  color: rgba(255,255,255,0.7);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.sig-ticker__pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--ag-cyan);
+  box-shadow: 0 0 18px rgba(134,255,244,0.9);
+  animation: tickerPulse 1.7s ease-in-out infinite;
+}
+
+.sig-ticker__viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.sig-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: tickerMarquee 42s linear infinite;
+}
+
+.sig-ticker:hover .sig-ticker__track {
+  animation-play-state: paused;
+}
+
+.sig-ticker__group {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.sig-ticker__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 0 24px;
+  white-space: nowrap;
+  color: rgba(255,255,255,0.72);
+}
+
+.sig-ticker__symbol {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+}
+
+.sig-ticker__name {
+  color: rgba(255,255,255,0.48);
+  font-size: 12px;
+}
+
+.sig-ticker__signal {
+  color: var(--ag-cyan);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sig-ticker__signal.neutral {
+  color: #d7c59b;
+}
+
+.sig-ticker__signal.watch {
+  color: #ff9fb0;
+}
+
+@keyframes tickerPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.85); }
+}
+
+@keyframes tickerMarquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@media (max-width: 900px) {
+  .ag-nav-links {
+    display: none;
+  }
+
+  .ag-floating-card {
+    display: none;
+  }
+
+  .ag-orbit {
+    width: 92vw;
+  }
+
+  .ag-orbit:nth-child(2) {
+    width: 72vw;
+  }
+
+  .ag-orbit:nth-child(3) {
+    width: 54vw;
+  }
+}
+
+@media (max-width: 640px) {
+  .ag-hero-inner {
+    min-height: calc(100vh - 80px);
+    padding-top: 34px;
+    padding-bottom: 116px;
+  }
+
+  .ag-title {
+    font-size: clamp(4.2rem, 20vw, 6rem);
+  }
+
+  .ag-subtitle {
+    font-size: 1rem;
+  }
+
+  .ag-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .ag-btn {
+    width: 100%;
+  }
+
+  .ag-nav {
+    width: min(100%, calc(100% - 24px));
+  }
+
+  .ag-nav-cta {
+    display: none;
+  }
+
+  .sig-ticker {
+    min-height: 64px;
+  }
+
+  .sig-ticker__label {
+    min-height: 64px;
+    padding: 0 14px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+  }
+
+  .sig-ticker__label span:not(.sig-ticker__pulse) {
+    display: none;
+  }
+
+  .sig-ticker__item {
+    padding: 0 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ag-orbit,
+  .ag-floating-card,
+  .sig-ticker__track,
+  .sig-ticker__pulse {
+    animation: none !important;
+  }
+}
+</style>
+
+<section class="ag-hero" id="agHero">
+  <canvas class="ag-canvas" id="agParticleCanvas" aria-hidden="true"></canvas>
+  <div class="ag-grid" aria-hidden="true"></div>
+  <div class="ag-cursor-glow" aria-hidden="true"></div>
+  <div class="ag-noise" aria-hidden="true"></div>
+
+  <nav class="ag-nav">
+    <a class="ag-brand" href="#">
+      <span class="ag-brand-mark"></span>
+      <span>SIG360.com</span>
+    </a>
+
+    <div class="ag-nav-links">
+      <a href="#overview">Planning</a>
+      <a href="#features">Estate</a>
+      <a href="#workflow">Insurance</a>
+      <a href="#start">Markets</a>
+    </div>
+
+    <a class="ag-nav-cta" href="#start">Schedule a Review</a>
+  </nav>
+
+  <div class="ag-stage" aria-hidden="true">
+    <div class="ag-orbit"></div>
+    <div class="ag-orbit"></div>
+    <div class="ag-orbit"></div>
+  </div>
+
+  <div class="ag-floating-card ag-card-one">
+    <strong>Coordinated planning</strong>
+    <p>Financial planning, estate strategy, insurance, and market insight connected in one clear view.</p>
+  </div>
+
+  <div class="ag-floating-card ag-card-two">
+    <strong>Markets in context</strong>
+    <p>Portfolio decisions guided by your goals, income needs, risk tolerance, and legacy plan.</p>
+  </div>
+
+  <div class="ag-hero-inner">
+    <div class="ag-copy">
+      <div class="ag-pill">
+        <span class="ag-pill-dot"></span>
+        <span>Financial planning services for every stage</span>
+      </div>
+
+      <h1 class="ag-title">
+        <span>Plan with</span>
+        <span class="ag-title-gradient">purpose</span>
+      </h1>
+
+      <p class="ag-subtitle">
+        SIG360.com brings financial planning, estate planning, insurance planning, market strategy,
+        and retirement income guidance together so every decision supports the life you are building.
+      </p>
+
+      <div class="ag-actions">
+        <a class="ag-btn ag-btn-primary" href="#start">Schedule a Planning Review</a>
+        <a class="ag-btn ag-btn-secondary" href="#overview">Explore Services</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="sig-ticker" aria-label="Market planning ticker">
+    <div class="sig-ticker__label">
+      <span class="sig-ticker__pulse"></span>
+      <span>SIG360.COM</span>
+    </div>
+
+    <div class="sig-ticker__viewport">
+      <div class="sig-ticker__track">
+        <div class="sig-ticker__group">
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">SPY</span><span class="sig-ticker__name">S&P 500 ETF</span><span class="sig-ticker__signal">Equity core</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">QQQ</span><span class="sig-ticker__name">Nasdaq 100 ETF</span><span class="sig-ticker__signal">Growth lens</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">DIA</span><span class="sig-ticker__name">Dow Industrials ETF</span><span class="sig-ticker__signal neutral">Blue-chip view</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">IWM</span><span class="sig-ticker__name">Russell 2000 ETF</span><span class="sig-ticker__signal">Small-cap pulse</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">TLT</span><span class="sig-ticker__name">Long Treasury ETF</span><span class="sig-ticker__signal neutral">Rate signal</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">GLD</span><span class="sig-ticker__name">Gold ETF</span><span class="sig-ticker__signal neutral">Hedge watch</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">USO</span><span class="sig-ticker__name">Oil ETF</span><span class="sig-ticker__signal watch">Energy watch</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">VIX</span><span class="sig-ticker__name">Volatility Index</span><span class="sig-ticker__signal watch">Risk gauge</span></div>
+        </div>
+
+        <div class="sig-ticker__group" aria-hidden="true">
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">SPY</span><span class="sig-ticker__name">S&P 500 ETF</span><span class="sig-ticker__signal">Equity core</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">QQQ</span><span class="sig-ticker__name">Nasdaq 100 ETF</span><span class="sig-ticker__signal">Growth lens</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">DIA</span><span class="sig-ticker__name">Dow Industrials ETF</span><span class="sig-ticker__signal neutral">Blue-chip view</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">IWM</span><span class="sig-ticker__name">Russell 2000 ETF</span><span class="sig-ticker__signal">Small-cap pulse</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">TLT</span><span class="sig-ticker__name">Long Treasury ETF</span><span class="sig-ticker__signal neutral">Rate signal</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">GLD</span><span class="sig-ticker__name">Gold ETF</span><span class="sig-ticker__signal neutral">Hedge watch</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">USO</span><span class="sig-ticker__name">Oil ETF</span><span class="sig-ticker__signal watch">Energy watch</span></div>
+          <div class="sig-ticker__item"><span class="sig-ticker__symbol">VIX</span><span class="sig-ticker__name">Volatility Index</span><span class="sig-ticker__signal watch">Risk gauge</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  const hero = document.getElementById("agHero");
+  const canvas = document.getElementById("agParticleCanvas");
+
+  if (!hero || !canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let width = 0;
+  let height = 0;
+  let particles = [];
+  let rafId = null;
+
+  const pointer = {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+    active: false
+  };
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function resizeCanvas() {
+    const rect = hero.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    width = rect.width;
+    height = rect.height;
+
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    createParticles();
+  }
+
+  function createParticles() {
+    const area = width * height;
+    const count = Math.min(180, Math.max(70, Math.floor(area / 10500)));
+
+    particles = Array.from({ length: count }, function (_, index) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.12 + Math.random() * 0.38;
+
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        baseX: Math.random() * width,
+        baseY: Math.random() * height,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        radius: Math.random() * 1.8 + 0.7,
+        alpha: Math.random() * 0.5 + 0.18,
+        hue: index % 3
+      };
+    });
+  }
+
+  function getParticleColor(particle, alphaBoost) {
+    const alpha = Math.min(1, particle.alpha + alphaBoost);
+
+    if (particle.hue === 0) return `rgba(125, 183, 255, ${alpha})`;
+    if (particle.hue === 1) return `rgba(134, 255, 244, ${alpha})`;
+    return `rgba(184, 140, 255, ${alpha})`;
+  }
+
+  function drawConnections() {
+    const maxDistance = 115;
+
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i];
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < maxDistance) {
+          const opacity = (1 - distance / maxDistance) * 0.16;
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(255,255,255,${opacity})`;
+          ctx.lineWidth = 1;
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    const heroRect = hero.getBoundingClientRect();
+    const localPointerX = pointer.x - heroRect.left;
+    const localPointerY = pointer.y - heroRect.top;
+
+    particles.forEach(function (p) {
+      p.x += p.vx;
+      p.y += p.vy;
+
+      if (p.x < -20 || p.x > width + 20) p.vx *= -1;
+      if (p.y < -20 || p.y > height + 20) p.vy *= -1;
+
+      const dx = p.x - localPointerX;
+      const dy = p.y - localPointerY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const influence = 150;
+
+      let alphaBoost = 0;
+
+      if (pointer.active && distance < influence) {
+        const force = (1 - distance / influence);
+        const angle = Math.atan2(dy, dx);
+
+        p.x += Math.cos(angle) * force * 2.8;
+        p.y += Math.sin(angle) * force * 2.8;
+
+        alphaBoost = force * 0.55;
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = getParticleColor(p, alphaBoost);
+      ctx.shadowColor = getParticleColor(p, 0.4);
+      ctx.shadowBlur = pointer.active && distance < influence ? 18 : 6;
+      ctx.arc(p.x, p.y, p.radius + alphaBoost * 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    drawConnections();
+
+    if (!prefersReducedMotion) {
+      rafId = requestAnimationFrame(animate);
+    }
+  }
+
+  function updateCursorVars(event) {
+    const rect = hero.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    pointer.active = true;
+
+    hero.style.setProperty("--cursor-x", x + "px");
+    hero.style.setProperty("--cursor-y", y + "px");
+  }
+
+  hero.addEventListener("pointermove", updateCursorVars);
+
+  hero.addEventListener("pointerenter", function () {
+    pointer.active = true;
+  });
+
+  hero.addEventListener("pointerleave", function () {
+    pointer.active = false;
+  });
+
+  window.addEventListener("resize", function () {
+    cancelAnimationFrame(rafId);
+    resizeCanvas();
+    animate();
+  });
+
+  resizeCanvas();
+  animate();
+})();
+</script>

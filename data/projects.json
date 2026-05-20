@@ -1,0 +1,136 @@
+[
+  {
+    "id": "proj-1774007400000",
+    "name": "Voice Agent Platform (agent.channelcast.io)",
+    "description": "Open-source voice agent platform built on Dograh (https://github.com/dograh-hq/dograh). Self-hosted alternative to Vapi with drag-and-drop workflow builder for AI voice bots.\n\nKey Features:\n• Inbound/outbound voice calling\n• Twilio, Vonage, Vobiz telephony integration\n• Custom LLM, TTS, and STT support\n• AI testing personas (LoopTalk)\n• Docker-based deployment\n• Zero vendor lock-in\n\nDocs: https://docs.dograh.com\nCloud version available at app.dograh.com for reference.",
+    "status": "planning",
+    "priority": "high",
+    "startDate": "2026-03-18",
+    "endDate": null,
+    "dueDate": null,
+    "budget": null,
+    "progress": 0,
+    "leadIds": [],
+    "contactIds": [],
+    "team": [],
+    "ownerId": "user-1",
+    "tasks": [],
+    "activityLog": [
+      {
+        "id": "act-1774007400000",
+        "type": "task_created",
+        "message": "Project created",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-03-18T04:10:00.000Z"
+      }
+    ],
+    "notifications": [],
+    "tags": ["Voice AI", "Automation", "Open Source", "Docker"],
+    "color": "#8b5cf6",
+    "createdAt": "2026-03-18T04:10:00.000Z",
+    "updatedAt": "2026-03-18T04:10:00.000Z"
+  },
+  {
+    "id": "proj-1771386849449",
+    "name": "CMI Inc",
+    "description": "Constructed Matter, Inc. is a Scottsdale-based builder specializing in high-end custom homes, transformative renovations, and select commercial projects throughout the greater Phoenix area — including Arcadia, Paradise Valley, and Central Phoenix.\n\nThis engagement includes the full buildout of Constructed Matter’s digital infrastructure and growth ecosystem. The project covers the development of a modern, performance-driven website aligned with their craftsmanship and brand positioning, along with CRM implementation, automation workflows, lead generation systems, project management integration, email marketing, and CPaaS (Twilio Voice & SMS) integration.\n\nThe objective is to create a scalable, automated business framework that supports:\n\n• Architect, designer, contractor, and realtor lead generation\n• RFP and municipal opportunity tracking\n• Client communication and follow-up automation\n• Project lifecycle management\n• Brand elevation within the luxury residential and commercial markets\n\nThis deal positions Constructed Matter for long-term operational efficiency, stronger referral pipelines, improved lead tracking, and a refined digital presence that reflects the quality and intentionality of their builds.",
+    "status": "active",
+    "priority": "high",
+    "startDate": "2026-02-18",
+    "endDate": "2027-02-17",
+    "dueDate": null,
+    "budget": null,
+    "progress": 0,
+    "leadIds": [],
+    "contactIds": [
+      364
+    ],
+    "team": [],
+    "ownerId": "user-1",
+    "tasks": [],
+    "activityLog": [
+      {
+        "id": "act-1771386849449",
+        "type": "task_created",
+        "message": "Project created",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-02-18T03:54:09.449Z"
+      },
+      {
+        "id": "act-1771431066001",
+        "type": "status_changed",
+        "message": "Status changed from active to on_hold",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-02-18T16:11:06.001Z"
+      },
+      {
+        "id": "act-1771431067777",
+        "type": "status_changed",
+        "message": "Status changed from on_hold to active",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-02-18T16:11:07.777Z"
+      },
+      {
+        "id": "act-1771540781696",
+        "type": "status_changed",
+        "message": "Status changed from active to on_hold",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-02-19T22:39:41.696Z"
+      },
+      {
+        "id": "act-1771540782899",
+        "type": "status_changed",
+        "message": "Status changed from on_hold to active",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-02-19T22:39:42.899Z"
+      }
+    ],
+    "notifications": [],
+    "tags": [
+      "Automation",
+      "Web Dev",
+      "Design"
+    ],
+    "color": "#f97316",
+    "createdAt": "2026-02-18T03:54:09.449Z",
+    "updatedAt": "2026-02-19T22:39:42.899Z"
+  },
+  {
+    "id": "proj-1772658492408",
+    "name": "Ben Peck - Accounting Automation",
+    "description": "<p>Project Outline - Priority List: </p><p>CMI Web - CRM - Project Manager - Booking - (Next API)</p><p></p><p></p><p>Ben</p><p>Cost Codes - Automate (invoice and receipts outside of Builder Trend) <a target=\"_blank\" rel=\"noopener noreferrer nofollow\" class=\"text-orange-500 underline cursor-pointer\" href=\"mailto:ap@constructedmatter.com\">ap@constructedmatter.com</a></p><p>Prefixes</p><p>Receipt Portal - </p><p>Job Name</p><p>Cost Type</p><p>Amount</p><p>Notes (Reason for purchase)</p><p>OCR (Receipt Photo)</p><p>Submit - Goes to AP (Joe reviews this)</p><p></p><p></p><p>—-—Talk to Joe about his process after Ben’s Hand-Off</p><p></p>",
+    "status": "planning",
+    "priority": "high",
+    "startDate": null,
+    "endDate": null,
+    "dueDate": null,
+    "budget": null,
+    "progress": 0,
+    "leadIds": [],
+    "contactIds": [],
+    "team": [],
+    "ownerId": "user-1",
+    "tasks": [],
+    "activityLog": [
+      {
+        "id": "act-1772658492408",
+        "type": "task_created",
+        "message": "Project created",
+        "userId": "user-1",
+        "userName": "System",
+        "createdAt": "2026-03-04T21:08:12.408Z"
+      }
+    ],
+    "notifications": [],
+    "tags": [],
+    "color": "#f97316",
+    "createdAt": "2026-03-04T21:08:12.408Z",
+    "updatedAt": "2026-03-04T21:08:12.408Z"
+  }
+]

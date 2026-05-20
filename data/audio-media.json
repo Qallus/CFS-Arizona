@@ -1,0 +1,59 @@
+{
+  "media": [
+    {
+      "id": "media-1771893888928",
+      "name": "Boom Bap Hip Hop Background Music",
+      "filename": "1771893888897-6d38dbbf60109521.mp3",
+      "originalFilename": "Boom Bap Hip Hop Background Music.mp3",
+      "mimeType": "audio/mpeg",
+      "fileSize": 2727182,
+      "durationSeconds": 68,
+      "checksum": "9d2be6711265a6283e911f4e3409f6f2",
+      "storageType": "local",
+      "storageUrl": "/uploads/audio/1771893888897-6d38dbbf60109521.mp3",
+      "storagePath": "/root/.openclaw/workspace/sig360-dashboard/public/uploads/audio/1771893888897-6d38dbbf60109521.mp3",
+      "description": "",
+      "tags": [],
+      "status": "ready",
+      "createdAt": "2026-02-24T00:44:48.928Z",
+      "updatedAt": "2026-02-24T00:44:48.928Z"
+    },
+    {
+      "id": "media-1771893889364",
+      "name": "File A 2-08_BearStockMusic - Dramatic Energy Sport Epic (Full Version)",
+      "filename": "1771893889332-cd99111fa1338a74.mp3",
+      "originalFilename": "File A 2-08_BearStockMusic - Dramatic Energy Sport Epic (Full Version).mp3",
+      "mimeType": "audio/mpeg",
+      "fileSize": 5117688,
+      "durationSeconds": 128,
+      "checksum": "1ba9a5d60aa1ed13607ca7992f1bba08",
+      "storageType": "local",
+      "storageUrl": "/uploads/audio/1771893889332-cd99111fa1338a74.mp3",
+      "storagePath": "/root/.openclaw/workspace/sig360-dashboard/public/uploads/audio/1771893889332-cd99111fa1338a74.mp3",
+      "description": "",
+      "tags": [],
+      "status": "ready",
+      "createdAt": "2026-02-24T00:44:49.364Z",
+      "updatedAt": "2026-02-24T00:44:49.364Z"
+    },
+    {
+      "id": "media-1771893889518",
+      "name": "Pop Music (the shortest)",
+      "filename": "1771893889513-e2f1c1beaded17dc.mp3",
+      "originalFilename": "Pop Music (the shortest).mp3",
+      "mimeType": "audio/mpeg",
+      "fileSize": 1517065,
+      "durationSeconds": 37,
+      "checksum": "ce59fe19ba46b4cba6fd917153c44681",
+      "storageType": "local",
+      "storageUrl": "/uploads/audio/1771893889513-e2f1c1beaded17dc.mp3",
+      "storagePath": "/root/.openclaw/workspace/sig360-dashboard/public/uploads/audio/1771893889513-e2f1c1beaded17dc.mp3",
+      "description": "",
+      "tags": [],
+      "status": "ready",
+      "createdAt": "2026-02-24T00:44:49.518Z",
+      "updatedAt": "2026-02-24T00:44:49.518Z"
+    }
+  ],
+  "clients": []
+}

@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Send, Flame, User, Loader2, RefreshCw, Wifi } from "lucide-react";
+import { Send, User, Loader2, RefreshCw, Wifi } from "lucide-react";
+import { Sig360LogoMark } from "@/components/branding/Sig360LogoMark";
+import { useAIStatus } from "@/components/providers/AIStatusProvider";
 
 interface Message {
   id: string;
@@ -23,6 +25,7 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { setThinking, setIdle } = useAIStatus();
 
   useEffect(() => {
     loadHistory();
@@ -84,6 +87,7 @@ export default function ChatPage() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setThinking(); // Update sidebar status
 
     try {
       const response = await fetch('/api/chat', {
@@ -119,6 +123,7 @@ export default function ChatPage() {
       setIsConnected(false);
     } finally {
       setIsLoading(false);
+      setIdle(); // Back to idle
     }
   };
 
@@ -133,8 +138,8 @@ export default function ChatPage() {
     <div className="flex flex-col h-full p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Chat with JDub</h1>
-          <p className="text-zinc-400">Connected to main session (shared with Telegram)</p>
+          <h1 className="text-2xl font-bold text-foreground">Chat with SIG360</h1>
+          <p className="text-muted-foreground">Connected to main session (shared with Telegram)</p>
         </div>
         <div className="flex items-center gap-3">
           <Badge 
@@ -148,19 +153,19 @@ export default function ChatPage() {
             variant="outline"
             size="sm"
             onClick={loadHistory}
-            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800"
+            className="border-border text-muted-foreground hover:bg-secondary"
           >
             <RefreshCw className="w-4 h-4" />
           </Button>
         </div>
       </div>
 
-      <Card className="flex-1 flex flex-col bg-zinc-900/50 border-zinc-800 overflow-hidden">
-        <CardHeader className="border-b border-zinc-800">
-          <CardTitle className="text-white flex items-center gap-2">
-            <Flame className="w-5 h-5 text-orange-500" />
+      <Card className="flex-1 flex flex-col bg-card/50 border-border overflow-hidden">
+        <CardHeader className="border-b border-border">
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Sig360LogoMark boxClassName="h-9 w-9 rounded-md" letterClassName="text-lg font-bold leading-none text-brand" />
             Main Session
-            <span className="text-sm font-normal text-zinc-500 ml-2">
+            <span className="text-sm font-normal text-muted-foreground ml-2">
               Messages sync across all channels
             </span>
           </CardTitle>
@@ -168,34 +173,34 @@ export default function ChatPage() {
         
         <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
           {/* Messages */}
-          <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+          <ScrollArea className="flex-1 min-h-0 p-4" ref={scrollRef}>
             <div className="space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
-                  <Avatar className={`w-8 h-8 flex items-center justify-center ${message.role === 'assistant' ? 'bg-orange-500/20' : 'bg-zinc-700'}`}>
+                  <Avatar className={`w-8 h-8 flex items-center justify-center ${message.role === 'assistant' ? 'bg-brand/20' : 'bg-secondary'}`}>
                     {message.role === 'assistant' ? (
-                      <Flame className="w-4 h-4 text-orange-500" />
+                      <span className="text-sm font-bold leading-none text-brand">S</span>
                     ) : (
-                      <User className="w-4 h-4 text-zinc-300" />
+                      <User className="w-4 h-4 text-muted-foreground" />
                     )}
                   </Avatar>
                   <div
                     className={`max-w-[70%] rounded-lg px-4 py-2 ${
                       message.role === 'assistant'
-                        ? 'bg-zinc-800 text-zinc-100'
-                        : 'bg-orange-500/20 text-zinc-100'
+                        ? 'bg-secondary text-foreground'
+                        : 'bg-brand/20 text-foreground'
                     }`}
                   >
                     <p className="whitespace-pre-wrap">{message.content}</p>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-muted-foreground">
                         {message.timestamp.toLocaleTimeString()}
                       </span>
                       {message.source && (
-                        <Badge variant="outline" className="text-xs border-zinc-600 text-zinc-500 py-0">
+                        <Badge variant="outline" className="text-xs border-border text-muted-foreground py-0">
                           {message.source}
                         </Badge>
                       )}
@@ -205,11 +210,11 @@ export default function ChatPage() {
               ))}
               {isLoading && (
                 <div className="flex gap-3">
-                  <Avatar className="w-8 h-8 bg-orange-500/20 flex items-center justify-center">
-                    <Flame className="w-4 h-4 text-orange-500" />
+                  <Avatar className="w-8 h-8 bg-brand/20 flex items-center justify-center">
+                    <span className="text-sm font-bold leading-none text-brand">S</span>
                   </Avatar>
-                  <div className="bg-zinc-800 rounded-lg px-4 py-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                  <div className="bg-secondary rounded-lg px-4 py-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
                   </div>
                 </div>
               )}
@@ -217,20 +222,20 @@ export default function ChatPage() {
           </ScrollArea>
 
           {/* Input */}
-          <div className="p-4 border-t border-zinc-800">
+          <div className="p-4 border-t border-border">
             <div className="flex gap-2">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your message... (Enter to send, Shift+Enter for new line)"
-                className="flex-1 bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500 resize-none"
+                className="flex-1 bg-secondary border-border text-foreground placeholder:text-muted-foreground resize-none"
                 rows={2}
               />
               <Button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+                className="bg-brand hover:bg-brand/90 text-white"
               >
                 <Send className="w-4 h-4" />
               </Button>

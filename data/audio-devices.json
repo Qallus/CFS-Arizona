@@ -1,0 +1,26 @@
+[
+  {
+    "id": "channelcastpi2026",
+    "name": "Raspberry Pi Audio",
+    "type": "linux",
+    "host": "100.85.111.96",
+    "username": "channelcast2026",
+    "authType": "key",
+    "audioOutput": "hw:1,0",
+    "status": "active",
+    "location": "Office",
+    "createdAt": "2026-02-21T02:22:00.000Z"
+  },
+  {
+    "id": "device-1771892992982",
+    "name": "Mini PC Office",
+    "type": "windows",
+    "host": "100.127.129.69",
+    "username": "jwate",
+    "password": "#Skyeblu8461#",
+    "authType": "password",
+    "status": "active",
+    "location": "Mini PC Channel Cast Office",
+    "createdAt": "2026-02-24T00:29:52.982Z"
+  }
+]

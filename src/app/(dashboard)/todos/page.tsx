@@ -110,7 +110,7 @@ export default function TodosPage() {
   });
 
   const priorityColors = {
-    low: 'border-zinc-500 text-zinc-500',
+    low: 'border-zinc-500 text-muted-foreground',
     medium: 'border-yellow-500 text-yellow-500',
     high: 'border-red-500 text-red-500',
   };
@@ -125,15 +125,15 @@ export default function TodosPage() {
     <div className="p-8">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-            <CheckSquare className="w-6 h-6 text-orange-500" />
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <CheckSquare className="w-6 h-6 text-brand" />
             To-Do List
           </h1>
-          <p className="text-zinc-400">Tasks and action items</p>
+          <p className="text-muted-foreground">Tasks and action items</p>
         </div>
         <Button 
           onClick={() => setShowForm(!showForm)}
-          className="bg-orange-500 hover:bg-orange-600 text-white"
+          className="bg-brand hover:bg-brand/90 text-white"
         >
           {showForm ? <X className="w-4 h-4 mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
           {showForm ? 'Cancel' : 'New Task'}
@@ -142,42 +142,42 @@ export default function TodosPage() {
 
       {/* Add Todo Form */}
       {showForm && (
-        <Card className="mb-6 bg-zinc-900/50 border-zinc-800 border-orange-500/30">
+        <Card className="mb-6 bg-card/50 border-border border-brand/30">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <Plus className="w-5 h-5 text-orange-500" />
+            <CardTitle className="text-foreground flex items-center gap-2">
+              <Plus className="w-5 h-5 text-brand" />
               Create New Task
             </CardTitle>
             <CardDescription>Add a task to your to-do list</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Task Title *</label>
+              <label className="text-sm text-muted-foreground block mb-2">Task Title *</label>
               <Input
                 placeholder="e.g., Review quarterly report"
                 value={newTodo.title}
                 onChange={(e) => setNewTodo({ ...newTodo, title: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white"
+                className="bg-secondary border-border text-foreground"
               />
             </div>
             
             <div>
-              <label className="text-sm text-zinc-400 block mb-2">Description</label>
+              <label className="text-sm text-muted-foreground block mb-2">Description</label>
               <Textarea
                 placeholder="Additional details about this task..."
                 value={newTodo.description}
                 onChange={(e) => setNewTodo({ ...newTodo, description: e.target.value })}
-                className="bg-zinc-800 border-zinc-700 text-white min-h-[80px]"
+                className="bg-secondary border-border text-foreground min-h-[80px]"
               />
             </div>
 
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Priority</label>
+                <label className="text-sm text-muted-foreground block mb-2">Priority</label>
                 <select
                   value={newTodo.priority}
                   onChange={(e) => setNewTodo({ ...newTodo, priority: e.target.value as Todo['priority'] })}
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-md text-white"
+                  className="w-full px-3 py-2 bg-secondary border border-border rounded-md text-foreground"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -185,31 +185,31 @@ export default function TodosPage() {
                 </select>
               </div>
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Due Date</label>
+                <label className="text-sm text-muted-foreground block mb-2">Due Date</label>
                 <Input
                   type="date"
                   value={newTodo.dueDate}
                   onChange={(e) => setNewTodo({ ...newTodo, dueDate: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
               </div>
               <div>
-                <label className="text-sm text-zinc-400 block mb-2">Tags</label>
+                <label className="text-sm text-muted-foreground block mb-2">Tags</label>
                 <Input
                   placeholder="work, urgent"
                   value={newTodo.tags}
                   onChange={(e) => setNewTodo({ ...newTodo, tags: e.target.value })}
-                  className="bg-zinc-800 border-zinc-700 text-white"
+                  className="bg-secondary border-border text-foreground"
                 />
               </div>
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button onClick={addTodo} className="bg-orange-500 hover:bg-orange-600">
+              <Button onClick={addTodo} className="bg-brand hover:bg-brand/90">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Task
               </Button>
-              <Button variant="outline" onClick={() => setShowForm(false)} className="border-zinc-700 text-zinc-300">
+              <Button variant="outline" onClick={() => setShowForm(false)} className="border-border text-muted-foreground">
                 Cancel
               </Button>
             </div>
@@ -225,24 +225,24 @@ export default function TodosPage() {
             variant="outline"
             size="sm"
             onClick={() => setFilter(f)}
-            className={`capitalize ${filter === f ? 'bg-zinc-800 text-white border-orange-500' : 'border-zinc-700 text-zinc-400'}`}
+            className={`capitalize ${filter === f ? 'bg-secondary text-foreground border-brand' : 'border-border text-muted-foreground'}`}
           >
             {f}
           </Button>
         ))}
-        <span className="ml-auto text-sm text-zinc-500">
+        <span className="ml-auto text-sm text-muted-foreground">
           {filteredTodos.filter(t => !t.completed).length} active, {filteredTodos.filter(t => t.completed).length} completed
         </span>
       </div>
 
       {/* Todo List */}
       {isLoading ? (
-        <div className="text-center py-12 text-zinc-500">Loading...</div>
+        <div className="text-center py-12 text-muted-foreground">Loading...</div>
       ) : filteredTodos.length === 0 ? (
-        <Card className="bg-zinc-900/50 border-zinc-800">
+        <Card className="bg-card/50 border-border">
           <CardContent className="py-12 text-center">
-            <CheckSquare2 className="w-12 h-12 text-zinc-600 mx-auto mb-4" />
-            <p className="text-zinc-400">
+            <CheckSquare2 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
               {filter === 'all' ? 'No tasks yet. Create one above!' : `No ${filter} tasks`}
             </p>
           </CardContent>
@@ -250,19 +250,19 @@ export default function TodosPage() {
       ) : (
         <div className="space-y-2">
           {filteredTodos.map((todo) => (
-            <Card key={todo.id} className="bg-zinc-900/50 border-zinc-800 hover:border-zinc-700 transition-colors">
+            <Card key={todo.id} className="bg-card/50 border-border hover:border-border transition-colors">
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
                   <button onClick={() => toggleTodo(todo.id)} className="mt-1 flex-shrink-0">
                     {todo.completed ? (
                       <CheckSquare2 className="w-5 h-5 text-green-500" />
                     ) : (
-                      <Square className="w-5 h-5 text-zinc-500 hover:text-zinc-300" />
+                      <Square className="w-5 h-5 text-muted-foreground hover:text-muted-foreground" />
                     )}
                   </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`font-medium ${todo.completed ? 'text-zinc-500 line-through' : 'text-white'}`}>
+                      <span className={`font-medium ${todo.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                         {todo.title}
                       </span>
                       <Badge variant="outline" className={priorityColors[todo.priority]}>
@@ -270,19 +270,19 @@ export default function TodosPage() {
                         <span className="ml-1">{todo.priority}</span>
                       </Badge>
                       {todo.dueDate && (
-                        <Badge variant="outline" className="border-zinc-600 text-zinc-400">
+                        <Badge variant="outline" className="border-border text-muted-foreground">
                           <Calendar className="w-3 h-3 mr-1" />
                           {new Date(todo.dueDate).toLocaleDateString()}
                         </Badge>
                       )}
                     </div>
                     {todo.description && (
-                      <p className="text-zinc-500 text-sm mt-1">{todo.description}</p>
+                      <p className="text-muted-foreground text-sm mt-1">{todo.description}</p>
                     )}
                     {todo.tags && todo.tags.length > 0 && (
                       <div className="flex gap-1 flex-wrap mt-2">
                         {todo.tags.map((tag, i) => (
-                          <Badge key={i} variant="outline" className="border-zinc-700 text-zinc-500 text-xs">
+                          <Badge key={i} variant="outline" className="border-border text-muted-foreground text-xs">
                             {tag}
                           </Badge>
                         ))}
@@ -293,7 +293,7 @@ export default function TodosPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => deleteTodo(todo.id)}
-                    className="text-zinc-500 hover:text-red-500 flex-shrink-0"
+                    className="text-muted-foreground hover:text-red-500 flex-shrink-0"
                   >
                     <Trash2 className="w-4 h-4" />
                   </Button>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 360" width="640" height="720">
+  <title>Siggey</title>
+  <desc>SIG360 character — calm, intelligent companion. Navy squircle body with round glasses, bright eyes, a gold north-star, and a friendly smile. Strictly SIG palette.</desc>
+
+  <defs>
+    <radialGradient id="sg-body" cx="0.38" cy="0.28" r="0.92">
+      <stop offset="0%" stop-color="#4F7CB8"></stop>
+      <stop offset="42%" stop-color="#1C3556"></stop>
+      <stop offset="100%" stop-color="#0A1628"></stop>
+    </radialGradient>
+    <radialGradient id="sg-face" cx="0.5" cy="0.42" r="0.65">
+      <stop offset="0%" stop-color="#F8F2E5"></stop>
+      <stop offset="100%" stop-color="#D8C9A5" stop-opacity="0.9"></stop>
+    </radialGradient>
+    <radialGradient id="sg-lens" cx="0.3" cy="0.3" r="0.85">
+      <stop offset="0%" stop-color="#FFFFFF"></stop>
+      <stop offset="60%" stop-color="#F0E8D2"></stop>
+      <stop offset="100%" stop-color="#C9B989"></stop>
+    </radialGradient>
+    <linearGradient id="sg-foot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#11243F"></stop>
+      <stop offset="100%" stop-color="#000000"></stop>
+    </linearGradient>
+    <radialGradient id="sg-star" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#F5E3B8"></stop>
+      <stop offset="60%" stop-color="#C9A35C"></stop>
+      <stop offset="100%" stop-color="#9C7C3D"></stop>
+    </radialGradient>
+  </defs>
+
+  
+  <ellipse cx="160" cy="340" rx="98" ry="9" fill="rgba(10,22,40,0.32)"></ellipse>
+
+  
+  <ellipse cx="118" cy="320" rx="20" ry="14" fill="url(#sg-foot)"></ellipse>
+  <ellipse cx="202" cy="320" rx="20" ry="14" fill="url(#sg-foot)"></ellipse>
+
+  
+  <path d="M40 130 C40 60 90 30 160 30 C230 30 280 60 280 130 L280 220 C280 290 230 320 160 320 C90 320 40 290 40 220 Z" fill="url(#sg-body)"></path>
+
+  
+  <ellipse cx="100" cy="98" rx="42" ry="26" fill="rgba(255,255,255,0.20)" transform="rotate(-25 100 98)"></ellipse>
+
+  
+  <path d="M270 80 Q288 175 270 270" stroke="rgba(201,163,92,0.55)" stroke-width="3.5" fill="none" stroke-linecap="round"></path>
+
+  
+  <ellipse cx="160" cy="295" rx="105" ry="32" fill="rgba(10,22,40,0.42)" opacity="0.5"></ellipse>
+
+  
+  <line x1="160" y1="28" x2="160" y2="38" stroke="rgba(201,163,92,0.6)" stroke-width="2" stroke-linecap="round"></line>
+  
+  <circle cx="160" cy="20" r="8" fill="url(#sg-star)"></circle>
+  <circle cx="160" cy="18" r="2.4" fill="#FBF4DC"></circle>
+
+  
+  <ellipse cx="160" cy="158" rx="100" ry="68" fill="url(#sg-face)" opacity="0.96"></ellipse>
+
+  
+  <ellipse cx="76" cy="205" rx="13" ry="6.5" fill="rgba(201,120,80,0.32)"></ellipse>
+  <ellipse cx="244" cy="205" rx="13" ry="6.5" fill="rgba(201,120,80,0.32)"></ellipse>
+
+  
+  <line x1="146" y1="158" x2="174" y2="158" stroke="#0A1628" stroke-width="6" stroke-linecap="round"></line>
+
+  
+  <path d="M84 159 Q70 156 58 162" stroke="#0A1628" stroke-width="6" stroke-linecap="round" fill="none"></path>
+  <path d="M236 159 Q250 156 262 162" stroke="#0A1628" stroke-width="6" stroke-linecap="round" fill="none"></path>
+
+  
+  <circle cx="118" cy="158" r="34" fill="url(#sg-lens)" stroke="#0A1628" stroke-width="7"></circle>
+  
+  <circle cx="202" cy="158" r="34" fill="url(#sg-lens)" stroke="#0A1628" stroke-width="7"></circle>
+
+  
+  <path d="M94 142 Q112 134 138 138" stroke="rgba(201,163,92,0.75)" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+  <path d="M182 138 Q204 134 224 142" stroke="rgba(201,163,92,0.75)" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
+
+  
+  <circle cx="118" cy="160" r="13" fill="#0F2240"></circle>
+  <circle cx="202" cy="160" r="13" fill="#0F2240"></circle>
+  
+  <circle cx="123" cy="155" r="4.5" fill="#FFFFFF"></circle>
+  <circle cx="207" cy="155" r="4.5" fill="#FFFFFF"></circle>
+  
+  <circle cx="114" cy="167" r="2" fill="#C9A35C"></circle>
+  <circle cx="198" cy="167" r="2" fill="#C9A35C"></circle>
+
+  
+  <path d="M137 222 Q160 240 183 222" stroke="#0A1628" stroke-width="5" stroke-linecap="round" fill="none"></path>
+</svg>

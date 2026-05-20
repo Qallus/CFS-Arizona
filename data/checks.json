@@ -1,0 +1,79 @@
+[
+  {
+    "id": "e04e2a9d-6c65-4a50-91b8-c8d3fb9d13be",
+    "checkNumber": 1001,
+    "payee": {
+      "name": "Qallus LLC",
+      "address": "3605 W. Ray Rd. Chandler, AZ 85226",
+      "city": "Chandler",
+      "state": "AZ",
+      "zip": "85226"
+    },
+    "amount": 5,
+    "amountText": "Five and 00/100",
+    "memo": "This is a test check",
+    "date": "2026-03-04",
+    "status": "cashed",
+    "createdAt": "2026-03-04T17:26:49.376Z",
+    "updatedAt": "2026-03-04T20:04:44.136Z",
+    "cashedAt": "2026-03-04T20:04:44.136Z"
+  },
+  {
+    "id": "718f2845-a392-45ae-95e9-49959808d073",
+    "checkNumber": 1002,
+    "payee": {
+      "name": "Controlp.io",
+      "address": "3605 W Harrison St ",
+      "city": "Chandler",
+      "state": "AZ",
+      "zip": "85226"
+    },
+    "amount": 50,
+    "amountText": "Fifty and 00/100",
+    "memo": "This is a test check",
+    "date": "2026-03-04",
+    "status": "draft",
+    "createdAt": "2026-03-04T20:23:50.242Z",
+    "updatedAt": "2026-03-04T20:23:50.242Z"
+  },
+  {
+    "id": "7e5da9e2-df86-4907-98c5-0767695e7bc9",
+    "checkNumber": 1003,
+    "payee": {
+      "name": "Controlp.io",
+      "address": "3605 W Harrison St. ",
+      "city": "Chandler",
+      "state": "AZ",
+      "zip": "85226"
+    },
+    "amount": 846,
+    "amountText": "Eight Hundred Forty-Six and 00/100",
+    "memo": "Test Check 3",
+    "date": "2026-03-04",
+    "status": "sent",
+    "createdAt": "2026-03-04T23:01:19.994Z",
+    "updatedAt": "2026-03-04T23:01:46.466Z",
+    "deliveryMethod": "email",
+    "deliveredTo": "jwaters@qallus.co",
+    "deliveredAt": "2026-03-04T23:01:46.466Z"
+  },
+  {
+    "id": "93cd5073-d974-4b2e-8f76-1fc9c4e76538",
+    "checkNumber": 1001,
+    "payee": {
+      "name": "Qallus LLC",
+      "address": "1234 N Scottsdale Rd",
+      "city": "Scottsdale",
+      "state": "AZ",
+      "zip": "85226"
+    },
+    "amount": 100,
+    "amountText": "One Hundred and 00/100",
+    "memo": "This is a test check",
+    "date": "2026-03-04",
+    "signature": "/api/uploads/contacts/contact-1772666393347.png",
+    "status": "draft",
+    "createdAt": "2026-03-04T23:19:56.815Z",
+    "updatedAt": "2026-03-04T23:19:56.815Z"
+  }
+]
