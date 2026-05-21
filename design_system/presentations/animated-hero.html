@@ -101,6 +101,9 @@
   .ag-nav-cta {
     color: #08101d;
     background: #ffffff;
+    border: 0;
+    cursor: none;
+    font-family: inherit;
     text-decoration: none;
     padding: 11px 18px;
     border-radius: 999px;
@@ -181,6 +184,71 @@
   .cta.primary { background: #fff; color: #050614; border-color: #fff; }
   .cta.primary:hover { background: #e8ecff; }
 
+  .sig-cal-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: rgba(5, 6, 20, 0.74);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+  }
+
+  .sig-cal-modal.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .sig-cal-panel {
+    width: min(1080px, 100%);
+    height: min(820px, calc(100vh - 48px));
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 18px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 34px 90px rgba(0,0,0,0.48);
+  }
+
+  .sig-cal-topbar {
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 0 16px 0 20px;
+    background: #0a1628;
+    color: #fff;
+  }
+
+  .sig-cal-topbar strong {
+    font-size: 0.94rem;
+  }
+
+  .sig-cal-close {
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(255,255,255,0.18);
+    border-radius: 999px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    cursor: none;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  #my-cal-inline {
+    width: 100%;
+    height: calc(100% - 54px);
+    overflow: auto;
+  }
+
   /* Custom cursor (dot + ring) */
   .cursor-dot, .cursor-ring {
     position: fixed;
@@ -241,7 +309,7 @@
       <a href="#markets" data-cursor="hover">Markets</a>
     </div>
 
-    <a class="ag-nav-cta" href="#review" data-cursor="hover">Schedule a Review</a>
+    <button class="ag-nav-cta" type="button" data-cursor="hover" data-cal-open="review">Schedule a Review</button>
   </nav>
 
   <div class="content">
@@ -249,9 +317,19 @@
     <h1>Plan with purpose.</h1>
     <p class="subtitle">Financial planning, estate planning, insurance planning, market strategy, and retirement income guidance aligned around the life you are building.</p>
     <div class="cta-row">
-      <button class="cta primary" data-cursor="hover">Schedule a Planning Review</button>
+      <button class="cta primary" type="button" data-cursor="hover" data-cal-open="review">Schedule a Planning Review</button>
       <button class="cta" data-cursor="hover">Explore Services</button>
     </div>
+  </div>
+</div>
+
+<div class="sig-cal-modal" id="sigCalModal" aria-hidden="true">
+  <div class="sig-cal-panel" role="dialog" aria-modal="true" aria-label="Schedule a SIG360 planning review">
+    <div class="sig-cal-topbar">
+      <strong>Schedule a SIG360 Planning Review</strong>
+      <button class="sig-cal-close" type="button" id="sigCalClose" aria-label="Close calendar" data-cursor="hover">&times;</button>
+    </div>
+    <div id="my-cal-inline"></div>
   </div>
 </div>
 
@@ -486,6 +564,51 @@
   animate();
 })();
 </script>
+
+<script>
+(function () {
+  const modal = document.getElementById("sigCalModal");
+  const closeButton = document.getElementById("sigCalClose");
+  const openButtons = document.querySelectorAll("[data-cal-open='review']");
+
+  function openCalendar() {
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeCalendar() {
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  openButtons.forEach(function (button) {
+    button.addEventListener("click", openCalendar);
+  });
+
+  closeButton.addEventListener("click", closeCalendar);
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) closeCalendar();
+  });
+
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeCalendar();
+  });
+})();
+</script>
+
+<!-- Cal inline embed code begins -->
+<script type="text/javascript">
+  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://events.sig360.com/embed/embed.js", "init");
+  Cal("init", "secret", {origin:"https://events.sig360.com"});
+  Cal.ns.secret("inline", {
+    elementOrSelector:"#my-cal-inline",
+    config: {"layout":"month_view"},
+    calLink: "jeremy-waters/secret",
+  });
+  Cal.ns.secret("ui", {"styles":{"branding":{"brandColor":"#000000"}},"hideEventTypeDetails":false,"layout":"month_view"});
+</script>
+<!-- Cal inline embed code ends -->
 
 </body>
 </html>

@@ -7,11 +7,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Hermes Agent — internal docker network URL
-      HERMES_GATEWAY_URL: http://hermes:18789
-      HERMES_GATEWAY_TOKEN: ${HERMES_GATEWAY_TOKEN}
-      HERMES_WORKSPACE: /hermes/workspace
-
       # NextAuth
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: "true"
@@ -69,52 +64,3 @@ services:
       WP_APPLICATION_USERNAME: ${WP_APPLICATION_USERNAME:-}
       WP_APPLICATION_PASSWORD: ${WP_APPLICATION_PASSWORD:-}
       WP_REST_API_URL: ${WP_REST_API_URL:-}
-    volumes:
-      # Bind-mount so DNA/memory files are version-controlled in ./hermes/workspace
-      - ./hermes/workspace:/hermes/workspace
-    depends_on:
-      hermes:
-        condition: service_healthy
-
-  hermes:
-    image: node:22-alpine
-    restart: unless-stopped
-    working_dir: /app
-    # Clone Hermes Agent on first boot; subsequent restarts are instant via the app volume
-    command: >
-      sh -c "
-        if [ ! -f /app/package.json ]; then
-          apk add --no-cache git &&
-          git clone https://github.com/NousResearch/hermes-agent.git /app;
-        fi &&
-        npm install --omit=dev &&
-        npm start
-      "
-    environment:
-      # LLM provider keys — Hermes uses these for AI completions
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-
-      # Gateway auth token — must match HERMES_GATEWAY_TOKEN in sig360 service
-      HERMES_TOKEN: ${HERMES_GATEWAY_TOKEN}
-
-      # Workspace — bind-mounted from ./hermes/workspace on the host
-      HERMES_WORKSPACE: /hermes/workspace
-
-      PORT: "18789"
-    ports:
-      # Internal only — Coolify reverse proxy handles external HTTPS
-      - "127.0.0.1:18789:18789"
-    volumes:
-      - ./hermes/workspace:/hermes/workspace
-      - hermes-app:/app
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:18789/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 60s
-
-volumes:
-  # hermes-app persists the cloned Hermes repo across restarts (no re-clone needed)
-  hermes-app:

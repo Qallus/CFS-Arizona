@@ -37,13 +37,6 @@ yarn-error.log*
 !.env.example
 !.env.local.example
 
-# Hermes workspace — daily logs and skills are local/runtime, not committed
-hermes/workspace/memory/*
-hermes/workspace/skills/*
-# Keep the directory structure itself
-!hermes/workspace/memory/.gitkeep
-!hermes/workspace/skills/.gitkeep
-
 # vercel
 .vercel
 

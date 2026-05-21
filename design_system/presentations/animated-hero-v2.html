@@ -1,3 +1,12 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SIG360.com Financial Planning Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
 /* =========================================================
    ANTIGRAVITY-STYLE HERO FOR BRICKS BUILDER
@@ -146,6 +155,9 @@
 .ag-nav-cta {
   color: #08101d;
   background: #ffffff;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
   text-decoration: none;
   padding: 11px 18px;
   border-radius: 999px;
@@ -157,6 +169,70 @@
 .ag-nav-cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 16px 40px rgba(255,255,255,0.16);
+}
+
+.sig-cal-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 7, 13, 0.74);
+  backdrop-filter: blur(16px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.sig-cal-modal.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.sig-cal-panel {
+  width: min(1080px, 100%);
+  height: min(820px, calc(100vh - 48px));
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 34px 90px rgba(0,0,0,0.48);
+}
+
+.sig-cal-topbar {
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 16px 0 20px;
+  background: #0a1628;
+  color: #fff;
+}
+
+.sig-cal-topbar strong {
+  font-size: 0.94rem;
+}
+
+.sig-cal-close {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+}
+
+#my-cal-inline {
+  width: 100%;
+  height: calc(100% - 54px);
+  overflow: auto;
 }
 
 .ag-hero-inner {
@@ -246,7 +322,10 @@
   justify-content: center;
   min-height: 54px;
   padding: 0 24px;
+  border: 0;
   border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
   text-decoration: none;
   font-weight: 850;
   overflow: hidden;
@@ -584,6 +663,8 @@
   }
 }
 </style>
+</head>
+<body>
 
 <section class="ag-hero" id="agHero">
   <canvas class="ag-canvas" id="agParticleCanvas" aria-hidden="true"></canvas>
@@ -604,7 +685,7 @@
       <a href="#start">Markets</a>
     </div>
 
-    <a class="ag-nav-cta" href="#start">Schedule a Review</a>
+    <button class="ag-nav-cta" type="button" data-cal-open="review">Schedule a Review</button>
   </nav>
 
   <div class="ag-stage" aria-hidden="true">
@@ -641,7 +722,7 @@
       </p>
 
       <div class="ag-actions">
-        <a class="ag-btn ag-btn-primary" href="#start">Schedule a Planning Review</a>
+        <button class="ag-btn ag-btn-primary" type="button" data-cal-open="review">Schedule a Planning Review</button>
         <a class="ag-btn ag-btn-secondary" href="#overview">Explore Services</a>
       </div>
     </div>
@@ -680,6 +761,16 @@
     </div>
   </div>
 </section>
+
+<div class="sig-cal-modal" id="sigCalModal" aria-hidden="true">
+  <div class="sig-cal-panel" role="dialog" aria-modal="true" aria-label="Schedule a SIG360 planning review">
+    <div class="sig-cal-topbar">
+      <strong>Schedule a SIG360 Planning Review</strong>
+      <button class="sig-cal-close" type="button" id="sigCalClose" aria-label="Close calendar">&times;</button>
+    </div>
+    <div id="my-cal-inline"></div>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -853,3 +944,50 @@
   animate();
 })();
 </script>
+
+<script>
+(function () {
+  const modal = document.getElementById("sigCalModal");
+  const closeButton = document.getElementById("sigCalClose");
+  const openButtons = document.querySelectorAll("[data-cal-open='review']");
+
+  function openCalendar() {
+    modal.classList.add("open");
+    modal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeCalendar() {
+    modal.classList.remove("open");
+    modal.setAttribute("aria-hidden", "true");
+  }
+
+  openButtons.forEach(function (button) {
+    button.addEventListener("click", openCalendar);
+  });
+
+  closeButton.addEventListener("click", closeCalendar);
+
+  modal.addEventListener("click", function (event) {
+    if (event.target === modal) closeCalendar();
+  });
+
+  window.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeCalendar();
+  });
+})();
+</script>
+
+<!-- Cal inline embed code begins -->
+<script type="text/javascript">
+  (function (C, A, L) { let p = function (a, ar) { a.q.push(ar); }; let d = C.document; C.Cal = C.Cal || function () { let cal = C.Cal; let ar = arguments; if (!cal.loaded) { cal.ns = {}; cal.q = cal.q || []; d.head.appendChild(d.createElement("script")).src = A; cal.loaded = true; } if (ar[0] === L) { const api = function () { p(api, arguments); }; const namespace = ar[1]; api.q = api.q || []; if(typeof namespace === "string"){cal.ns[namespace] = cal.ns[namespace] || api;p(cal.ns[namespace], ar);p(cal, ["initNamespace", namespace]);} else p(cal, ar); return;} p(cal, ar); }; })(window, "https://events.sig360.com/embed/embed.js", "init");
+  Cal("init", "secret", {origin:"https://events.sig360.com"});
+  Cal.ns.secret("inline", {
+    elementOrSelector:"#my-cal-inline",
+    config: {"layout":"month_view"},
+    calLink: "jeremy-waters/secret",
+  });
+  Cal.ns.secret("ui", {"styles":{"branding":{"brandColor":"#000000"}},"hideEventTypeDetails":false,"layout":"month_view"});
+</script>
+<!-- Cal inline embed code ends -->
+</body>
+</html>

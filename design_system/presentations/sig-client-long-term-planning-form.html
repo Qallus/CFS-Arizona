@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SIG360 Client Long-Term Planning Form</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --sig-navy-deep: #0a1628;
+    --sig-navy: #11243f;
+    --sig-blue: #3b6fe0;
+    --sig-gold: #c9a35c;
+    --sig-gold-soft: #ead8ad;
+    --sig-ivory: #faf7f0;
+    --sig-surface: #ffffff;
+    --sig-line: #e4dcc8;
+    --sig-text: #0f2240;
+    --sig-muted: #5f6f84;
+    --sig-soft: #f0ebe0;
+    --sig-success: #2f7d59;
+    --radius: 8px;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background:
+      linear-gradient(135deg, rgba(250, 247, 240, 0.96), rgba(240, 235, 224, 0.94)),
+      linear-gradient(180deg, var(--sig-ivory), #efe7d2);
+    color: var(--sig-text);
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  .sig-form-page {
+    min-height: 100vh;
+    padding: 28px clamp(16px, 4vw, 52px) 48px;
+  }
+
+  .sig-shell {
+    width: min(1180px, 100%);
+    margin: 0 auto;
+  }
+
+  .sig-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 28px;
+  }
+
+  .sig-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--sig-text);
+    text-decoration: none;
+    font-weight: 800;
+  }
+
+  .sig-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    background: linear-gradient(135deg, var(--sig-navy), var(--sig-blue));
+    box-shadow: 0 16px 40px rgba(17, 36, 63, 0.18);
+  }
+
+  .sig-mark svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sig-header-note {
+    max-width: 430px;
+    color: var(--sig-muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .sig-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(320px, 1.1fr);
+    gap: 24px;
+    align-items: stretch;
+  }
+
+  .sig-intro {
+    position: sticky;
+    top: 22px;
+    align-self: start;
+    min-height: 640px;
+    padding: clamp(28px, 4vw, 46px);
+    border: 1px solid rgba(201, 163, 92, 0.34);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(160deg, rgba(10, 22, 40, 0.98), rgba(17, 36, 63, 0.96)),
+      var(--sig-navy);
+    color: #f6f0df;
+    overflow: hidden;
+  }
+
+  .sig-intro::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(rgba(255,255,255,0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.055) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.72), transparent);
+    pointer-events: none;
+  }
+
+  .sig-intro > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .sig-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 22px;
+    color: var(--sig-gold-soft);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+  }
+
+  .sig-kicker::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--sig-gold);
+  }
+
+  .sig-intro h1 {
+    margin: 0;
+    font-family: Newsreader, Georgia, serif;
+    font-size: clamp(3rem, 6vw, 5.9rem);
+    font-weight: 500;
+    line-height: 0.94;
+    letter-spacing: -0.035em;
+  }
+
+  .sig-intro h1 span {
+    color: var(--sig-gold-soft);
+    font-style: italic;
+  }
+
+  .sig-mission {
+    margin: 28px 0 0;
+    color: rgba(246, 240, 223, 0.82);
+    font-size: clamp(1.04rem, 1.8vw, 1.22rem);
+    line-height: 1.65;
+  }
+
+  .sig-promise-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 34px;
+  }
+
+  .sig-promise {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 15px;
+    border: 1px solid rgba(234, 216, 173, 0.18);
+    border-radius: var(--radius);
+    background: rgba(255,255,255,0.055);
+  }
+
+  .sig-promise strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #fff;
+    font-size: 0.94rem;
+  }
+
+  .sig-promise p {
+    margin: 0;
+    color: rgba(246, 240, 223, 0.68);
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+
+  .sig-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: rgba(201, 163, 92, 0.16);
+    color: var(--sig-gold-soft);
+  }
+
+  .sig-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .sig-form-card {
+    border: 1px solid var(--sig-line);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 24px 70px rgba(15, 34, 64, 0.12);
+    overflow: visible;
+  }
+
+  .sig-progress {
+    padding: 22px 24px;
+    border-bottom: 1px solid var(--sig-line);
+    background: rgba(255,255,255,0.78);
+  }
+
+  .sig-progress-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .sig-progress-top strong {
+    font-size: 0.92rem;
+  }
+
+  .sig-progress-top span {
+    color: var(--sig-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .sig-progress-bar {
+    height: 9px;
+    border-radius: 999px;
+    background: var(--sig-soft);
+    overflow: hidden;
+  }
+
+  .sig-progress-fill {
+    width: 14.28%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--sig-gold), var(--sig-blue));
+    transition: width 0.25s ease;
+  }
+
+  .sig-step-tabs {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .sig-step-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sig-step-tab {
+    flex: 0 0 auto;
+    border: 1px solid var(--sig-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--sig-muted);
+    padding: 8px 11px;
+    font-size: 0.76rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .sig-step-tab.active {
+    border-color: rgba(59, 111, 224, 0.38);
+    background: rgba(59, 111, 224, 0.1);
+    color: var(--sig-navy);
+  }
+
+  .sig-form-body {
+    padding: clamp(22px, 4vw, 34px);
+  }
+
+  .sig-step {
+    display: none;
+  }
+
+  .sig-step.active {
+    display: block;
+  }
+
+  .sig-step h2 {
+    margin: 0;
+    font-family: Newsreader, Georgia, serif;
+    font-size: clamp(2rem, 4vw, 3.1rem);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.025em;
+  }
+
+  .sig-step-lead {
+    max-width: 720px;
+    margin: 13px 0 28px;
+    color: var(--sig-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .sig-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .sig-grid.full {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sig-field {
+    display: grid;
+    gap: 8px;
+  }
+
+  .sig-field.full {
+    grid-column: 1 / -1;
+  }
+
+  .sig-field label,
+  .sig-choice-label {
+    color: var(--sig-text);
+    font-size: 0.88rem;
+    font-weight: 800;
+  }
+
+  .sig-field small {
+    color: var(--sig-muted);
+    line-height: 1.4;
+  }
+
+  .sig-input,
+  .sig-select,
+  .sig-textarea {
+    width: 100%;
+    border: 1px solid var(--sig-line);
+    border-radius: var(--radius);
+    background: #fff;
+    color: var(--sig-text);
+    padding: 13px 14px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .sig-select {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 48px;
+    padding-right: 46px;
+    border-color: rgba(17, 36, 63, 0.18);
+    background-color: #fff;
+    background-image:
+      linear-gradient(135deg, rgba(201, 163, 92, 0.14), rgba(17, 36, 63, 0.04)),
+      url("data:image/svg+xml,%3Csvg%20width%3D%2718%27%20height%3D%2718%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%3E%3Cpath%20d%3D%27M6%209L12%2015L18%209%27%20stroke%3D%27%23C9A35C%27%20stroke-width%3D%272.4%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 0 0, right 14px center;
+    background-size: 100% 100%, 18px 18px;
+    color: var(--sig-navy);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .sig-select:hover {
+    border-color: rgba(201, 163, 92, 0.62);
+    box-shadow: 0 10px 24px rgba(17, 36, 63, 0.06);
+  }
+
+  .sig-select option {
+    background: #fff;
+    color: var(--sig-text);
+    font-weight: 600;
+  }
+
+  .sig-select.is-enhanced {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .sig-custom-select {
+    position: relative;
+    width: 100%;
+  }
+
+  .sig-custom-select__button {
+    width: 100%;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    border: 1px solid rgba(17, 36, 63, 0.18);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(135deg, rgba(201, 163, 92, 0.14), rgba(17, 36, 63, 0.04)),
+      #fff;
+    color: var(--sig-navy);
+    padding: 13px 14px;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .sig-custom-select__button:hover,
+  .sig-custom-select.open .sig-custom-select__button {
+    border-color: rgba(201, 163, 92, 0.78);
+    box-shadow:
+      0 0 0 3px rgba(201, 163, 92, 0.16),
+      0 12px 30px rgba(17, 36, 63, 0.08);
+  }
+
+  .sig-custom-select__button svg {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 auto;
+    color: var(--sig-gold);
+    transition: transform 0.16s ease;
+  }
+
+  .sig-custom-select.open .sig-custom-select__button svg {
+    transform: rotate(180deg);
+  }
+
+  .sig-custom-select__menu {
+    position: absolute;
+    z-index: 50;
+    left: 0;
+    right: 0;
+    top: calc(100% + 6px);
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 6px;
+    border: 1px solid rgba(201, 163, 92, 0.42);
+    border-radius: var(--radius);
+    background: #fffdf8;
+    box-shadow: 0 22px 46px rgba(17, 36, 63, 0.18);
+    display: none;
+  }
+
+  .sig-custom-select.open .sig-custom-select__menu {
+    display: grid;
+    gap: 4px;
+  }
+
+  .sig-custom-select__option {
+    width: 100%;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--sig-text);
+    padding: 11px 12px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .sig-custom-select__option:hover,
+  .sig-custom-select__option.active {
+    background: rgba(201, 163, 92, 0.16);
+    color: var(--sig-navy);
+  }
+
+  .sig-custom-select__option.selected {
+    background: var(--sig-navy);
+    color: #fffaf0;
+  }
+
+  .sig-textarea {
+    min-height: 118px;
+    resize: vertical;
+  }
+
+  .sig-input:focus,
+  .sig-select:focus,
+  .sig-textarea:focus {
+    border-color: rgba(201, 163, 92, 0.78);
+    box-shadow:
+      0 0 0 3px rgba(201, 163, 92, 0.18),
+      0 12px 30px rgba(17, 36, 63, 0.08);
+  }
+
+  .sig-choice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .sig-choice {
+    position: relative;
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 11px;
+    min-height: 72px;
+    align-items: start;
+    padding: 14px;
+    border: 1px solid var(--sig-line);
+    border-radius: var(--radius);
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .sig-choice input {
+    margin: 3px 0 0;
+    accent-color: var(--sig-blue);
+  }
+
+  .sig-choice span {
+    display: block;
+    color: var(--sig-muted);
+    font-size: 0.83rem;
+    line-height: 1.45;
+  }
+
+  .sig-summary {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+    border: 1px solid rgba(47, 125, 89, 0.24);
+    border-radius: var(--radius);
+    background: rgba(47, 125, 89, 0.075);
+  }
+
+  .sig-summary h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .sig-summary p {
+    margin: 0;
+    color: var(--sig-muted);
+    line-height: 1.55;
+  }
+
+  .sig-actions {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 24px;
+    border-top: 1px solid var(--sig-line);
+    background: rgba(250, 247, 240, 0.74);
+  }
+
+  .sig-action-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .sig-btn {
+    min-height: 44px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
+  }
+
+  .sig-btn[hidden] {
+    display: none !important;
+  }
+
+  .sig-btn:hover {
+    transform: translateY(-1px);
+  }
+
+  .sig-btn-primary {
+    background: var(--sig-navy);
+    color: #fff;
+    box-shadow: 0 14px 32px rgba(17, 36, 63, 0.16);
+  }
+
+  .sig-btn-gold {
+    background: var(--sig-gold);
+    color: var(--sig-navy-deep);
+  }
+
+  .sig-actions .sig-btn {
+    width: 164px;
+  }
+
+  .sig-btn-outline {
+    background: #fff;
+    color: var(--sig-text);
+    border-color: var(--sig-line);
+  }
+
+  .sig-disclaimer {
+    max-width: 1180px;
+    margin: 18px auto 0;
+    color: var(--sig-muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 980px) {
+    .sig-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sig-intro {
+      position: relative;
+      top: auto;
+      min-height: auto;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .sig-header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .sig-header-note {
+      text-align: left;
+    }
+
+    .sig-grid,
+    .sig-choice-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sig-actions {
+      grid-template-columns: minmax(0, 1fr);
+      align-items: stretch;
+    }
+
+    .sig-action-group {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .sig-btn {
+      width: 100%;
+    }
+
+    #submitBtn {
+      grid-column: 1 / -1;
+    }
+  }
+</style>
+</head>
+<body>
+<main class="sig-form-page">
+  <div class="sig-shell">
+    <header class="sig-header">
+      <a class="sig-brand" href="#">
+        <span class="sig-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 17l5-5 4 4 7-9" /><path d="M14 7h6v6" /></svg>
+        </span>
+        <span>SIG360.com</span>
+      </a>
+      <p class="sig-header-note">
+        A guided stewardship experience to help clients identify their best life through faith, financial planning, generosity, and wise long-term decisions.
+      </p>
+    </header>
+
+    <section class="sig-hero">
+      <aside class="sig-intro">
+        <div class="sig-kicker">Client planning journey</div>
+        <h1>Identify your <span>best life.</span></h1>
+        <p class="sig-mission">
+          This form is designed to help you slow down, reflect deeply, and begin shaping a financial plan that supports the life God is calling you to live.
+        </p>
+
+        <div class="sig-promise-grid">
+          <div class="sig-promise">
+            <span class="sig-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20" /><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></svg></span>
+            <div>
+              <strong>Discover your best life</strong>
+              <p>Name what flourishing looks like through faith, family, calling, health, work, generosity, and peace.</p>
+            </div>
+          </div>
+
+          <div class="sig-promise">
+            <span class="sig-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="17" r="3" /><circle cx="7" cy="7" r="3" /></svg></span>
+            <div>
+              <strong>Plan with intention</strong>
+              <p>Connect your financial decisions to the life you want to live and the people you want to serve.</p>
+            </div>
+          </div>
+
+          <div class="sig-promise">
+            <span class="sig-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l7 4v6c0 5-3.5 7.5-7 8-3.5-.5-7-3-7-8V7l7-4z" /><path d="M9 12l2 2 4-5" /></svg></span>
+            <div>
+              <strong>Live and give well</strong>
+              <p>Build toward security, freedom, generosity, wisdom, and a legacy that blesses others.</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <form class="sig-form-card" id="sigPlanningForm">
+        <div class="sig-progress">
+          <div class="sig-progress-top">
+            <strong id="stepTitle">Step 1 of 7</strong>
+            <span id="stepPercent">14% Complete</span>
+          </div>
+          <div class="sig-progress-bar" aria-hidden="true">
+            <div class="sig-progress-fill" id="progressFill"></div>
+          </div>
+          <div class="sig-step-tabs" id="stepTabs" aria-label="Planning form steps"></div>
+        </div>
+
+        <div class="sig-form-body">
+          <section class="sig-step active" data-step="0" data-label="Bedrock">
+            <h2>Faith, identity, and your best life</h2>
+            <p class="sig-step-lead">Start with the life you believe God is calling you to live. A financial plan becomes more powerful when it begins with who you are, what you believe, and what flourishing truly means to you.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field">
+                <label for="firstName">First name</label>
+                <input class="sig-input" id="firstName" name="firstName" type="text" autocomplete="given-name" placeholder="Your first name" />
+              </div>
+              <div class="sig-field">
+                <label for="lastName">Last name</label>
+                <input class="sig-input" id="lastName" name="lastName" type="text" autocomplete="family-name" placeholder="Your last name" />
+              </div>
+              <div class="sig-field">
+                <label for="email">Email</label>
+                <input class="sig-input" id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" />
+              </div>
+              <div class="sig-field">
+                <label for="phone">Phone</label>
+                <input class="sig-input" id="phone" name="phone" type="tel" autocomplete="tel" placeholder="Best number to reach you" />
+              </div>
+              <div class="sig-field full">
+                <label for="lifeVision">When you picture your best life as faithful, fruitful, and fully alive 10 years from now, what do you want to be true?</label>
+                <textarea class="sig-textarea" id="lifeVision" name="lifeVision" placeholder="Share what you hope is true spiritually, relationally, financially, vocationally, and in the way you are blessing others."></textarea>
+              </div>
+              <div class="sig-field full">
+                <label for="callingReflection">What do you believe God has uniquely entrusted to you in this season?</label>
+                <textarea class="sig-textarea" id="callingReflection" name="callingReflection" placeholder="Consider your resources, relationships, abilities, influence, testimony, business, time, or opportunities."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="1" data-label="Reflection">
+            <h2>Best-life reflection</h2>
+            <p class="sig-step-lead">Before planning forward, it helps to notice where life has felt most alive, what you would improve, and what wisdom you have gained from the road behind you.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field full">
+                <label for="bestTimes">What have been the best times of your life, and what made them meaningful?</label>
+                <textarea class="sig-textarea" id="bestTimes" name="bestTimes" placeholder="Think about seasons, memories, relationships, work, service, faith, travel, family, or moments when you felt fully alive."></textarea>
+              </div>
+              <div class="sig-field">
+                <label for="moreOf">If you could have more of anything right now, what would it be?</label>
+                <input class="sig-input" id="moreOf" name="moreOf" type="text" placeholder="Time, peace, health, family, courage, margin, purpose..." />
+              </div>
+              <div class="sig-field">
+                <label for="bestMemory">What is one memory you would love to experience more often?</label>
+                <input class="sig-input" id="bestMemory" name="bestMemory" type="text" placeholder="A moment, place, person, tradition, or feeling" />
+              </div>
+              <div class="sig-field full">
+                <label for="lifeImprovements">What are five things you would improve in your life right now?</label>
+                <textarea class="sig-textarea" id="lifeImprovements" name="lifeImprovements" placeholder="List the areas that would make life healthier, freer, more faithful, more joyful, or more aligned."></textarea>
+              </div>
+              <div class="sig-field full">
+                <label for="twentyYearWisdom">Looking back over the last 20 years, what would you do differently with your time, money, relationships, or decisions?</label>
+                <textarea class="sig-textarea" id="twentyYearWisdom" name="twentyYearWisdom" placeholder="This is not for shame. It is for wisdom, clarity, and better next decisions."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="2" data-label="Alignment">
+            <h2>Purpose, priorities, and alignment</h2>
+            <p class="sig-step-lead">Most people drift toward urgency. This step helps identify where your current life and financial decisions support your best life, and where a better blueprint may be needed.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field">
+                <label for="maritalStatus">Household season</label>
+                <select class="sig-select" id="maritalStatus" name="maritalStatus">
+                  <option value="">Select one</option>
+                  <option>Single / discerning next steps</option>
+                  <option>Married / building together</option>
+                  <option>Raising children</option>
+                  <option>Empty nest / preparing for next chapter</option>
+                  <option>Retired / legacy focused</option>
+                  <option>Major transition</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="dependents">People you are called to care for</label>
+                <input class="sig-input" id="dependents" name="dependents" type="text" placeholder="Spouse, children, parents, family, team, community, ministry" />
+              </div>
+              <div class="sig-field">
+                <label for="retirementTimeline">Long-term planning horizon</label>
+                <select class="sig-select" id="retirementTimeline" name="retirementTimeline">
+                  <option value="">Select one</option>
+                  <option>1-3 years: urgent decisions</option>
+                  <option>4-7 years: transition planning</option>
+                  <option>8-15 years: intentional building</option>
+                  <option>15+ years: compounding wisely</option>
+                  <option>Multi-generational planning</option>
+                  <option>Not sure yet</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="advisorContact">Preferred planning conversation</label>
+                <select class="sig-select" id="advisorContact" name="advisorContact">
+                  <option value="">Select one</option>
+                  <option>Faith and finances discovery</option>
+                  <option>Retirement income strategy</option>
+                  <option>Investment and giving alignment</option>
+                  <option>Estate and legacy review</option>
+                  <option>Full stewardship blueprint</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="familyContext">Where do your current decisions feel most out of alignment with your faith, values, or best-life vision?</label>
+                <textarea class="sig-textarea" id="familyContext" name="familyContext" placeholder="Examples: time pressure, debt, lifestyle creep, fear, giving inconsistency, investment anxiety, family communication, work-life tension, or unclear priorities."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="3" data-label="Rhythms">
+            <h2>Rest, relationships, and rhythm</h2>
+            <p class="sig-step-lead">A financial plan should support a life that has room to breathe: gratitude, Sabbath, family, friendship, reflection, recreation, and peace.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field">
+                <label for="gratitudePractice">Do you practice a gratitude rhythm?</label>
+                <select class="sig-select" id="gratitudePractice" name="gratitudePractice">
+                  <option value="">Select one</option>
+                  <option>Daily</option>
+                  <option>Several times a week</option>
+                  <option>Occasionally</option>
+                  <option>Rarely</option>
+                  <option>I want to begin</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="sabbathPractice">Do you practice Sabbath or intentional rest?</label>
+                <select class="sig-select" id="sabbathPractice" name="sabbathPractice">
+                  <option value="">Select one</option>
+                  <option>Yes, consistently</option>
+                  <option>Sometimes</option>
+                  <option>Not currently</option>
+                  <option>I want help building this rhythm</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="reflectionTime">How much time do you take to reflect, pray, and relax?</label>
+                <select class="sig-select" id="reflectionTime" name="reflectionTime">
+                  <option value="">Select one</option>
+                  <option>Daily margin</option>
+                  <option>Weekly margin</option>
+                  <option>Only when life forces me to stop</option>
+                  <option>Almost none right now</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="vacationRhythm">How often have you truly rested or vacationed recently?</label>
+                <select class="sig-select" id="vacationRhythm" name="vacationRhythm">
+                  <option value="">Select one</option>
+                  <option>Multiple times in the last year</option>
+                  <option>Once in the last year</option>
+                  <option>A few times in the last 5 years</option>
+                  <option>Rarely in the last 10 years</option>
+                  <option>I do not feel free to rest</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="relationshipRhythm">Are you spending meaningful time with family, friends, co-workers, church, or people you are called to serve?</label>
+                <textarea class="sig-textarea" id="relationshipRhythm" name="relationshipRhythm" placeholder="Where are relationships life-giving? Where do they need more presence, boundaries, forgiveness, or intentionality?"></textarea>
+              </div>
+              <div class="sig-field full">
+                <label for="survivalMode">Are you surviving or thriving? What would help you move out of survival mode?</label>
+                <textarea class="sig-textarea" id="survivalMode" name="survivalMode" placeholder="Consider workload, cash flow, health, fear, obligations, family pressure, decision fatigue, or lack of margin."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="4" data-label="Resources">
+            <h2>Resources for the life you are called to live</h2>
+            <p class="sig-step-lead">Stewardship includes more than account balances. This section helps your planning team see the full picture of what can support your best life, your family, your giving, and your future impact.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field">
+                <label for="annualIncome">Approximate household annual income</label>
+                <select class="sig-select" id="annualIncome" name="annualIncome">
+                  <option value="">Select range</option>
+                  <option>Under $100,000</option>
+                  <option>$100,000 - $250,000</option>
+                  <option>$250,000 - $500,000</option>
+                  <option>$500,000 - $1M</option>
+                  <option>$1M+</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="investableAssets">Approximate investable assets</label>
+                <select class="sig-select" id="investableAssets" name="investableAssets">
+                  <option value="">Select range</option>
+                  <option>Under $250,000</option>
+                  <option>$250,000 - $500,000</option>
+                  <option>$500,000 - $1M</option>
+                  <option>$1M - $3M</option>
+                  <option>$3M - $10M</option>
+                  <option>$10M+</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="incomeSources">Primary income and provision sources</label>
+                <input class="sig-input" id="incomeSources" name="incomeSources" type="text" placeholder="Salary, business, pension, rental, Social Security, ministry, royalties" />
+              </div>
+              <div class="sig-field">
+                <label for="liquidity">Margin and emergency savings comfort</label>
+                <select class="sig-select" id="liquidity" name="liquidity">
+                  <option value="">Select one</option>
+                  <option>Less than 3 months</option>
+                  <option>3-6 months</option>
+                  <option>6-12 months</option>
+                  <option>More than 12 months</option>
+                  <option>Not sure</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="accounts">Which resources, accounts, assets, or liabilities should we account for?</label>
+                <textarea class="sig-textarea" id="accounts" name="accounts" placeholder="Examples: 401(k), IRA, Roth IRA, brokerage, business ownership, real estate, mortgage, education accounts, debt, stock options, intellectual property, or future inheritance."></textarea>
+              </div>
+              <div class="sig-field full">
+                <label for="stewardshipStrengths">Where do you already feel faithful, disciplined, or generous with what you have?</label>
+                <textarea class="sig-textarea" id="stewardshipStrengths" name="stewardshipStrengths" placeholder="Name the habits, disciplines, or decisions you want to preserve and build upon."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="5" data-label="Investing">
+            <h2>Investing with wisdom and conviction</h2>
+            <p class="sig-step-lead">Investing can be more than accumulation. It can help fund your best life, express patience and prudence, support generosity, and align resources with the kind of future you want to help build.</p>
+
+            <div class="sig-choice-grid">
+              <label class="sig-choice">
+                <input type="checkbox" name="goals" value="Retirement income confidence" />
+                <span><span class="sig-choice-label">Retirement income confidence</span> Create reliable income so generosity and lifestyle are not driven by fear.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="goals" value="Tax-aware generosity" />
+                <span><span class="sig-choice-label">Tax-aware generosity</span> Coordinate income, investments, and charitable strategies wisely.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="goals" value="Values-aligned investing" />
+                <span><span class="sig-choice-label">Values-aligned investing</span> Understand how portfolios can reflect biblical convictions and prudent diversification.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="goals" value="Risk stewardship" />
+                <span><span class="sig-choice-label">Risk stewardship</span> Take appropriate risk without speculation, panic, or greed driving decisions.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="goals" value="Capital for impact" />
+                <span><span class="sig-choice-label">Capital for impact</span> Build resources that can fund family, ministry, business, and community impact.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="goals" value="Long-term compounding" />
+                <span><span class="sig-choice-label">Long-term compounding</span> Practice patience and consistency across market cycles.</span>
+              </label>
+            </div>
+
+            <div class="sig-field full" style="margin-top: 16px;">
+              <label for="topGoal">What investment questions, convictions, or tensions do you want to work through?</label>
+              <textarea class="sig-textarea" id="topGoal" name="topGoal" placeholder="Examples: biblical responsible investing, risk, income, market volatility, generosity, concentrated stock, business sale proceeds, or avoiding investments that conflict with your values."></textarea>
+            </div>
+            <div class="sig-field full" style="margin-top: 16px;">
+              <label for="investmentChanges">What would you change about your current investments if they were fully aligned with your best-life vision?</label>
+              <textarea class="sig-textarea" id="investmentChanges" name="investmentChanges" placeholder="Think about risk, income, complexity, fees, values alignment, giving capacity, tax planning, concentration, or peace of mind."></textarea>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="6" data-label="Decisions">
+            <h2>Decisions, fear, and faith</h2>
+            <p class="sig-step-lead">Many decisions are shaped by love or fear. This step helps name what is driving your choices and invites faith, wisdom, and boundaries into the planning process.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field">
+                <label for="fishermanBanker">Which story feels closer to your life right now?</label>
+                <select class="sig-select" id="fishermanBanker" name="fishermanBanker">
+                  <option value="">Select one</option>
+                  <option>The fisherman: I value enough, peace, presence, and simplicity</option>
+                  <option>The investment banker: I am driven to build, optimize, and expand</option>
+                  <option>I feel caught between both</option>
+                  <option>I am not sure yet</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="decisionDriver">What most often drives major financial decisions?</label>
+                <select class="sig-select" id="decisionDriver" name="decisionDriver">
+                  <option value="">Select one</option>
+                  <option>Faith and conviction</option>
+                  <option>Love and service</option>
+                  <option>Fear or scarcity</option>
+                  <option>Pressure or comparison</option>
+                  <option>Data and analysis</option>
+                  <option>I want more clarity</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="biggestFear">What are you most afraid of financially or personally, and what would it look like to leave that fear with the Lord?</label>
+                <textarea class="sig-textarea" id="biggestFear" name="biggestFear" placeholder="Name the fear honestly: running out, being a burden, losing control, missing your calling, family conflict, market loss, regret, failure, or something else."></textarea>
+              </div>
+              <div class="sig-field full">
+                <label for="decisionWhy">When you face a major choice, how do you answer: Why am I making this decision?</label>
+                <textarea class="sig-textarea" id="decisionWhy" name="decisionWhy" placeholder="What filters, prayer practices, counsel, boundaries, meeting outlines, or decision rules would help you choose with wisdom?"></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="7" data-label="Giving">
+            <h2>Generosity and kingdom impact</h2>
+            <p class="sig-step-lead">A best life is not only measured by what you keep. Giving is a central expression of stewardship, gratitude, trust, and love for people.</p>
+
+            <div class="sig-grid">
+              <div class="sig-field">
+                <label for="estateDocs">Current giving rhythm</label>
+                <select class="sig-select" id="estateDocs" name="estateDocs">
+                  <option value="">Select one</option>
+                  <option>Consistent planned giving</option>
+                  <option>Periodic giving as needs arise</option>
+                  <option>Year-end giving</option>
+                  <option>Giving through a donor-advised fund or foundation</option>
+                  <option>I want to become more intentional</option>
+                  <option>Not sure</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="estateReview">Desired generosity posture</label>
+                <select class="sig-select" id="estateReview" name="estateReview">
+                  <option value="">Select one</option>
+                  <option>Build a biblical giving plan</option>
+                  <option>Increase generosity over time</option>
+                  <option>Teach children or heirs to give wisely</option>
+                  <option>Fund a specific cause or ministry</option>
+                  <option>Create a long-term charitable legacy</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="legacyVision">Who are you called to bless through your giving?</label>
+                <textarea class="sig-textarea" id="legacyVision" name="legacyVision" placeholder="Church, ministries, missionaries, education, foster/adoption, local needs, widows/orphans, entrepreneurs, community development, or causes close to your testimony."></textarea>
+              </div>
+              <div class="sig-field full">
+                <label for="legacyConcerns">What would make your generosity feel more joyful, strategic, and sustainable?</label>
+                <textarea class="sig-textarea" id="legacyConcerns" name="legacyConcerns" placeholder="Examples: clear giving percentage, donor-advised fund, appreciated asset giving, family giving meetings, values statement, impact tracking, or reducing fear around giving."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="8" data-label="Guardrails">
+            <h2>Guardrails, protection, and wisdom</h2>
+            <p class="sig-step-lead">The right guardrails protect the life you are building: your faithfulness, family, calling, generosity, peace, and ability to remain steady through uncertainty.</p>
+
+            <div class="sig-choice-grid">
+              <label class="sig-choice">
+                <input type="checkbox" name="protection" value="Life insurance" />
+                <span><span class="sig-choice-label">Life insurance</span> Income replacement, estate liquidity, family protection, or legacy transfer.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="protection" value="Long-term care" />
+                <span><span class="sig-choice-label">Long-term care</span> Planning for care needs without placing unexpected burdens on loved ones.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="protection" value="Estate documents" />
+                <span><span class="sig-choice-label">Estate documents</span> Review wills, trusts, powers of attorney, healthcare directives, and beneficiaries.</span>
+              </label>
+              <label class="sig-choice">
+                <input type="checkbox" name="protection" value="Family governance" />
+                <span><span class="sig-choice-label">Family governance</span> Communicate values, responsibilities, and inheritance wisdom clearly.</span>
+              </label>
+            </div>
+
+            <div class="sig-grid" style="margin-top: 16px;">
+              <div class="sig-field">
+                <label for="riskComfort">Risk comfort as a steward</label>
+                <select class="sig-select" id="riskComfort" name="riskComfort">
+                  <option value="">Select one</option>
+                  <option>Very conservative</option>
+                  <option>Conservative</option>
+                  <option>Moderate</option>
+                  <option>Growth-oriented</option>
+                  <option>Aggressive growth</option>
+                  <option>Not sure</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="marketConcern">Current worry or fear around money</label>
+                <select class="sig-select" id="marketConcern" name="marketConcern">
+                  <option value="">Select one</option>
+                  <option>Low</option>
+                  <option>Moderate</option>
+                  <option>High</option>
+                  <option>I want help understanding this</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="protectionNotes">What needs protection so you can live, give, invest, and lead with peace?</label>
+                <textarea class="sig-textarea" id="protectionNotes" name="protectionNotes" placeholder="Share policies you already own, estate gaps, family concerns, business risks, market fears, health concerns, or anything you want reviewed."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="sig-step" data-step="9" data-label="Legacy">
+            <h2>Your best life blueprint</h2>
+            <p class="sig-step-lead">You have started the work of bringing faith, family, finances, investing, giving, protection, and legacy into one coordinated plan for living well and blessing others.</p>
+
+            <div class="sig-summary">
+              <h3>What happens after you submit?</h3>
+              <p>
+                Your SIG planning team will review your responses, identify the highest-impact planning areas, and prepare a focused conversation around your best-life vision, biblical stewardship, financial security, wise investing, generosity, and long-term legacy.
+              </p>
+            </div>
+
+            <div class="sig-grid" style="margin-top: 18px;">
+              <div class="sig-field">
+                <label for="meetingTiming">When would you like to take the next faithful step?</label>
+                <select class="sig-select" id="meetingTiming" name="meetingTiming">
+                  <option value="">Select one</option>
+                  <option>As soon as possible</option>
+                  <option>This week</option>
+                  <option>Within the next 2 weeks</option>
+                  <option>This month</option>
+                  <option>I am still praying and exploring</option>
+                </select>
+              </div>
+              <div class="sig-field">
+                <label for="bestTime">Best time of day</label>
+                <select class="sig-select" id="bestTime" name="bestTime">
+                  <option value="">Select one</option>
+                  <option>Morning</option>
+                  <option>Midday</option>
+                  <option>Afternoon</option>
+                  <option>Evening</option>
+                </select>
+              </div>
+              <div class="sig-field full">
+                <label for="finalNotes">What would you like your best-life financial plan to help you become, build, or bless?</label>
+                <textarea class="sig-textarea" id="finalNotes" name="finalNotes" placeholder="Use this space for prayers, questions, concerns, convictions, or context that would help us serve you well."></textarea>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="sig-actions">
+          <div class="sig-action-group sig-action-group-left">
+            <button class="sig-btn sig-btn-outline" type="button" id="prevBtn">Back</button>
+          </div>
+          <span aria-hidden="true"></span>
+          <div class="sig-action-group sig-action-group-right">
+            <button class="sig-btn sig-btn-primary" type="button" id="nextBtn">Continue</button>
+            <button class="sig-btn sig-btn-gold" type="submit" id="submitBtn" hidden>Submit Planning Form</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <p class="sig-disclaimer">
+      This planning form is a discovery tool and does not provide individualized financial, legal, tax, or insurance advice. Your SIG advisor will use your responses to guide a personalized planning conversation.
+    </p>
+  </div>
+</main>
+
+<script>
+(function () {
+  const form = document.getElementById("sigPlanningForm");
+  const steps = Array.from(document.querySelectorAll(".sig-step"));
+  const tabs = document.getElementById("stepTabs");
+  const progressFill = document.getElementById("progressFill");
+  const stepTitle = document.getElementById("stepTitle");
+  const stepPercent = document.getElementById("stepPercent");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const submitBtn = document.getElementById("submitBtn");
+
+  let currentStep = 0;
+
+  function closeCustomSelects(exceptSelect) {
+    document.querySelectorAll(".sig-custom-select.open").forEach(function (customSelect) {
+      if (customSelect !== exceptSelect) {
+        customSelect.classList.remove("open");
+        const button = customSelect.querySelector(".sig-custom-select__button");
+        if (button) button.setAttribute("aria-expanded", "false");
+      }
+    });
+  }
+
+  function initializeCustomSelects() {
+    document.querySelectorAll("select.sig-select").forEach(function (select, selectIndex) {
+      if (select.classList.contains("is-enhanced")) return;
+
+      const customSelect = document.createElement("div");
+      const button = document.createElement("button");
+      const menu = document.createElement("div");
+
+      customSelect.className = "sig-custom-select";
+      button.type = "button";
+      button.className = "sig-custom-select__button";
+      button.setAttribute("aria-haspopup", "listbox");
+      button.setAttribute("aria-expanded", "false");
+      button.setAttribute("aria-controls", "sigCustomSelectMenu" + selectIndex);
+      menu.className = "sig-custom-select__menu";
+      menu.id = "sigCustomSelectMenu" + selectIndex;
+      menu.setAttribute("role", "listbox");
+
+      button.innerHTML = '<span></span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const buttonText = button.querySelector("span");
+
+      function syncButtonText() {
+        const selectedOption = select.options[select.selectedIndex];
+        buttonText.textContent = selectedOption ? selectedOption.textContent : "Select one";
+      }
+
+      Array.from(select.options).forEach(function (option, optionIndex) {
+        const item = document.createElement("button");
+        item.type = "button";
+        item.className = "sig-custom-select__option";
+        item.textContent = option.textContent;
+        item.setAttribute("role", "option");
+        item.dataset.value = option.value;
+
+        if (optionIndex === select.selectedIndex) {
+          item.classList.add("selected");
+          item.setAttribute("aria-selected", "true");
+        }
+
+        item.addEventListener("click", function () {
+          select.selectedIndex = optionIndex;
+          select.dispatchEvent(new Event("change", { bubbles: true }));
+          menu.querySelectorAll(".sig-custom-select__option").forEach(function (menuItem) {
+            const isSelected = menuItem === item;
+            menuItem.classList.toggle("selected", isSelected);
+            menuItem.setAttribute("aria-selected", isSelected ? "true" : "false");
+          });
+          syncButtonText();
+          customSelect.classList.remove("open");
+          button.setAttribute("aria-expanded", "false");
+          button.focus();
+        });
+
+        menu.appendChild(item);
+      });
+
+      button.addEventListener("click", function () {
+        const isOpen = customSelect.classList.contains("open");
+        closeCustomSelects(customSelect);
+        customSelect.classList.toggle("open", !isOpen);
+        button.setAttribute("aria-expanded", !isOpen ? "true" : "false");
+      });
+
+      button.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          customSelect.classList.remove("open");
+          button.setAttribute("aria-expanded", "false");
+        }
+      });
+
+      customSelect.appendChild(button);
+      customSelect.appendChild(menu);
+      select.classList.add("is-enhanced");
+      select.insertAdjacentElement("afterend", customSelect);
+      syncButtonText();
+    });
+
+    document.addEventListener("click", function (event) {
+      if (!event.target.closest(".sig-custom-select")) {
+        closeCustomSelects();
+      }
+    });
+  }
+
+  steps.forEach(function (step, index) {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "sig-step-tab";
+    tab.textContent = (index + 1) + ". " + step.dataset.label;
+    tab.addEventListener("click", function () {
+      currentStep = index;
+      updateStep();
+    });
+    tabs.appendChild(tab);
+  });
+
+  function updateStep() {
+    const total = steps.length;
+    const percent = Math.round(((currentStep + 1) / total) * 100);
+
+    steps.forEach(function (step, index) {
+      step.classList.toggle("active", index === currentStep);
+    });
+
+    Array.from(tabs.children).forEach(function (tab, index) {
+      tab.classList.toggle("active", index === currentStep);
+    });
+
+    progressFill.style.width = percent + "%";
+    stepTitle.textContent = "Step " + (currentStep + 1) + " of " + total;
+    stepPercent.textContent = percent + "% Complete";
+    prevBtn.disabled = currentStep === 0;
+    prevBtn.style.opacity = currentStep === 0 ? "0.45" : "1";
+    nextBtn.hidden = currentStep === total - 1;
+    submitBtn.hidden = currentStep !== total - 1;
+  }
+
+  prevBtn.addEventListener("click", function () {
+    currentStep = Math.max(0, currentStep - 1);
+    updateStep();
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  nextBtn.addEventListener("click", function () {
+    currentStep = Math.min(steps.length - 1, currentStep + 1);
+    updateStep();
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    submitBtn.textContent = "Ready for Advisor Review";
+    submitBtn.disabled = true;
+    submitBtn.style.opacity = "0.82";
+  });
+
+  initializeCustomSelects();
+  updateStep();
+})();
+</script>
+</body>
+</html>
