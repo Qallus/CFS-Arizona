@@ -1,8 +1,12 @@
 services:
-  sig360:
+  cfs-arizona:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.cfsarizona.com}
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -10,10 +14,10 @@ services:
       # NextAuth
       AUTH_SECRET: ${AUTH_SECRET}
       AUTH_TRUST_HOST: "true"
-      NEXTAUTH_URL: https://sig360.com
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-https://app.cfsarizona.com}
 
       # App
-      NEXT_PUBLIC_APP_URL: https://sig360.com
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://app.cfsarizona.com}
 
       # Supabase
       SUPABASE_URL: ${SUPABASE_URL}
