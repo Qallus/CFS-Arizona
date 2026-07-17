@@ -1,0 +1,7 @@
+# SIG360 Supabase project config.
+# Set project_id to your SIG360 Supabase project ref, then run
+# `supabase link` / `supabase db push` to apply migrations/.
+project_id = "sig360"
+
+[db]
+major_version = 15

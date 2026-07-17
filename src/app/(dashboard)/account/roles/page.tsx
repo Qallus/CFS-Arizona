@@ -1,247 +1,233 @@
 'use client';
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
+import { useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
   Users,
   Shield,
   Plus,
   Search,
-  Edit,
   Trash2,
   Check,
   AlertCircle,
   Loader2,
   Crown,
-  UserCheck,
-  Eye,
-  Settings,
   Mail,
-  MoreVertical,
   X,
-  Save,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+  Database,
+  RefreshCw,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import {
+  ROLES,
+  ROLE_LABELS,
+  ROLE_DESCRIPTIONS,
+  ROLE_PERMISSIONS,
+  INTERNAL_ROLES,
+  EXTERNAL_ROLES,
+  USER_STATUSES,
+  USER_STATUS_LABELS,
+  roleLabel,
+  statusLabel,
+  type Role,
+  type UserStatus,
+} from '@/lib/rbac';
 
-interface Role {
+interface ApiUser {
   id: string;
-  name: string;
-  description: string;
-  color: string;
-  permissions: string[];
-  userCount: number;
-  isSystem: boolean;
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
   email: string;
-  avatar?: string;
-  role: string;
-  status: 'active' | 'invited' | 'inactive';
-  lastActive?: string;
+  profilePhotoUrl: string | null;
+  role: Role;
+  title: string | null;
+  status: UserStatus;
+  lastLoginAt: string | null;
+  createdAt: string;
 }
 
-const AVAILABLE_PERMISSIONS = [
-  { key: 'contacts.view', label: 'View Contacts', category: 'Contacts' },
-  { key: 'contacts.edit', label: 'Edit Contacts', category: 'Contacts' },
-  { key: 'contacts.delete', label: 'Delete Contacts', category: 'Contacts' },
-  { key: 'leads.view', label: 'View Leads', category: 'Leads' },
-  { key: 'leads.edit', label: 'Edit Leads', category: 'Leads' },
-  { key: 'leads.delete', label: 'Delete Leads', category: 'Leads' },
-  { key: 'pipeline.view', label: 'View Pipeline', category: 'Pipeline' },
-  { key: 'pipeline.edit', label: 'Edit Deals', category: 'Pipeline' },
-  { key: 'projects.view', label: 'View Projects', category: 'Projects' },
-  { key: 'projects.edit', label: 'Edit Projects', category: 'Projects' },
-  { key: 'projects.delete', label: 'Delete Projects', category: 'Projects' },
-  { key: 'billing.view', label: 'View Billing', category: 'Billing' },
-  { key: 'billing.edit', label: 'Manage Billing', category: 'Billing' },
-  { key: 'settings.view', label: 'View Settings', category: 'Settings' },
-  { key: 'settings.edit', label: 'Edit Settings', category: 'Settings' },
-  { key: 'team.view', label: 'View Team', category: 'Team' },
-  { key: 'team.manage', label: 'Manage Team', category: 'Team' },
+type Msg = { type: 'success' | 'error'; text: string } | null;
+
+const STATUS_STYLES: Partial<Record<UserStatus, string>> = {
+  [USER_STATUSES.ACTIVE]: 'border-green-500 text-green-500',
+  [USER_STATUSES.INVITED]: 'border-yellow-500 text-yellow-500',
+  [USER_STATUSES.PENDING_SETUP]: 'border-yellow-500 text-yellow-500',
+  [USER_STATUSES.PENDING_REVIEW]: 'border-blue-500 text-blue-500',
+  [USER_STATUSES.SUSPENDED]: 'border-red-500 text-red-500',
+  [USER_STATUSES.INACTIVE]: 'border-gray-500 text-gray-500',
+  [USER_STATUSES.ARCHIVED]: 'border-gray-500 text-gray-500',
+};
+
+// Statuses an admin can set from the members table.
+const ASSIGNABLE_STATUSES: UserStatus[] = [
+  USER_STATUSES.ACTIVE,
+  USER_STATUSES.SUSPENDED,
+  USER_STATUSES.INACTIVE,
+  USER_STATUSES.PENDING_REVIEW,
 ];
 
+function permissionCount(role: Role): string {
+  const perms = ROLE_PERMISSIONS[role] ?? [];
+  if ((perms as readonly string[]).includes('*')) return 'All';
+  return String(perms.length);
+}
+
+function fullName(u: ApiUser): string {
+  return (
+    u.displayName?.trim() ||
+    `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() ||
+    u.email
+  );
+}
+
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+}
+
 export default function RolesPage() {
+  const [users, setUsers] = useState<ApiUser[]>([]);
+  const [provisioned, setProvisioned] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [saving, setSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [showAddRole, setShowAddRole] = useState(false);
+  const [msg, setMsg] = useState<Msg>(null);
   const [showInvite, setShowInvite] = useState(false);
-  const [editingRole, setEditingRole] = useState<Role | null>(null);
-  
-  const [roles, setRoles] = useState<Role[]>([
-    {
-      id: 'owner',
-      name: 'Owner',
-      description: 'Full access to all features and settings',
-      color: 'orange',
-      permissions: AVAILABLE_PERMISSIONS.map(p => p.key),
-      userCount: 1,
-      isSystem: true,
-    },
-    {
-      id: 'admin',
-      name: 'Admin',
-      description: 'Can manage team and most settings',
-      color: 'blue',
-      permissions: AVAILABLE_PERMISSIONS.filter(p => p.key !== 'settings.edit' && p.key !== 'team.manage').map(p => p.key),
-      userCount: 0,
-      isSystem: true,
-    },
-    {
-      id: 'member',
-      name: 'Member',
-      description: 'Can view and edit assigned items',
-      color: 'green',
-      permissions: AVAILABLE_PERMISSIONS.filter(p => p.key.includes('view') || p.key.includes('edit')).map(p => p.key),
-      userCount: 2,
-      isSystem: true,
-    },
-    {
-      id: 'viewer',
-      name: 'Viewer',
-      description: 'Read-only access',
-      color: 'gray',
-      permissions: AVAILABLE_PERMISSIONS.filter(p => p.key.includes('view')).map(p => p.key),
-      userCount: 1,
-      isSystem: true,
-    },
-  ]);
-
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    {
-      id: '1',
-      name: 'Jeremy Waters',
-      email: 'jw@channelcast.io',
-      role: 'owner',
-      status: 'active',
-      lastActive: 'Now',
-    },
-    {
-      id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah@channelcast.io',
-      role: 'member',
-      status: 'active',
-      lastActive: '2 hours ago',
-    },
-    {
-      id: '3',
-      name: 'Mike Chen',
-      email: 'mike@channelcast.io',
-      role: 'member',
-      status: 'invited',
-    },
-    {
-      id: '4',
-      name: 'Emma Davis',
-      email: 'emma@channelcast.io',
-      role: 'viewer',
-      status: 'active',
-      lastActive: '1 day ago',
-    },
-  ]);
-
-  const [newRole, setNewRole] = useState({
-    name: '',
-    description: '',
-    color: 'blue',
-    permissions: [] as string[],
-  });
-
   const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('member');
+  const [inviteRole, setInviteRole] = useState<Role>(ROLES.CLIENT_SERVICE_ASSOCIATE);
+  const [inviteTitle, setInviteTitle] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
-  const filteredMembers = teamMembers.filter(member =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    member.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  function flash(m: Msg) {
+    setMsg(m);
+    if (m) setTimeout(() => setMsg(null), 3500);
+  }
 
-  const getRoleBadgeColor = (roleId: string) => {
-    const role = roles.find(r => r.id === roleId);
-    if (!role) return 'secondary';
-    switch (role.color) {
-      case 'orange': return 'border-brand text-brand';
-      case 'blue': return 'border-blue-500 text-blue-500';
-      case 'green': return 'border-green-500 text-green-500';
-      case 'gray': return 'border-gray-500 text-gray-500';
-      default: return 'secondary';
-    }
-  };
-
-  const handleSaveRole = async () => {
-    setSaving(true);
+  async function loadUsers() {
+    setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      if (editingRole) {
-        setRoles(prev => prev.map(r => r.id === editingRole.id ? { ...editingRole, ...newRole, id: editingRole.id } : r));
-      } else {
-        const role: Role = {
-          id: newRole.name.toLowerCase().replace(/\s+/g, '-'),
-          ...newRole,
-          userCount: 0,
-          isSystem: false,
-        };
-        setRoles(prev => [...prev, role]);
-      }
-      setSaveMessage({ type: 'success', text: editingRole ? 'Role updated!' : 'Role created!' });
-      setShowAddRole(false);
-      setEditingRole(null);
-      setNewRole({ name: '', description: '', color: 'blue', permissions: [] });
-    } catch (error) {
-      setSaveMessage({ type: 'error', text: 'Failed to save role' });
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load users');
+      setProvisioned(data.provisioned !== false);
+      setUsers(data.users ?? []);
+    } catch (err) {
+      flash({ type: 'error', text: (err as Error).message });
     } finally {
-      setSaving(false);
-      setTimeout(() => setSaveMessage(null), 3000);
+      setLoading(false);
     }
-  };
+  }
 
-  const handleInvite = async () => {
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const userCountByRole = useMemo(() => {
+    const counts = {} as Record<Role, number>;
+    for (const u of users) counts[u.role] = (counts[u.role] ?? 0) + 1;
+    return counts;
+  }, [users]);
+
+  const filteredUsers = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return users.filter(
+      (u) =>
+        fullName(u).toLowerCase().includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        roleLabel(u.role).toLowerCase().includes(q),
+    );
+  }, [users, searchQuery]);
+
+  async function handleInvite() {
     setSaving(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const newMember: TeamMember = {
-        id: Date.now().toString(),
-        name: inviteEmail.split('@')[0],
-        email: inviteEmail,
-        role: inviteRole,
-        status: 'invited',
-      };
-      setTeamMembers(prev => [...prev, newMember]);
-      setSaveMessage({ type: 'success', text: `Invitation sent to ${inviteEmail}` });
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole, title: inviteTitle, mode: 'invite' }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to invite user');
+      setUsers((prev) => [...prev, data.user]);
+      const emailNote = data.invite?.emailSent
+        ? 'invite email sent'
+        : data.invite?.error
+          ? `user created, email not sent (${data.invite.error})`
+          : 'user created';
+      flash({ type: data.invite?.emailSent === false ? 'error' : 'success', text: `${inviteEmail}: ${emailNote}` });
       setShowInvite(false);
       setInviteEmail('');
-      setInviteRole('member');
-    } catch (error) {
-      setSaveMessage({ type: 'error', text: 'Failed to send invitation' });
+      setInviteTitle('');
+      setInviteRole(ROLES.CLIENT_SERVICE_ASSOCIATE);
+    } catch (err) {
+      flash({ type: 'error', text: (err as Error).message });
     } finally {
       setSaving(false);
-      setTimeout(() => setSaveMessage(null), 3000);
     }
-  };
+  }
 
-  const togglePermission = (permKey: string) => {
-    setNewRole(prev => ({
-      ...prev,
-      permissions: prev.permissions.includes(permKey)
-        ? prev.permissions.filter(p => p !== permKey)
-        : [...prev.permissions, permKey],
-    }));
-  };
+  async function patchUser(id: string, patch: Record<string, unknown>, successText: string) {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/users/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Update failed');
+      setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+      flash({ type: 'success', text: successText });
+    } catch (err) {
+      flash({ type: 'error', text: (err as Error).message });
+    } finally {
+      setBusyId(null);
+    }
+  }
 
-  const groupedPermissions = AVAILABLE_PERMISSIONS.reduce((acc, perm) => {
-    if (!acc[perm.category]) acc[perm.category] = [];
-    acc[perm.category].push(perm);
-    return acc;
-  }, {} as Record<string, typeof AVAILABLE_PERMISSIONS>);
+  async function archiveUser(id: string) {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Archive failed');
+      setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+      flash({ type: 'success', text: 'User archived' });
+    } catch (err) {
+      flash({ type: 'error', text: (err as Error).message });
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function resendInvite(id: string) {
+    setBusyId(id);
+    try {
+      const res = await fetch(`/api/users/${id}/resend-invite`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Resend failed');
+      setUsers((prev) => prev.map((u) => (u.id === id ? data.user : u)));
+      flash({
+        type: 'success',
+        text: data.invite?.emailSent ? 'Invite email resent' : 'Invite reset (email not sent)',
+      });
+    } catch (err) {
+      flash({ type: 'error', text: (err as Error).message });
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   return (
     <div className="p-8">
@@ -249,275 +235,211 @@ export default function RolesPage() {
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-brand" />
-            Roles & Permissions
+            Roles &amp; Permissions
           </h1>
-          <p className="text-muted-foreground">Manage team access and permissions</p>
+          <p className="text-muted-foreground">Manage team access, roles, and user status</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setShowAddRole(true)}>
-            <Shield className="w-4 h-4 mr-2" />
-            New Role
+          <Button variant="outline" onClick={loadUsers} disabled={loading}>
+            <RefreshCw className={cn('w-4 h-4 mr-2', loading && 'animate-spin')} />
+            Refresh
           </Button>
           <Button className="bg-brand hover:bg-brand/90" onClick={() => setShowInvite(true)}>
             <Plus className="w-4 h-4 mr-2" />
-            Invite Member
+            Invite User
           </Button>
         </div>
       </div>
 
-      {/* Save Message */}
-      {saveMessage && (
-        <div className={cn(
-          "mb-6 p-4 rounded-lg flex items-center gap-2",
-          saveMessage.type === 'success' 
-            ? "bg-green-500/10 border border-green-500/30 text-green-400"
-            : "bg-red-500/10 border border-red-500/30 text-red-400"
-        )}>
-          {saveMessage.type === 'success' ? <Check className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-          {saveMessage.text}
+      {msg && (
+        <div
+          className={cn(
+            'mb-6 p-4 rounded-lg flex items-center gap-2',
+            msg.type === 'success'
+              ? 'bg-green-500/10 border border-green-500/30 text-green-500'
+              : 'bg-red-500/10 border border-red-500/30 text-red-500',
+          )}
+        >
+          {msg.type === 'success' ? <Check className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          {msg.text}
         </div>
       )}
 
-      {/* Roles Section */}
+      {!provisioned && (
+        <div className="mb-6 p-4 rounded-lg flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/30 text-yellow-600 dark:text-yellow-400">
+          <Database className="w-5 h-5 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-medium">User management database not provisioned</p>
+            <p className="text-sm opacity-90">
+              Apply the RBAC migration (<code>supabase/migrations/20260707000001_rbac_foundation.sql</code>)
+              to your SIG360 Supabase project, then refresh. The role catalog below is available now;
+              inviting and editing users needs the database.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Role Catalog */}
       <div className="mb-8">
-        <h2 className="text-lg font-semibold text-foreground mb-4">Roles</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {roles.map((role) => (
-            <Card key={role.id} className="bg-card/50 border-border">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={cn(
-                      "w-8 h-8 rounded-lg flex items-center justify-center",
-                      role.color === 'orange' && "bg-brand/20",
-                      role.color === 'blue' && "bg-blue-500/20",
-                      role.color === 'green' && "bg-green-500/20",
-                      role.color === 'gray' && "bg-gray-500/20",
-                    )}>
-                      {role.id === 'owner' ? (
-                        <Crown className={cn("w-4 h-4", `text-${role.color}-500`)} />
-                      ) : (
-                        <Shield className={cn("w-4 h-4", `text-${role.color}-500`)} />
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-medium text-foreground">{role.name}</p>
-                      <p className="text-xs text-muted-foreground">{role.userCount} users</p>
-                    </div>
-                  </div>
-                  {!role.isSystem && (
-                    <button
-                      onClick={() => {
-                        setEditingRole(role);
-                        setNewRole({
-                          name: role.name,
-                          description: role.description,
-                          color: role.color,
-                          permissions: role.permissions,
-                        });
-                        setShowAddRole(true);
-                      }}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">{role.description}</p>
-                <div className="mt-3 flex flex-wrap gap-1">
-                  <Badge variant="outline" className="text-xs">
-                    {role.permissions.length} permissions
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+        <h2 className="text-lg font-semibold text-foreground mb-1">Role Catalog</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          SIG360 uses a fixed set of roles. Fine-tune access per user via permission overrides.
+        </p>
+
+        <h3 className="text-sm font-medium text-muted-foreground mb-2">Internal</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+          {INTERNAL_ROLES.map((role) => (
+            <RoleCard key={role} role={role} count={userCountByRole[role] ?? 0} />
+          ))}
+        </div>
+
+        <h3 className="text-sm font-medium text-muted-foreground mb-2">External / Portal</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {EXTERNAL_ROLES.map((role) => (
+            <RoleCard key={role} role={role} count={userCountByRole[role] ?? 0} />
           ))}
         </div>
       </div>
 
-      {/* Team Members Section */}
+      {/* Team Members */}
       <Card className="bg-card/50 border-border">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-foreground">Team Members</CardTitle>
-              <CardDescription>Manage your team and their access levels</CardDescription>
+              <CardTitle className="text-foreground">Users</CardTitle>
+              <CardDescription>
+                {loading ? 'Loading…' : `${users.length} user${users.length === 1 ? '' : 's'}`}
+              </CardDescription>
             </div>
             <div className="relative">
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search members..."
+                placeholder="Search users…"
                 className="pl-9 bg-secondary border-border w-64"
               />
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {filteredMembers.map((member) => (
-              <div 
-                key={member.id}
-                className="flex items-center justify-between p-4 bg-secondary rounded-lg"
-              >
-                <div className="flex items-center gap-4">
-                  <Avatar>
-                    <AvatarImage src={member.avatar} />
-                    <AvatarFallback className="bg-brand/20 text-brand">
-                      {member.name.split(' ').map(n => n[0]).join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-foreground">{member.name}</p>
-                      {member.status === 'invited' && (
-                        <Badge variant="outline" className="border-yellow-500 text-yellow-500 text-xs">
-                          Pending
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{member.email}</p>
-                    {member.lastActive && (
-                      <p className="text-xs text-muted-foreground">Last active: {member.lastActive}</p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className={getRoleBadgeColor(member.role)}>
-                    {roles.find(r => r.id === member.role)?.name || member.role}
-                  </Badge>
-                  <select
-                    value={member.role}
-                    onChange={(e) => {
-                      setTeamMembers(prev => prev.map(m => 
-                        m.id === member.id ? { ...m, role: e.target.value } : m
-                      ));
-                    }}
-                    disabled={member.role === 'owner'}
-                    className="h-8 px-2 bg-background border border-border rounded-md text-sm text-foreground disabled:opacity-50"
+          {loading ? (
+            <div className="flex items-center justify-center py-12 text-muted-foreground">
+              <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading users…
+            </div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              {provisioned ? 'No users yet. Invite your first team member.' : 'Provision the database to add users.'}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredUsers.map((u) => {
+                const name = fullName(u);
+                const busy = busyId === u.id;
+                return (
+                  <div
+                    key={u.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 bg-secondary rounded-lg"
                   >
-                    {roles.map(role => (
-                      <option key={role.id} value={role.id}>{role.name}</option>
-                    ))}
-                  </select>
-                  {member.role !== 'owner' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Add/Edit Role Modal */}
-      {showAddRole && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card border-border">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-foreground">
-                  {editingRole ? 'Edit Role' : 'Create New Role'}
-                </CardTitle>
-                <button onClick={() => { setShowAddRole(false); setEditingRole(null); }}>
-                  <X className="w-5 h-5 text-muted-foreground" />
-                </button>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-muted-foreground">Role Name</Label>
-                  <Input
-                    value={newRole.name}
-                    onChange={(e) => setNewRole(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., Sales Manager"
-                    className="bg-secondary border-border mt-1"
-                  />
-                </div>
-                <div>
-                  <Label className="text-sm text-muted-foreground">Color</Label>
-                  <div className="flex gap-2 mt-2">
-                    {['orange', 'blue', 'green', 'gray', 'purple', 'red'].map((color) => (
-                      <button
-                        key={color}
-                        onClick={() => setNewRole(prev => ({ ...prev, color }))}
-                        className={cn(
-                          "w-8 h-8 rounded-full border-2 transition-all",
-                          newRole.color === color ? "scale-110 border-white" : "border-transparent",
-                          color === 'orange' && "bg-brand",
-                          color === 'blue' && "bg-blue-500",
-                          color === 'green' && "bg-green-500",
-                          color === 'gray' && "bg-gray-500",
-                          color === 'purple' && "bg-purple-500",
-                          color === 'red' && "bg-red-500",
-                        )}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Label className="text-sm text-muted-foreground">Description</Label>
-                <Input
-                  value={newRole.description}
-                  onChange={(e) => setNewRole(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Brief description of this role"
-                  className="bg-secondary border-border mt-1"
-                />
-              </div>
-              
-              <div>
-                <Label className="text-sm text-muted-foreground mb-3 block">Permissions</Label>
-                <div className="space-y-4">
-                  {Object.entries(groupedPermissions).map(([category, perms]) => (
-                    <div key={category} className="p-4 bg-secondary rounded-lg">
-                      <p className="font-medium text-foreground mb-3">{category}</p>
-                      <div className="grid grid-cols-2 gap-3">
-                        {perms.map((perm) => (
-                          <label 
-                            key={perm.key}
-                            className="flex items-center gap-2 cursor-pointer"
+                    <div className="flex items-center gap-4 min-w-0">
+                      <Avatar>
+                        <AvatarImage src={u.profilePhotoUrl ?? undefined} />
+                        <AvatarFallback className="bg-brand/20 text-brand">
+                          {initials(name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground truncate">{name}</p>
+                          <Badge
+                            variant="outline"
+                            className={cn('text-xs', STATUS_STYLES[u.status] ?? '')}
                           >
-                            <input
-                              type="checkbox"
-                              checked={newRole.permissions.includes(perm.key)}
-                              onChange={() => togglePermission(perm.key)}
-                              className="rounded"
-                            />
-                            <span className="text-sm text-foreground">{perm.label}</span>
-                          </label>
-                        ))}
+                            {statusLabel(u.status)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground truncate">{u.email}</p>
+                        {u.title && <p className="text-xs text-muted-foreground">{u.title}</p>}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t border-border">
-                <Button variant="outline" onClick={() => { setShowAddRole(false); setEditingRole(null); }}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSaveRole}
-                  disabled={saving || !newRole.name}
-                  className="bg-brand hover:bg-brand/90"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  {editingRole ? 'Update Role' : 'Create Role'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Role */}
+                      <select
+                        value={u.role}
+                        disabled={busy}
+                        onChange={(e) =>
+                          patchUser(u.id, { role: e.target.value }, `Role updated for ${name}`)
+                        }
+                        className="h-8 px-2 bg-background border border-border rounded-md text-sm text-foreground disabled:opacity-50"
+                      >
+                        <optgroup label="Internal">
+                          {INTERNAL_ROLES.map((r) => (
+                            <option key={r} value={r}>
+                              {ROLE_LABELS[r]}
+                            </option>
+                          ))}
+                        </optgroup>
+                        <optgroup label="External">
+                          {EXTERNAL_ROLES.map((r) => (
+                            <option key={r} value={r}>
+                              {ROLE_LABELS[r]}
+                            </option>
+                          ))}
+                        </optgroup>
+                      </select>
+
+                      {/* Status */}
+                      <select
+                        value={ASSIGNABLE_STATUSES.includes(u.status) ? u.status : ''}
+                        disabled={busy}
+                        onChange={(e) =>
+                          patchUser(u.id, { status: e.target.value }, `Status updated for ${name}`)
+                        }
+                        className="h-8 px-2 bg-background border border-border rounded-md text-sm text-foreground disabled:opacity-50"
+                      >
+                        {!ASSIGNABLE_STATUSES.includes(u.status) && (
+                          <option value="" disabled>
+                            {statusLabel(u.status)}
+                          </option>
+                        )}
+                        {ASSIGNABLE_STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {USER_STATUS_LABELS[s]}
+                          </option>
+                        ))}
+                      </select>
+
+                      {u.status === USER_STATUSES.INVITED && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => resendInvite(u.id)}
+                          title="Reset invite"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </Button>
+                      )}
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy || u.status === USER_STATUSES.ARCHIVED}
+                        onClick={() => archiveUser(u.id)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-500/10"
+                        title="Archive user"
+                      >
+                        {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Invite Modal */}
       {showInvite && (
@@ -525,12 +447,12 @@ export default function RolesPage() {
           <Card className="w-full max-w-md bg-card border-border">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-foreground">Invite Team Member</CardTitle>
-                <button onClick={() => setShowInvite(false)}>
+                <CardTitle className="text-foreground">Invite User</CardTitle>
+                <button onClick={() => setShowInvite(false)} aria-label="Close">
                   <X className="w-5 h-5 text-muted-foreground" />
                 </button>
               </div>
-              <CardDescription>Send an invitation to join your team</CardDescription>
+              <CardDescription>Creates the user with an “Invited” status.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -539,7 +461,16 @@ export default function RolesPage() {
                   type="email"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  placeholder="colleague@example.com"
+                  placeholder="colleague@sig360.com"
+                  className="bg-secondary border-border mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Title (optional)</Label>
+                <Input
+                  value={inviteTitle}
+                  onChange={(e) => setInviteTitle(e.target.value)}
+                  placeholder="e.g., Servicing Advisor"
                   className="bg-secondary border-border mt-1"
                 />
               </div>
@@ -547,15 +478,27 @@ export default function RolesPage() {
                 <Label className="text-sm text-muted-foreground">Role</Label>
                 <select
                   value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value)}
+                  onChange={(e) => setInviteRole(e.target.value as Role)}
                   className="w-full h-10 px-3 mt-1 bg-secondary border border-border rounded-md text-foreground"
                 >
-                  {roles.filter(r => r.id !== 'owner').map(role => (
-                    <option key={role.id} value={role.id}>{role.name}</option>
-                  ))}
+                  <optgroup label="Internal">
+                    {INTERNAL_ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {ROLE_LABELS[r]}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label="External / Portal">
+                    {EXTERNAL_ROLES.map((r) => (
+                      <option key={r} value={r}>
+                        {ROLE_LABELS[r]}
+                      </option>
+                    ))}
+                  </optgroup>
                 </select>
+                <p className="text-xs text-muted-foreground mt-1">{ROLE_DESCRIPTIONS[inviteRole]}</p>
               </div>
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setShowInvite(false)}>
                   Cancel
                 </Button>
@@ -565,7 +508,7 @@ export default function RolesPage() {
                   className="bg-brand hover:bg-brand/90"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Mail className="w-4 h-4 mr-2" />}
-                  Send Invitation
+                  Send Invite
                 </Button>
               </div>
             </CardContent>
@@ -573,5 +516,34 @@ export default function RolesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function RoleCard({ role, count }: { role: Role; count: number }) {
+  const isSuper = role === ROLES.SUPER_ADMIN;
+  return (
+    <Card className="bg-card/50 border-border">
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-brand/15 flex-shrink-0">
+              {isSuper ? (
+                <Crown className="w-4 h-4 text-brand" />
+              ) : (
+                <Shield className="w-4 h-4 text-brand" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="font-medium text-foreground truncate">{ROLE_LABELS[role]}</p>
+              <p className="text-xs text-muted-foreground">{count} user{count === 1 ? '' : 's'}</p>
+            </div>
+          </div>
+          <Badge variant="outline" className="text-xs whitespace-nowrap">
+            {permissionCount(role)} perms
+          </Badge>
+        </div>
+        <p className="text-xs text-muted-foreground line-clamp-2">{ROLE_DESCRIPTIONS[role]}</p>
+      </CardContent>
+    </Card>
   );
 }

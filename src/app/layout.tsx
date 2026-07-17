@@ -8,9 +8,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: { default: "SIG360", template: "%s | SIG360" },
-  description: "SIG360 operations dashboard",
-  applicationName: "SIG360",
+  title: { default: "Steward — Certified Fiduciary Services", template: "%s | Steward" },
+  description: "Practice management dashboard for Certified Fiduciary Services, Inc.",
+  applicationName: "Steward",
 };
 
 export default function RootLayout({

@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  fetchRedtailContacts,
+  getRedtailConfigStatus,
+  isRedtailConfigured,
+} from '@/lib/redtail';
 
 const WP_SITE_URL = process.env.WP_SITE_URL!;
 const WP_APPLICATION_USERNAME = process.env.WP_APPLICATION_USERNAME!;
@@ -23,6 +28,34 @@ export async function GET(request: NextRequest) {
     const tag = searchParams.get('tag') || '';
     const list = searchParams.get('list') || '';
     const type = searchParams.get('type') || ''; // lead, client, company
+    const source = (searchParams.get('source') || 'fluent').toLowerCase(); // fluent, redtail, all
+
+    if (source === 'redtail') {
+      if (!isRedtailConfigured()) {
+        return NextResponse.json(
+          {
+            error: 'Redtail credentials are not configured',
+            contacts: [],
+            redtail: getRedtailConfigStatus(),
+          },
+          { status: 503 }
+        );
+      }
+
+      const redtailContacts = await fetchRedtailContacts({
+        page,
+        perPage,
+        search,
+        status,
+        type,
+      });
+
+      return NextResponse.json({
+        ...redtailContacts,
+        source: 'redtail',
+        redtail: getRedtailConfigStatus(),
+      });
+    }
 
     // Build query params
     const params = new URLSearchParams({
@@ -105,14 +138,58 @@ export async function GET(request: NextRequest) {
       };
     });
     
-    return NextResponse.json({
-      contacts,
-      pagination: {
+    const fluentPagination = {
         total: data.subscribers?.total || 0,
         perPage: data.subscribers?.per_page || 50,
         currentPage: data.subscribers?.current_page || 1,
         lastPage: data.subscribers?.last_page || 1,
-      },
+      };
+
+    if (source === 'all') {
+      if (!isRedtailConfigured()) {
+        return NextResponse.json({
+          contacts,
+          pagination: fluentPagination,
+          source: 'all',
+          sources: {
+            fluent: { ok: true, count: contacts.length },
+            redtail: {
+              ok: false,
+              error: 'Redtail credentials are not configured',
+              config: getRedtailConfigStatus(),
+            },
+          },
+        });
+      }
+
+      const redtailContacts = await fetchRedtailContacts({
+        page,
+        perPage,
+        search,
+        status,
+        type,
+      });
+
+      return NextResponse.json({
+        contacts: [...contacts, ...redtailContacts.contacts],
+        pagination: {
+          total: fluentPagination.total + redtailContacts.pagination.total,
+          perPage: fluentPagination.perPage + redtailContacts.pagination.perPage,
+          currentPage: fluentPagination.currentPage,
+          lastPage: Math.max(fluentPagination.lastPage, redtailContacts.pagination.lastPage),
+        },
+        source: 'all',
+        sources: {
+          fluent: { ok: true, count: contacts.length },
+          redtail: { ok: true, count: redtailContacts.contacts.length },
+        },
+      });
+    }
+
+    return NextResponse.json({
+      contacts,
+      pagination: fluentPagination,
+      source: 'fluent',
     });
   } catch (error) {
     console.error('Error fetching contacts:', error);

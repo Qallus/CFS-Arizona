@@ -1,0 +1,554 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+  Users,
+  Search,
+  Plus,
+  Upload,
+  Table as TableIcon,
+  LayoutList,
+  LayoutGrid,
+  CalendarDays,
+  Columns3,
+  Database,
+  ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Mail,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  PageShell,
+  PageHeader,
+  SectionCard,
+  StatusPill,
+  TableWrap,
+  Th,
+  Td,
+  Tr,
+  EmptyState,
+} from '@/components/dashboard/page-parts';
+import { cn } from '@/lib/utils';
+import { AddContactModal } from './AddContactModal';
+import { ImportContactsModal } from './ImportContactsModal';
+import {
+  STAGES,
+  TABS,
+  type TabKey,
+  type Stage,
+  type Disposition,
+  stageLabel,
+  stageTone,
+  dispositionLabel,
+  dispositionTone,
+  formatMatterTypes,
+  matchesTab,
+  contactDisplayName,
+} from './crm-meta';
+
+interface ContactSummary {
+  id: string;
+  fullName: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  matterType: string | null;
+  referralSource: string | null;
+}
+interface Opportunity {
+  id: string;
+  contactId: string;
+  stage: Stage;
+  disposition: Disposition;
+  nextFollowUpAt: string | null;
+  contact: ContactSummary | null;
+}
+
+type ViewKey = 'table' | 'list' | 'cards' | 'calendar' | 'kanban';
+const VIEWS: { key: ViewKey; label: string; icon: typeof TableIcon }[] = [
+  { key: 'table', label: 'Table', icon: TableIcon },
+  { key: 'list', label: 'List', icon: LayoutList },
+  { key: 'cards', label: 'Cards', icon: LayoutGrid },
+  { key: 'calendar', label: 'Calendar', icon: CalendarDays },
+  { key: 'kanban', label: 'Kanban', icon: Columns3 },
+];
+
+function fmtDate(iso: string | null): string {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } catch {
+    return '—';
+  }
+}
+
+export function ContactsClient() {
+  const [opps, setOpps] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [provisioned, setProvisioned] = useState(true);
+  const [view, setView] = useState<ViewKey>('table');
+  const [tab, setTab] = useState<TabKey>('all');
+  const [search, setSearch] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/crm/opportunities');
+      const data = await res.json();
+      setProvisioned(data.provisioned !== false);
+      setOpps(Array.isArray(data.opportunities) ? data.opportunities : []);
+    } catch {
+      setProvisioned(true);
+      setOpps([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const moveStage = useCallback(
+    async (id: string, stage: Stage) => {
+      // optimistic
+      setOpps((cur) => cur.map((o) => (o.id === id ? { ...o, stage, disposition: 'active' } : o)));
+      await fetch(`/api/crm/opportunities/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage }),
+      }).catch(() => {});
+      load();
+    },
+    [load],
+  );
+
+  const searched = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return opps;
+    return opps.filter((o) => {
+      const name = contactDisplayName(o.contact).toLowerCase();
+      return name.includes(q) || (o.contact?.email ?? '').toLowerCase().includes(q);
+    });
+  }, [opps, search]);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {};
+    for (const t of TABS) c[t.key] = searched.filter((o) => matchesTab(o, t.key)).length;
+    return c;
+  }, [searched]);
+
+  const visible = useMemo(() => searched.filter((o) => matchesTab(o, tab)), [searched, tab]);
+
+  if (!loading && !provisioned) {
+    return (
+      <PageShell>
+        <PageHeader eyebrow="Caseload" title="Contacts" description="The people CFS carries from first contact through active client." />
+        <EmptyState
+          icon={Database}
+          title="Database not provisioned yet"
+          description="Apply the CRM migrations (supabase/migrations) to your Supabase, then add or import contacts."
+        />
+      </PageShell>
+    );
+  }
+
+  return (
+    <PageShell>
+      <PageHeader
+        eyebrow="Caseload"
+        title="Contacts"
+        description="One continuous record per person — from first inquiry through active future-fee client."
+        actions={
+          <>
+            <div className="relative hidden md:block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search contacts…"
+                className="h-9 w-48 rounded-md border border-input bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:w-56"
+              />
+            </div>
+            <Button size="sm" variant="outline" onClick={() => setShowImport(true)}>
+              <Upload className="size-4" /> Import
+            </Button>
+            <Button size="sm" onClick={() => setShowAdd(true)}>
+              <Plus className="size-4" /> Add contact
+            </Button>
+          </>
+        }
+      />
+
+      {/* Tabs + view switcher */}
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-wrap gap-1.5">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
+                tab === t.key ? 'bg-brand text-brand-foreground' : 'bg-secondary/60 text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t.label}
+              <span className={cn('tabular-nums', tab === t.key ? 'opacity-80' : 'opacity-60')}>{counts[t.key] ?? 0}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex shrink-0 items-center gap-1 self-start rounded-lg border border-border p-0.5">
+          {VIEWS.map((v) => (
+            <button
+              key={v.key}
+              onClick={() => setView(v.key)}
+              title={v.label}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm transition-colors',
+                view === v.key ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:text-foreground',
+              )}
+            >
+              <v.icon className="size-4" />
+              <span className="hidden sm:inline">{v.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <SectionCard><p className="py-10 text-center text-sm text-muted-foreground">Loading contacts…</p></SectionCard>
+      ) : opps.length === 0 ? (
+        <EmptyState icon={Users} title="No contacts yet" description="Add or import contacts to start the funnel." />
+      ) : view === 'table' ? (
+        <TableView rows={visible} />
+      ) : view === 'list' ? (
+        <ListView rows={visible} />
+      ) : view === 'cards' ? (
+        <CardsView rows={visible} />
+      ) : view === 'calendar' ? (
+        <CalendarView rows={visible} />
+      ) : (
+        <KanbanView rows={searched} onMove={moveStage} />
+      )}
+
+      <AddContactModal open={showAdd} onOpenChange={setShowAdd} onCreated={load} />
+      <ImportContactsModal open={showImport} onOpenChange={setShowImport} onImported={load} />
+    </PageShell>
+  );
+}
+
+/* ------------------------------- Table view ------------------------------ */
+function TableView({ rows }: { rows: Opportunity[] }) {
+  if (rows.length === 0) return <EmptyState icon={Users} title="Nothing in this tab" />;
+  return (
+    <SectionCard bodyClassName="p-0">
+      <TableWrap>
+        <thead>
+          <tr>
+            <Th>Contact</Th>
+            <Th>Stage</Th>
+            <Th>Disposition</Th>
+            <Th>Matter</Th>
+            <Th>Next follow-up</Th>
+            <Th></Th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((o) => (
+            <Tr key={o.id}>
+              <Td>
+                <Link href={`/contacts/${o.contactId}`} className="flex items-center gap-3 hover:underline">
+                  <Avatar name={contactDisplayName(o.contact)} />
+                  <span className="font-medium text-foreground">{contactDisplayName(o.contact)}</span>
+                </Link>
+              </Td>
+              <Td><StatusPill tone={stageTone[o.stage]}>{stageLabel[o.stage]}</StatusPill></Td>
+              <Td><StatusPill tone={dispositionTone[o.disposition]}>{dispositionLabel[o.disposition]}</StatusPill></Td>
+              <Td className="text-muted-foreground">{formatMatterTypes(o.contact?.matterType) || '—'}</Td>
+              <Td className="text-muted-foreground">{fmtDate(o.nextFollowUpAt)}</Td>
+              <Td className="text-right">
+                <Link href={`/contacts/${o.contactId}`} className="inline-flex text-muted-foreground hover:text-foreground">
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Td>
+            </Tr>
+          ))}
+        </tbody>
+      </TableWrap>
+    </SectionCard>
+  );
+}
+
+/* -------------------------------- List view ------------------------------ */
+/* Compact, single-column stacked rows (distinct from the columnar Table and
+   the Cards grid). */
+function ListView({ rows }: { rows: Opportunity[] }) {
+  if (rows.length === 0) return <EmptyState icon={Users} title="Nothing in this tab" />;
+  return (
+    <SectionCard bodyClassName="p-0">
+      <ul className="divide-y divide-border">
+        {rows.map((o) => (
+          <li key={o.id}>
+            <Link
+              href={`/contacts/${o.contactId}`}
+              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-secondary/40"
+            >
+              <Avatar name={contactDisplayName(o.contact)} />
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-foreground">{contactDisplayName(o.contact)}</p>
+                {o.contact?.email && <p className="truncate text-sm text-muted-foreground">{o.contact.email}</p>}
+              </div>
+              <div className="hidden shrink-0 items-center gap-1.5 sm:flex">
+                <StatusPill tone={stageTone[o.stage]}>{stageLabel[o.stage]}</StatusPill>
+                <StatusPill tone={dispositionTone[o.disposition]}>{dispositionLabel[o.disposition]}</StatusPill>
+              </div>
+              <div className="hidden w-40 shrink-0 truncate text-sm text-muted-foreground lg:block">
+                {formatMatterTypes(o.contact?.matterType) || '—'}
+              </div>
+              <div className="w-24 shrink-0 text-right text-xs text-muted-foreground">{fmtDate(o.nextFollowUpAt)}</div>
+              <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </SectionCard>
+  );
+}
+
+/* -------------------------------- Cards view ----------------------------- */
+function CardsView({ rows }: { rows: Opportunity[] }) {
+  if (rows.length === 0) return <EmptyState icon={Users} title="Nothing in this tab" />;
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {rows.map((o) => (
+        <Link
+          key={o.id}
+          href={`/contacts/${o.contactId}`}
+          className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-brand/50"
+        >
+          <div className="flex items-start gap-3">
+            <Avatar name={contactDisplayName(o.contact)} size="lg" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium text-foreground">{contactDisplayName(o.contact)}</p>
+              {o.contact?.email && (
+                <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-muted-foreground">
+                  <Mail className="size-3.5 shrink-0" /> {o.contact.email}
+                </p>
+              )}
+            </div>
+          </div>
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <StatusPill tone={stageTone[o.stage]}>{stageLabel[o.stage]}</StatusPill>
+            <StatusPill tone={dispositionTone[o.disposition]}>{dispositionLabel[o.disposition]}</StatusPill>
+          </div>
+          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+            <span>{formatMatterTypes(o.contact?.matterType) || 'No matter type'}</span>
+            {o.nextFollowUpAt && <span>Follow-up {fmtDate(o.nextFollowUpAt)}</span>}
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------ Calendar view ---------------------------- */
+function CalendarView({ rows }: { rows: Opportunity[] }) {
+  const [cursor, setCursor] = useState(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1);
+  });
+
+  const year = cursor.getFullYear();
+  const month = cursor.getMonth();
+  const monthLabel = cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const byDay = useMemo(() => {
+    const map: Record<number, Opportunity[]> = {};
+    for (const o of rows) {
+      if (!o.nextFollowUpAt) continue;
+      const d = new Date(o.nextFollowUpAt);
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        (map[d.getDate()] ??= []).push(o);
+      }
+    }
+    return map;
+  }, [rows, year, month]);
+
+  const scheduled = Object.values(byDay).reduce((n, a) => n + a.length, 0);
+  const cells: (number | null)[] = [
+    ...Array(firstWeekday).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+  const today = new Date();
+  const isToday = (day: number) => today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+
+  return (
+    <SectionCard
+      title={monthLabel}
+      description={`${scheduled} follow-up${scheduled === 1 ? '' : 's'} scheduled this month`}
+      action={
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon-sm" onClick={() => setCursor(new Date(year, month - 1, 1))}><ChevronLeft className="size-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={() => { const d = new Date(); setCursor(new Date(d.getFullYear(), d.getMonth(), 1)); }}>Today</Button>
+          <Button variant="ghost" size="icon-sm" onClick={() => setCursor(new Date(year, month + 1, 1))}><ChevronRight className="size-4" /></Button>
+        </div>
+      }
+    >
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+          <div key={d} className="py-1">{d}</div>
+        ))}
+      </div>
+      <div className="mt-1 grid grid-cols-7 gap-1">
+        {cells.map((day, i) => (
+          <div
+            key={i}
+            className={cn(
+              'min-h-20 rounded-lg border p-1.5 text-left',
+              day ? 'border-border bg-background' : 'border-transparent',
+            )}
+          >
+            {day && (
+              <>
+                <div className={cn('mb-1 text-xs font-medium', isToday(day) ? 'text-brand' : 'text-muted-foreground')}>
+                  {isToday(day) ? <span className="rounded bg-brand px-1.5 py-0.5 text-brand-foreground">{day}</span> : day}
+                </div>
+                <div className="space-y-1">
+                  {(byDay[day] ?? []).slice(0, 3).map((o) => (
+                    <Link
+                      key={o.id}
+                      href={`/contacts/${o.contactId}`}
+                      className="block truncate rounded bg-brand/15 px-1.5 py-0.5 text-[11px] font-medium text-brand hover:bg-brand/25"
+                    >
+                      {contactDisplayName(o.contact)}
+                    </Link>
+                  ))}
+                  {(byDay[day]?.length ?? 0) > 3 && (
+                    <p className="px-1 text-[10px] text-muted-foreground">+{(byDay[day]!.length - 3)} more</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">Contacts appear on their next scheduled follow-up date. Set follow-up dates from a contact&apos;s page.</p>
+    </SectionCard>
+  );
+}
+
+/* ------------------------------- Kanban view ----------------------------- */
+function KanbanView({ rows, onMove }: { rows: Opportunity[]; onMove: (id: string, stage: Stage) => void }) {
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [overStage, setOverStage] = useState<Stage | null>(null);
+
+  const active = rows.filter(
+    (o) => o.disposition === 'active' || o.disposition === 're_engagement',
+  );
+  const recovery = rows.filter(
+    (o) => o.disposition === 'dormant_no_response' || o.disposition === 'dormant_deferred' || o.disposition === 'exit',
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {STAGES.map((stage) => {
+          const cards = active.filter((o) => o.stage === stage);
+          return (
+            <div
+              key={stage}
+              onDragOver={(e) => { e.preventDefault(); setOverStage(stage); }}
+              onDragLeave={() => setOverStage((s) => (s === stage ? null : s))}
+              onDrop={(e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/opp-id');
+                const from = e.dataTransfer.getData('text/opp-stage');
+                if (id && from !== stage) onMove(id, stage);
+                setDragId(null);
+                setOverStage(null);
+              }}
+              className={cn(
+                'rounded-xl border bg-card p-3 transition-colors',
+                overStage === stage ? 'border-brand ring-1 ring-brand/40' : 'border-border',
+              )}
+            >
+              <div className="mb-3 flex items-center justify-between px-1">
+                <StatusPill tone={stageTone[stage]}>{stageLabel[stage]}</StatusPill>
+                <span className="text-sm tabular-nums text-muted-foreground">{cards.length}</span>
+              </div>
+              <div className="space-y-2">
+                {cards.length === 0 && <p className="px-1 py-4 text-xs text-muted-foreground">Drop here</p>}
+                {cards.map((o) => (
+                  <div
+                    key={o.id}
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/opp-id', o.id);
+                      e.dataTransfer.setData('text/opp-stage', o.stage);
+                      setDragId(o.id);
+                    }}
+                    onDragEnd={() => setDragId(null)}
+                    className={cn(
+                      'cursor-grab rounded-lg border border-border bg-background p-3 active:cursor-grabbing',
+                      dragId === o.id && 'opacity-50',
+                    )}
+                  >
+                    <Link href={`/contacts/${o.contactId}`} className="block">
+                      <p className="truncate font-medium text-foreground hover:underline">{contactDisplayName(o.contact)}</p>
+                    </Link>
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                      {formatMatterTypes(o.contact?.matterType) || 'No matter type'}
+                    </p>
+                    {o.disposition === 're_engagement' && (
+                      <span className="mt-2 inline-block"><StatusPill tone="warning">Re-engagement</StatusPill></span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <p className="px-1 text-xs text-muted-foreground">Drag a card between columns to advance or move its stage.</p>
+
+      {recovery.length > 0 && (
+        <SectionCard title="Recovery & disposition" description="Dormant · Exit" bodyClassName="p-0">
+          <TableWrap>
+            <thead>
+              <tr><Th>Contact</Th><Th>Last stage</Th><Th className="text-right">Disposition</Th></tr>
+            </thead>
+            <tbody>
+              {recovery.map((o) => (
+                <Tr key={o.id}>
+                  <Td><Link href={`/contacts/${o.contactId}`} className="font-medium text-foreground hover:underline">{contactDisplayName(o.contact)}</Link></Td>
+                  <Td><StatusPill tone={stageTone[o.stage]}>{stageLabel[o.stage]}</StatusPill></Td>
+                  <Td className="text-right"><StatusPill tone={dispositionTone[o.disposition]}>{dispositionLabel[o.disposition]}</StatusPill></Td>
+                </Tr>
+              ))}
+            </tbody>
+          </TableWrap>
+        </SectionCard>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------- shared --------------------------------- */
+function Avatar({ name, size = 'md' }: { name: string; size?: 'md' | 'lg' }) {
+  return (
+    <span
+      className={cn(
+        'grid shrink-0 place-items-center rounded-full bg-secondary font-semibold text-muted-foreground',
+        size === 'lg' ? 'size-10 text-sm' : 'size-8 text-xs',
+      )}
+    >
+      {name[0]?.toUpperCase()}
+    </span>
+  );
+}

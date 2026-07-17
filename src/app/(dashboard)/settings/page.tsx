@@ -15,6 +15,7 @@ import {
   Cpu, 
   Wifi,
   Key,
+  ChevronDown,
   Eye,
   EyeOff,
   Check,
@@ -78,6 +79,8 @@ export default function SettingsPage() {
   const [groups, setGroups] = useState<Record<string, CredentialGroup>>({});
   const [editedValues, setEditedValues] = useState<Record<string, string>>({});
   const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const toggleGroup = (k: string) => setOpenGroups((g) => ({ ...g, [k]: !g[k] }));
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [activeTab, setActiveTab] = useState('credentials');
@@ -89,128 +92,12 @@ export default function SettingsPage() {
   const [newKeyIsSensitive, setNewKeyIsSensitive] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
   
-  // Audio devices state
-  const [audioDevices, setAudioDevices] = useState<any[]>([]);
-  const [loadingDevices, setLoadingDevices] = useState(false);
-  const [showDeviceModal, setShowDeviceModal] = useState(false);
-  const [editingDevice, setEditingDevice] = useState<any>(null);
-  const [testingDevice, setTestingDevice] = useState<string | null>(null);
-  const [deviceForm, setDeviceForm] = useState({
-    name: '',
-    type: 'linux',
-    host: '',
-    username: '',
-    password: '',
-    authType: 'key',
-    audioOutput: '',
-    location: '',
-  });
 
   useEffect(() => {
     loadSettings();
     loadCredentials();
-    loadAudioDevices();
   }, []);
 
-  const loadAudioDevices = async () => {
-    setLoadingDevices(true);
-    try {
-      const response = await fetch('/api/audio-devices');
-      const data = await response.json();
-      setAudioDevices(data.devices || []);
-    } catch (error) {
-      console.error('Error loading audio devices:', error);
-    } finally {
-      setLoadingDevices(false);
-    }
-  };
-
-  const handleSaveDevice = async () => {
-    setSaving(true);
-    try {
-      const method = editingDevice ? 'PUT' : 'POST';
-      const body = editingDevice 
-        ? { id: editingDevice.id, ...deviceForm }
-        : deviceForm;
-
-      const response = await fetch('/api/audio-devices', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setSaveMessage({ type: 'success', text: editingDevice ? 'Device updated' : 'Device added' });
-        setShowDeviceModal(false);
-        setEditingDevice(null);
-        setDeviceForm({ name: '', type: 'linux', host: '', username: '', password: '', authType: 'key', audioOutput: '', location: '' });
-        loadAudioDevices();
-      } else {
-        setSaveMessage({ type: 'error', text: data.error || 'Failed to save device' });
-      }
-    } catch {
-      setSaveMessage({ type: 'error', text: 'Failed to save device' });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDeleteDevice = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this device?')) return;
-    
-    setDeleting(id);
-    try {
-      const response = await fetch(`/api/audio-devices?id=${id}`, { method: 'DELETE' });
-      const data = await response.json();
-      if (data.success) {
-        setSaveMessage({ type: 'success', text: 'Device deleted' });
-        loadAudioDevices();
-      } else {
-        setSaveMessage({ type: 'error', text: data.error || 'Failed to delete' });
-      }
-    } catch {
-      setSaveMessage({ type: 'error', text: 'Failed to delete device' });
-    } finally {
-      setDeleting(null);
-    }
-  };
-
-  const handleTestDevice = async (deviceId: string) => {
-    setTestingDevice(deviceId);
-    try {
-      const response = await fetch('/api/audio-devices/test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deviceId, message: 'Hello! This is a test of your audio network device.' }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setSaveMessage({ type: 'success', text: 'Audio played successfully!' });
-      } else {
-        setSaveMessage({ type: 'error', text: data.error || 'Audio test failed' });
-      }
-    } catch {
-      setSaveMessage({ type: 'error', text: 'Failed to test audio' });
-    } finally {
-      setTestingDevice(null);
-    }
-  };
-
-  const openEditDevice = (device: any) => {
-    setEditingDevice(device);
-    setDeviceForm({
-      name: device.name,
-      type: device.type,
-      host: device.host,
-      username: device.username,
-      password: '',
-      authType: device.authType,
-      audioOutput: device.audioOutput || '',
-      location: device.location || '',
-    });
-    setShowDeviceModal(true);
-  };
 
   const loadSettings = async () => {
     try {
@@ -377,21 +264,28 @@ export default function SettingsPage() {
   const renderCredentialGroup = (groupKey: string, group: CredentialGroup) => {
     const Icon = GROUP_ICONS[groupKey] || Key;
     const hasChanges = hasChangesInGroup(groupKey);
+    const isOpen = openGroups[groupKey] ?? false;
 
     return (
       <Card key={groupKey} className="bg-card/50 border-border">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-brand/20 flex items-center justify-center">
+        <CardHeader className={isOpen ? "pb-3" : "pb-3 [.border-b]:pb-3"}>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => toggleGroup(groupKey)}
+              className="flex min-w-0 flex-1 items-center gap-3 text-left"
+              aria-expanded={isOpen}
+            >
+              <ChevronDown className={cn("w-4 h-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+              <div className="w-10 h-10 shrink-0 rounded-lg bg-brand/20 flex items-center justify-center">
                 <Icon className="w-5 h-5 text-brand" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <CardTitle className="text-foreground">{group.name}</CardTitle>
                 <CardDescription>{group.description}</CardDescription>
               </div>
-            </div>
-            <div className="flex gap-2">
+            </button>
+            <div className="flex shrink-0 gap-2">
               {group.allowAdd && (
                 <Button
                   size="sm"
@@ -425,6 +319,7 @@ export default function SettingsPage() {
             </div>
           </div>
         </CardHeader>
+        {isOpen && (
         <CardContent className="space-y-4">
           {group.fields.length === 0 && (
             <p className="text-sm text-muted-foreground text-center py-4">
@@ -484,6 +379,7 @@ export default function SettingsPage() {
             </div>
           ))}
         </CardContent>
+        )}
       </Card>
     );
   };
@@ -530,10 +426,6 @@ export default function SettingsPage() {
             <Key className="w-4 h-4 mr-2" />
             Credentials
           </TabsTrigger>
-          <TabsTrigger value="audio-network" className="data-[state=active]:bg-muted">
-            <Speaker className="w-4 h-4 mr-2" />
-            Audio Network
-          </TabsTrigger>
           <TabsTrigger value="system" className="data-[state=active]:bg-muted">
             <Cpu className="w-4 h-4 mr-2" />
             System
@@ -551,8 +443,8 @@ export default function SettingsPage() {
               <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {Object.entries(groups).map(([key, group]) => 
+            <div className="space-y-3">
+              {Object.entries(groups).map(([key, group]) =>
                 renderCredentialGroup(key, group)
               )}
             </div>
@@ -575,240 +467,6 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        {/* Audio Network Tab */}
-        <TabsContent value="audio-network" className="mt-0">
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-foreground">Audio Network Devices</h3>
-                <p className="text-sm text-muted-foreground">Manage speakers and audio devices for TTS announcements</p>
-              </div>
-              <Button 
-                onClick={() => {
-                  setEditingDevice(null);
-                  setDeviceForm({ name: '', type: 'linux', host: '', username: '', password: '', authType: 'key', audioOutput: '', location: '' });
-                  setShowDeviceModal(true);
-                }}
-                className="bg-brand hover:bg-brand/90"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Device
-              </Button>
-            </div>
-
-            {/* Devices List */}
-            {loadingDevices ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : audioDevices.length === 0 ? (
-              <Card className="bg-card/50 border-border">
-                <CardContent className="py-12 text-center">
-                  <Speaker className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">No devices configured</h3>
-                  <p className="text-muted-foreground mb-4">Add your first audio device to start broadcasting announcements</p>
-                  <Button 
-                    onClick={() => setShowDeviceModal(true)}
-                    className="bg-brand hover:bg-brand/90"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Device
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-4">
-                {audioDevices.map((device) => (
-                  <Card key={device.id} className="bg-card/50 border-border">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className={cn(
-                            "w-12 h-12 rounded-lg flex items-center justify-center",
-                            device.type === 'windows' ? "bg-blue-500/20" : "bg-green-500/20"
-                          )}>
-                            {device.type === 'windows' ? (
-                              <Monitor className="w-6 h-6 text-blue-500" />
-                            ) : (
-                              <Speaker className="w-6 h-6 text-green-500" />
-                            )}
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground">{device.name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {device.host} • {device.username} • {device.type}
-                            </p>
-                            {device.location && (
-                              <p className="text-xs text-muted-foreground/70">{device.location}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={device.status === 'active' ? 'default' : 'secondary'}>
-                            {device.status}
-                          </Badge>
-                          <Badge variant="outline">
-                            {device.authType === 'key' ? '🔑 SSH Key' : '🔒 Password'}
-                          </Badge>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleTestDevice(device.id)}
-                            disabled={testingDevice === device.id}
-                          >
-                            {testingDevice === device.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Play className="w-4 h-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openEditDevice(device)}
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeleteDevice(device.id)}
-                            disabled={deleting === device.id}
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            {deleting === device.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="w-4 h-4" />
-                            )}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-
-            {/* Help Card */}
-            <Card className="bg-card/50 border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-blue-500" />
-                  Setting Up Audio Devices
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>• <strong>Linux (Raspberry Pi):</strong> Install espeak and enable SSH. Use Tailscale for remote access.</p>
-                <p>• <strong>Windows:</strong> Enable OpenSSH Server and use built-in Windows Speech Synthesis.</p>
-                <p>• <strong>SSH Key Auth:</strong> Add your server's public key to the device's authorized_keys file.</p>
-                <p>• <strong>Password Auth:</strong> Store the device password securely (only used for SSH connection).</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Add/Edit Device Modal */}
-          {showDeviceModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <Card className="w-full max-w-md bg-card border-border">
-                <CardHeader>
-                  <CardTitle className="text-foreground">
-                    {editingDevice ? 'Edit Device' : 'Add Audio Device'}
-                  </CardTitle>
-                  <CardDescription>
-                    Configure connection details for your audio device
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Device Name</label>
-                    <Input
-                      value={deviceForm.name}
-                      onChange={(e) => setDeviceForm({ ...deviceForm, name: e.target.value })}
-                      placeholder="e.g., Office Speaker"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-foreground">Type</label>
-                      <select
-                        value={deviceForm.type}
-                        onChange={(e) => setDeviceForm({ ...deviceForm, type: e.target.value })}
-                        className="w-full h-10 px-3 bg-secondary border border-border rounded-md text-foreground"
-                      >
-                        <option value="linux">Linux / Raspberry Pi</option>
-                        <option value="windows">Windows</option>
-                        <option value="macos">macOS</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-foreground">Auth Type</label>
-                      <select
-                        value={deviceForm.authType}
-                        onChange={(e) => setDeviceForm({ ...deviceForm, authType: e.target.value })}
-                        className="w-full h-10 px-3 bg-secondary border border-border rounded-md text-foreground"
-                      >
-                        <option value="key">SSH Key</option>
-                        <option value="password">Password</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Host (Tailscale IP)</label>
-                    <Input
-                      value={deviceForm.host}
-                      onChange={(e) => setDeviceForm({ ...deviceForm, host: e.target.value })}
-                      placeholder="e.g., 100.85.111.96"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Username</label>
-                    <Input
-                      value={deviceForm.username}
-                      onChange={(e) => setDeviceForm({ ...deviceForm, username: e.target.value })}
-                      placeholder="e.g., pi or jwate"
-                    />
-                  </div>
-                  {deviceForm.authType === 'password' && (
-                    <div>
-                      <label className="text-sm font-medium text-foreground">
-                        Password {editingDevice && '(leave blank to keep existing)'}
-                      </label>
-                      <Input
-                        type="password"
-                        value={deviceForm.password}
-                        onChange={(e) => setDeviceForm({ ...deviceForm, password: e.target.value })}
-                        placeholder="••••••••"
-                      />
-                    </div>
-                  )}
-                  <div>
-                    <label className="text-sm font-medium text-foreground">Location (optional)</label>
-                    <Input
-                      value={deviceForm.location}
-                      onChange={(e) => setDeviceForm({ ...deviceForm, location: e.target.value })}
-                      placeholder="e.g., Office, Kitchen, Living Room"
-                    />
-                  </div>
-                </CardContent>
-                <div className="flex justify-end gap-2 p-6 pt-0">
-                  <Button variant="outline" onClick={() => { setShowDeviceModal(false); setEditingDevice(null); }}>
-                    Cancel
-                  </Button>
-                  <Button 
-                    onClick={handleSaveDevice}
-                    disabled={saving || !deviceForm.name || !deviceForm.host || !deviceForm.username}
-                    className="bg-brand hover:bg-brand/90"
-                  >
-                    {saving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                    {editingDevice ? 'Update' : 'Add'} Device
-                  </Button>
-                </div>
-              </Card>
-            </div>
-          )}
-        </TabsContent>
 
         {/* System Tab */}
         <TabsContent value="system" className="mt-0">

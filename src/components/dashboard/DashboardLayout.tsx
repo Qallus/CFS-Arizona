@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
+import { Topbar } from './Topbar';
+import { AssistantFab } from './AssistantFab';
 import { AIStatusProvider, useAIStatus } from '@/components/providers/AIStatusProvider';
-import { Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
@@ -13,7 +14,20 @@ interface DashboardLayoutProps {
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { status } = useAIStatus();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  
+  const [collapsed, setCollapsed] = useState(false);
+
+  // Restore the desktop collapse preference.
+  useEffect(() => {
+    setCollapsed(localStorage.getItem('cfs_sidebar_collapsed') === '1');
+  }, []);
+
+  const toggleCollapsed = () =>
+    setCollapsed((v) => {
+      const next = !v;
+      localStorage.setItem('cfs_sidebar_collapsed', next ? '1' : '0');
+      return next;
+    });
+
   // Close sidebar on route change (for mobile)
   useEffect(() => {
     const handleResize = () => {
@@ -27,15 +41,6 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
   
   return (
     <div className="flex h-screen bg-background">
-      {/* Mobile hamburger button */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-40 p-2 rounded-lg bg-card border border-border shadow-lg"
-        aria-label="Open menu"
-      >
-        <Menu className="w-6 h-6 text-foreground" />
-      </button>
-      
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div
@@ -43,7 +48,7 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       {/* Sidebar - always visible on desktop, toggleable on mobile */}
       <div
         className={cn(
@@ -51,13 +56,16 @@ function DashboardContent({ children }: { children: React.ReactNode }) {
           sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <Sidebar status={status} onClose={() => setSidebarOpen(false)} />
+        <Sidebar status={status} collapsed={collapsed} onClose={() => setSidebarOpen(false)} />
       </div>
-      
-      {/* Main content - add left padding on mobile for hamburger */}
-      <main className="flex-1 overflow-auto pt-16 lg:pt-0">
-        {children}
-      </main>
+
+      {/* Main content with top bar (collapse, back, search, bell, theme) */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Topbar onMenu={() => setSidebarOpen(true)} collapsed={collapsed} onToggleCollapse={toggleCollapsed} />
+        <main className="flex-1 overflow-auto">{children}</main>
+      </div>
+
+      <AssistantFab />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Login - SIG360",
-  description: "Sign in to SIG360",
+  title: "Sign in — Steward",
+  description: "Sign in to Steward, the Certified Fiduciary Services dashboard.",
 };
 
 export default function LoginLayout({
