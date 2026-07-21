@@ -14,6 +14,8 @@ import {
   CalendarDays,
   Columns3,
   MapPin,
+  Share2,
+  Moon,
   Database,
   ArrowRight,
   ChevronLeft,
@@ -24,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import {
   PageShell,
   PageHeader,
+  StatTile,
   SectionCard,
   StatusPill,
   TableWrap,
@@ -60,6 +63,7 @@ import {
 
 interface ContactSummary {
   id: string;
+  source: string | null;
   fullName: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -164,11 +168,40 @@ export function ContactsClient() {
 
   const counts = useMemo(() => {
     const c: Record<string, number> = {};
-    for (const t of TABS) c[t.key] = searched.filter((o) => matchesTab(o, t.key)).length;
+    for (const t of TABS)
+      c[t.key] = searched.filter((o) => matchesTab({ ...o, source: o.contact?.source }, t.key)).length;
     return c;
   }, [searched]);
 
-  const visible = useMemo(() => searched.filter((o) => matchesTab(o, tab)), [searched, tab]);
+  /**
+   * Stat cards chosen to be actionable rather than decorative: how much of
+   * the caseload is live, what came from referrals, what needs chasing this
+   * week, and what has gone quiet. "Total contacts" is not a number anyone
+   * does anything about.
+   */
+  const stats = useMemo(() => {
+    const live = opps.filter(
+      (o) => o.disposition !== 'exit' && !o.disposition.startsWith('dormant'),
+    );
+    const weekOut = Date.now() + 7 * 86_400_000;
+    const dueSoon = live.filter((o) => {
+      if (!o.nextFollowUpAt) return false;
+      return new Date(o.nextFollowUpAt).getTime() <= weekOut;
+    }).length;
+    return {
+      active: live.length,
+      fromReferral: opps.filter((o) =>
+        ['referral', 'pnff_2025'].includes(o.contact?.source ?? ''),
+      ).length,
+      dueSoon,
+      dormant: opps.filter((o) => o.disposition.startsWith('dormant')).length,
+    };
+  }, [opps]);
+
+  const visible = useMemo(
+    () => searched.filter((o) => matchesTab({ ...o, source: o.contact?.source }, tab)),
+    [searched, tab],
+  );
 
   if (!loading && !provisioned) {
     return (
@@ -209,6 +242,18 @@ export function ContactsClient() {
           </>
         }
       />
+
+      <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <StatTile label="Active contacts" value={String(stats.active)} icon={Users} tone="brand" />
+        <StatTile label="From referrals" value={String(stats.fromReferral)} icon={Share2} />
+        <StatTile
+          label="Follow-up due ≤7d"
+          value={String(stats.dueSoon)}
+          icon={CalendarDays}
+          tone={stats.dueSoon ? 'warning' : 'default'}
+        />
+        <StatTile label="Dormant" value={String(stats.dormant)} icon={Moon} tone="default" />
+      </div>
 
       {/* Tabs + view switcher */}
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

@@ -74,10 +74,18 @@ export function formatMatterTypes(value?: string | null): string {
 }
 
 // Tab definitions (full funnel + dispositions).
-export type TabKey = 'all' | 'prospects' | 'prospective_ff' | 'ff_clients' | 'dormant' | 'exit';
+export type TabKey =
+  | 'all'
+  | 'referrals'
+  | 'prospects'
+  | 'prospective_ff'
+  | 'ff_clients'
+  | 'dormant'
+  | 'exit';
 
 export const TABS: { key: TabKey; label: string }[] = [
   { key: 'all', label: 'All' },
+  { key: 'referrals', label: 'Referrals' },
   { key: 'prospects', label: 'Prospects' },
   { key: 'prospective_ff', label: 'Prospective FF' },
   { key: 'ff_clients', label: 'FF Clients' },
@@ -88,7 +96,12 @@ export const TABS: { key: TabKey; label: string }[] = [
 export interface FunnelRecord {
   stage: Stage;
   disposition: Disposition;
+  /** How the contact entered the system — 'referral', 'pnff_2025', 'manual'. */
+  source?: string | null;
 }
+
+/** Contact sources that mean "this person came in as a referral". */
+const REFERRAL_SOURCES = ['referral', 'pnff_2025'];
 
 /** Whether a record belongs in a given tab. Mapping is intentionally simple
  *  and easy to adjust as CFS refines definitions. */
@@ -98,6 +111,10 @@ export function matchesTab(rec: FunnelRecord, tab: TabKey): boolean {
   switch (tab) {
     case 'all':
       return true;
+    // Origin, not funnel position: a referral stays a referral no matter how
+    // far it has since progressed.
+    case 'referrals':
+      return REFERRAL_SOURCES.includes(rec.source ?? '');
     case 'prospects':
       return !isDormant && !isExit && (rec.stage === 'awareness' || rec.stage === 'interest');
     case 'prospective_ff':

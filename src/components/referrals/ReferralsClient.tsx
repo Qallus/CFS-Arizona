@@ -124,6 +124,7 @@ const EMPTY_FORM = {
 export function ReferralsClient() {
   const router = useRouter();
   const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [total, setTotal] = useState(0);
   const [provisioned, setProvisioned] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -167,6 +168,7 @@ export function ReferralsClient() {
       }
       setProvisioned(true);
       setReferrals(Array.isArray(data.referrals) ? data.referrals : []);
+      setTotal(typeof data.total === 'number' ? data.total : 0);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -366,15 +368,20 @@ export function ReferralsClient() {
     [],
   );
 
+  // Counted from the loaded page, EXCEPT the total, which comes from the
+  // API's exact count — the list is capped at 200 rows, so counting locally
+  // reported "200 open referrals" against 426 real ones.
   const stats = useMemo(() => {
     const live = referrals.filter((r) => !r.archivedAt);
+    const by = (s: string) => live.filter((r) => r.status === s).length;
     return {
-      total: live.length,
-      newCount: live.filter((r) => r.status === 'new').length,
-      scheduled: live.filter((r) => r.status === 'consult_scheduled').length,
-      converted: live.filter((r) => r.status === 'converted').length,
+      total,
+      awaiting: by('awaiting'),
+      nominated: by('nominated'),
+      accepted: by('accepted'),
+      declined: by('declined'),
     };
-  }, [referrals]);
+  }, [referrals, total]);
 
   const field = (
     key: keyof typeof EMPTY_FORM,
@@ -413,10 +420,10 @@ export function ReferralsClient() {
       />
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-        <StatTile label="Open referrals" value={String(stats.total)} icon={Share2} tone="brand" />
-        <StatTile label="New" value={String(stats.newCount)} icon={UserPlus} tone="info" />
-        <StatTile label="Consults scheduled" value={String(stats.scheduled)} icon={Scale} tone="warning" />
-        <StatTile label="Converted" value={String(stats.converted)} icon={CheckCircle2} tone="good" />
+        <StatTile label="Referrals" value={String(stats.total)} icon={Share2} tone="brand" />
+        <StatTile label="Awaiting status" value={String(stats.awaiting)} icon={UserPlus} tone="info" />
+        <StatTile label="Nominated CFS" value={String(stats.nominated)} icon={Scale} tone="warning" />
+        <StatTile label="Accepted" value={String(stats.accepted)} icon={CheckCircle2} tone="good" />
       </div>
 
       {!provisioned ? (

@@ -30,7 +30,7 @@ const COLS =
 
 // Embed a light contact summary for list/board rendering.
 const CONTACT_EMBED =
-  'contact:sig_contacts ( id, full_name, first_name, last_name, email, phone, mobile_phone, ' +
+  'contact:sig_contacts ( id, source, full_name, first_name, last_name, email, phone, mobile_phone, ' +
   'matter_type, referral_source, address_line1, city, state, zip_code )';
 
 export type Stage = 'awareness' | 'interest' | 'intake' | 'nurture';
@@ -47,6 +47,8 @@ type Row = Record<string, unknown>;
 
 export interface ContactSummary {
   id: string;
+  /** How the contact entered: 'referral', 'pnff_2025', 'manual'. */
+  source: string | null;
   fullName: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -100,6 +102,7 @@ function mapContact(r: Row | null | undefined): ContactSummary | null {
   if (!r) return null;
   return {
     id: String(r.id),
+    source: (r.source as string) ?? null,
     fullName: (r.full_name as string) ?? null,
     firstName: (r.first_name as string) ?? null,
     lastName: (r.last_name as string) ?? null,
