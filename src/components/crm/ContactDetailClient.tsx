@@ -16,6 +16,8 @@ import {
   Clock,
   ChevronRight,
   ChevronLeft,
+  UserCircle,
+  GitBranch,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +35,7 @@ import { WorkflowPath, WorkflowActions } from './WorkflowPath';
 import type { WorkflowStage } from './workflow-meta';
 import { MultiCombobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   STAGES,
   type Stage,
@@ -259,9 +262,25 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Main column */}
-        <div className="space-y-4 lg:col-span-2">
+      {/* Two tabs: the record itself, and the funnel it is moving through.
+          Details is first and default — landing straight in the funnel was
+          disorienting, and the editable fields were buried in a side rail. */}
+      <Tabs defaultValue="details">
+        <TabsList className="mb-4">
+          <TabsTrigger value="details" className="gap-1.5">
+            <UserCircle className="size-4" /> Contact details
+          </TabsTrigger>
+          <TabsTrigger value="workflow" className="gap-1.5">
+            <GitBranch className="size-4" /> Workflow &amp; funnel
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="details">
+          <DetailsPanel contact={contact} onSaved={load} />
+        </TabsContent>
+
+        <TabsContent value="workflow">
+        <div className="space-y-4">
           {/* Lead servicing workflow (Salesforce-style path) */}
           {opp && (
             <SectionCard
@@ -436,12 +455,8 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
             )}
           </SectionCard>
         </div>
-
-        {/* Right rail */}
-        <div className="space-y-4">
-          <CifPanel contact={contact} onSaved={load} />
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
 
       <LogActivityModal open={showLog} onOpenChange={setShowLog} contactId={contactId} opportunityId={opp?.id ?? null} onLogged={load} />
     </PageShell>
@@ -465,40 +480,80 @@ function GateRow({ label, done, onToggle, disabled }: { label: string; done: boo
 
 const MATTER_OPTIONS = MATTER_TYPES.map((m) => ({ value: m, label: matterTypeLabel[m] }));
 
-const CIF_FIELDS: { key: keyof Contact; label: string; type?: string }[] = [
-  { key: 'salutation', label: 'Salutation' },
-  { key: 'preferredName', label: 'Preferred name' },
-  { key: 'email', label: 'Email', type: 'email' },
-  { key: 'mobilePhone', label: 'Mobile phone' },
-  { key: 'phone', label: 'Other phone' },
-  { key: 'dateOfBirth', label: 'Date of birth', type: 'date' },
-  { key: 'addressLine1', label: 'Address' },
-  { key: 'city', label: 'City' },
-  { key: 'state', label: 'State' },
-  { key: 'zipCode', label: 'ZIP' },
-  { key: 'referralSource', label: 'Referral source' },
-  { key: 'referralSourceDetail', label: 'Referral detail' },
+/**
+ * Contact details, grouped and editable.
+ *
+ * Replaces the old CIF side rail. Two things were wrong with it: it was
+ * squeezed into a third of the page next to the funnel, and it had no name
+ * fields at all — so a misspelled contact could never be corrected, even
+ * though the API has always accepted firstName/lastName.
+ */
+const FIELD_GROUPS: {
+  title: string;
+  fields: { key: keyof Contact; label: string; type?: string; placeholder?: string }[];
+}[] = [
+  {
+    title: 'Name',
+    fields: [
+      { key: 'salutation', label: 'Salutation', placeholder: 'Mrs.' },
+      { key: 'firstName', label: 'First name' },
+      { key: 'lastName', label: 'Last name' },
+      { key: 'preferredName', label: 'Preferred name', placeholder: 'What they go by' },
+    ],
+  },
+  {
+    title: 'Contact',
+    fields: [
+      { key: 'email', label: 'Email', type: 'email' },
+      { key: 'mobilePhone', label: 'Mobile phone', type: 'tel' },
+      { key: 'phone', label: 'Other phone', type: 'tel' },
+      { key: 'dateOfBirth', label: 'Date of birth', type: 'date' },
+    ],
+  },
+  {
+    title: 'Address',
+    fields: [
+      { key: 'addressLine1', label: 'Street address' },
+      { key: 'addressLine2', label: 'Unit / apt' },
+      { key: 'city', label: 'City' },
+      { key: 'state', label: 'State' },
+      { key: 'zipCode', label: 'ZIP' },
+    ],
+  },
+  {
+    title: 'Referral',
+    fields: [
+      { key: 'referralSource', label: 'Referral source', placeholder: 'Attorney, hospital, website…' },
+      { key: 'referralSourceDetail', label: 'Referral detail' },
+    ],
+  },
 ];
 
-function CifPanel({ contact, onSaved }: { contact: Contact; onSaved: () => void }) {
+function DetailsPanel({ contact, onSaved }: { contact: Contact; onSaved: () => void }) {
   const [form, setForm] = useState<Contact>(contact);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [error, setError] = useState('');
+  const [savedAt, setSavedAt] = useState<string | null>(null);
 
   useEffect(() => setForm(contact), [contact]);
 
   function set(key: keyof Contact, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
     setDirty(true);
+    setSavedAt(null);
   }
 
   async function save() {
     setSaving(true);
+    setError('');
     try {
-      await fetch(`/api/crm/contacts/${contact.id}`, {
+      const res = await fetch(`/api/crm/contacts/${contact.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          firstName: form.firstName ?? '',
+          lastName: form.lastName ?? '',
           salutation: form.salutation ?? '',
           preferredName: form.preferredName ?? '',
           email: form.email ?? '',
@@ -506,6 +561,7 @@ function CifPanel({ contact, onSaved }: { contact: Contact; onSaved: () => void 
           phone: form.phone ?? '',
           dateOfBirth: form.dateOfBirth || null,
           addressLine1: form.addressLine1 ?? '',
+          addressLine2: form.addressLine2 ?? '',
           city: form.city ?? '',
           state: form.state ?? '',
           zipCode: form.zipCode ?? '',
@@ -514,21 +570,42 @@ function CifPanel({ contact, onSaved }: { contact: Contact; onSaved: () => void 
           matterType: form.matterType ?? '',
         }),
       });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Could not save the contact.');
       setDirty(false);
+      setSavedAt(new Date().toLocaleTimeString());
       onSaved();
+    } catch (err) {
+      setError((err as Error).message);
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <SectionCard
-      title="Client information (CIF)"
-      action={dirty ? <Button size="xs" onClick={save} disabled={saving}>{saving ? 'Saving…' : 'Save'}</Button> : undefined}
-    >
-      <div className="space-y-3">
+    <div className="space-y-4">
+      <SectionCard
+        title="Client information (CIF)"
+        description="Everything on this contact. Changes save when you press Save."
+        action={
+          <div className="flex items-center gap-2">
+            {savedAt && !dirty && (
+              <span className="text-xs text-muted-foreground">Saved {savedAt}</span>
+            )}
+            <Button size="sm" onClick={save} disabled={saving || !dirty}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        }
+      >
+        {error && (
+          <p className="mb-3 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">{error}</p>
+        )}
+
         <div className="space-y-1.5">
-          <Label>Matter type <span className="font-normal text-muted-foreground">(any that apply)</span></Label>
+          <Label>
+            Matter type <span className="font-normal text-muted-foreground">(any that apply)</span>
+          </Label>
           <MultiCombobox
             options={MATTER_OPTIONS}
             value={parseMatterTypes(form.matterType)}
@@ -536,22 +613,42 @@ function CifPanel({ contact, onSaved }: { contact: Contact; onSaved: () => void 
             placeholder="Select matter types…"
           />
         </div>
-        {CIF_FIELDS.map((f) => (
-          <div key={f.key} className="space-y-1.5">
-            <Label htmlFor={`cif-${f.key}`}>{f.label}</Label>
-            {f.type === 'date' ? (
-              <DatePicker value={(form[f.key] as string) ?? ''} onChange={(v) => set(f.key, v)} />
-            ) : (
-              <Input
-                id={`cif-${f.key}`}
-                type={f.type ?? 'text'}
-                value={(form[f.key] as string) ?? ''}
-                onChange={(e) => set(f.key, e.target.value)}
-              />
-            )}
+
+        {FIELD_GROUPS.map((group) => (
+          <div key={group.title} className="mt-5 border-t border-border pt-4 first:mt-4">
+            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {group.title}
+            </p>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {group.fields.map((f) => (
+                <div key={f.key} className="space-y-1.5">
+                  <Label htmlFor={`cif-${f.key}`}>{f.label}</Label>
+                  {f.type === 'date' ? (
+                    <DatePicker
+                      value={(form[f.key] as string) ?? ''}
+                      onChange={(v) => set(f.key, v)}
+                    />
+                  ) : (
+                    <Input
+                      id={`cif-${f.key}`}
+                      type={f.type ?? 'text'}
+                      value={(form[f.key] as string) ?? ''}
+                      onChange={(e) => set(f.key, e.target.value)}
+                      placeholder={f.placeholder}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         ))}
-      </div>
-    </SectionCard>
+      </SectionCard>
+
+      {dirty && (
+        <p className="text-center text-xs text-muted-foreground">
+          You have unsaved changes.
+        </p>
+      )}
+    </div>
   );
 }
