@@ -86,6 +86,7 @@ interface Contact {
   statusNotes: string | null;
   secondaryFirstName: string | null;
   secondaryLastName: string | null;
+  secondaryDateOfBirth: string | null;
   secondaryEmail: string | null;
   secondaryPhone: string | null;
   referralDate: string | null;
@@ -519,21 +520,33 @@ const FIELD_GROUPS: {
   fields: { key: keyof Contact; label: string; type?: string; placeholder?: string }[];
 }[] = [
   {
-    title: 'Name',
+    title: 'Primary contact',
     fields: [
       { key: 'salutation', label: 'Salutation', placeholder: 'Mrs.' },
       { key: 'firstName', label: 'First name' },
       { key: 'lastName', label: 'Last name' },
       { key: 'preferredName', label: 'Preferred name', placeholder: 'What they go by' },
+      { key: 'dateOfBirth', label: 'Date of birth', type: 'date' },
     ],
   },
   {
-    title: 'Contact',
+    title: 'Secondary contact',
     fields: [
-      { key: 'email', label: 'Email', type: 'email' },
-      { key: 'mobilePhone', label: 'Mobile phone', type: 'tel' },
+      { key: 'secondaryFirstName', label: 'First name' },
+      { key: 'secondaryLastName', label: 'Last name' },
+      { key: 'secondaryDateOfBirth', label: 'Date of birth', type: 'date' },
+    ],
+  },
+  {
+    title: 'Contact information',
+    fields: [
+      { key: 'email', label: 'Primary email', type: 'email' },
+      { key: 'secondaryEmail', label: 'Secondary email', type: 'email' },
+      { key: 'mobilePhone', label: 'Primary phone', type: 'tel' },
+      { key: 'secondaryPhone', label: 'Secondary phone', type: 'tel' },
+      // Kept even though it is not in the CFS field list: the column holds
+      // data on existing contacts, and dropping the input would hide it.
       { key: 'phone', label: 'Other phone', type: 'tel' },
-      { key: 'dateOfBirth', label: 'Date of birth', type: 'date' },
     ],
   },
   {
@@ -544,25 +557,6 @@ const FIELD_GROUPS: {
       { key: 'city', label: 'City' },
       { key: 'state', label: 'State' },
       { key: 'zipCode', label: 'ZIP' },
-    ],
-  },
-  {
-    title: 'Second client',
-    fields: [
-      { key: 'secondaryFirstName', label: 'Client 2 first name' },
-      { key: 'secondaryLastName', label: 'Client 2 last name' },
-      { key: 'secondaryEmail', label: 'Client 2 email', type: 'email' },
-      { key: 'secondaryPhone', label: 'Client 2 phone', type: 'tel' },
-    ],
-  },
-  {
-    title: 'Referral',
-    fields: [
-      { key: 'referralSource', label: 'Referred by', placeholder: 'Attorney, hospital, website…' },
-      { key: 'referralSourceDetail', label: 'Referral detail' },
-      { key: 'referralDate', label: 'Referral date', type: 'date' },
-      { key: 'referralType', label: 'Referral type', placeholder: 'PNFF' },
-      { key: 'attorney', label: 'Attorney (as applicable)' },
     ],
   },
   {
@@ -583,7 +577,74 @@ const FIELD_GROUPS: {
       { key: 'finalClosureNoticeAt', label: 'Closure notice sent', type: 'date' },
     ],
   },
+  {
+    title: 'Referral',
+    fields: [
+      { key: 'referralSource', label: 'Referred by', placeholder: 'Attorney, hospital, website…' },
+      { key: 'referralSourceDetail', label: 'Referral detail' },
+      { key: 'referralDate', label: 'Referral date', type: 'date' },
+      { key: 'referralType', label: 'Referral type', placeholder: 'PNFF' },
+      { key: 'attorney', label: 'Attorney (as applicable)' },
+    ],
+  },
 ];
+
+/** Sections open on first visit. The rest collapse to keep the form short. */
+const DEFAULT_OPEN = ['Primary contact', 'Contact information'];
+const OPEN_STORAGE_KEY = 'cfs_contact_sections_open';
+
+/**
+ * One collapsible section.
+ *
+ * The filled-count badge matters more than it looks: a collapsed section is
+ * otherwise a black box, and "Address 0/5" tells you there is nothing behind
+ * it without expanding.
+ */
+function Section({
+  title,
+  filled,
+  total,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  filled: number;
+  total: number;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-border first:border-t-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="flex w-full items-center gap-2 py-3 text-left"
+      >
+        <ChevronRight
+          className={cn(
+            'size-4 shrink-0 text-muted-foreground transition-transform',
+            open && 'rotate-90',
+          )}
+        />
+        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          {title}
+        </span>
+        <span
+          className={cn(
+            'ml-auto rounded-full px-2 py-0.5 text-[11px] tabular-nums',
+            filled === 0 ? 'text-muted-foreground' : 'bg-brand/10 text-brand',
+          )}
+        >
+          {filled}/{total}
+        </span>
+      </button>
+      {open && <div className="grid gap-3 pb-4 sm:grid-cols-2 lg:grid-cols-3">{children}</div>}
+    </div>
+  );
+}
 
 function DetailsPanel({ contact, onSaved }: { contact: Contact; onSaved: () => void }) {
   const [form, setForm] = useState<Contact>(contact);
@@ -591,6 +652,29 @@ function DetailsPanel({ contact, onSaved }: { contact: Contact; onSaved: () => v
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState('');
   const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [openSections, setOpenSections] = useState<string[]>(DEFAULT_OPEN);
+
+  // Whichever sections someone works in, they work in every time.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(OPEN_STORAGE_KEY);
+      if (saved) setOpenSections(JSON.parse(saved));
+    } catch {
+      /* a corrupt preference is not worth breaking the form over */
+    }
+  }, []);
+
+  function toggleSection(title: string) {
+    setOpenSections((prev) => {
+      const next = prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title];
+      try {
+        localStorage.setItem(OPEN_STORAGE_KEY, JSON.stringify(next));
+      } catch {
+        /* private browsing — the accordion still works, it just forgets */
+      }
+      return next;
+    });
+  }
 
   useEffect(() => setForm(contact), [contact]);
 
@@ -626,6 +710,7 @@ function DetailsPanel({ contact, onSaved }: { contact: Contact; onSaved: () => v
           matterType: form.matterType ?? '',
           secondaryFirstName: form.secondaryFirstName ?? '',
           secondaryLastName: form.secondaryLastName ?? '',
+          secondaryDateOfBirth: form.secondaryDateOfBirth || null,
           secondaryEmail: form.secondaryEmail ?? '',
           secondaryPhone: form.secondaryPhone ?? '',
           referralDate: form.referralDate || null,
@@ -687,34 +772,44 @@ function DetailsPanel({ contact, onSaved }: { contact: Contact; onSaved: () => v
           />
         </div>
 
-        {FIELD_GROUPS.map((group) => (
-          <div key={group.title} className="mt-5 border-t border-border pt-4 first:mt-4">
-            <p className="mb-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-              {group.title}
-            </p>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {group.fields.map((f) => (
-                <div key={f.key} className="space-y-1.5">
-                  <Label htmlFor={`cif-${f.key}`}>{f.label}</Label>
-                  {f.type === 'date' ? (
-                    <DatePicker
-                      value={(form[f.key] as string) ?? ''}
-                      onChange={(v) => set(f.key, v)}
-                    />
-                  ) : (
-                    <Input
-                      id={`cif-${f.key}`}
-                      type={f.type ?? 'text'}
-                      value={(form[f.key] as string) ?? ''}
-                      onChange={(e) => set(f.key, e.target.value)}
-                      placeholder={f.placeholder}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+        <div className="mt-4">
+          {FIELD_GROUPS.map((group) => {
+            const filled = group.fields.filter((f) => {
+              const v = form[f.key];
+              return typeof v === 'string' && v.trim() !== '';
+            }).length;
+            return (
+              <Section
+                key={group.title}
+                title={group.title}
+                filled={filled}
+                total={group.fields.length}
+                open={openSections.includes(group.title)}
+                onToggle={() => toggleSection(group.title)}
+              >
+                {group.fields.map((f) => (
+                  <div key={f.key} className="space-y-1.5">
+                    <Label htmlFor={`cif-${f.key}`}>{f.label}</Label>
+                    {f.type === 'date' ? (
+                      <DatePicker
+                        value={(form[f.key] as string) ?? ''}
+                        onChange={(v) => set(f.key, v)}
+                      />
+                    ) : (
+                      <Input
+                        id={`cif-${f.key}`}
+                        type={f.type ?? 'text'}
+                        value={(form[f.key] as string) ?? ''}
+                        onChange={(e) => set(f.key, e.target.value)}
+                        placeholder={f.placeholder}
+                      />
+                    )}
+                  </div>
+                ))}
+              </Section>
+            );
+          })}
+        </div>
       </SectionCard>
 
       {dirty && (

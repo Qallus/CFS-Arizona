@@ -25,6 +25,7 @@ const COLS =
   'cc_fee_due, staff_contact, last_contact_type, contact_date, send_follow_up_email_at, ' +
   'email_follow_up_at, final_closure_notice_at, status_notes, ' +
   'secondary_first_name, secondary_last_name, secondary_email, secondary_phone, ' +
+  'secondary_date_of_birth, ' +
   'referral_date, referral_type, attorney, appointment_notes, notes, ' +
   'id, source, external_id, first_name, last_name, full_name, email, phone, mobile_phone, ' +
   'home_phone, work_phone, company_name, status, contact_type, city, state, zip_code, country, ' +
@@ -35,6 +36,34 @@ const COLS =
   'referral_source_detail, matter_type, preferred_contact_method, cif';
 
 type Row = Record<string, unknown>;
+
+/**
+ * Whether sig_contacts.secondary_date_of_birth exists yet.
+ *
+ * Migration 007 adds it. A column named in a PostgREST select list that does
+ * not exist fails the WHOLE query with 42703 — so a deploy landing before its
+ * migration would take out the entire Contacts area rather than one field.
+ * That ordering has slipped more than once, so the first failure flips this
+ * flag and the query is retried without the column.
+ */
+let hasSecondaryDob = true;
+
+/** The select list, minus anything the database does not have yet. */
+function cols(): string {
+  return hasSecondaryDob ? COLS : COLS.replace('secondary_date_of_birth, ', '');
+}
+
+function isMissingSecondaryDob(err: PgError | null): boolean {
+  return err?.code === '42703' && /secondary_date_of_birth/.test(err.message ?? '');
+}
+
+/** Drop the pending column from a write payload once we know it is absent. */
+function stripPending(update: Record<string, unknown>): Record<string, unknown> {
+  if (hasSecondaryDob) return update;
+  const rest = { ...update };
+  delete rest.secondary_date_of_birth;
+  return rest;
+}
 
 export interface ContactRow {
   id: string;
@@ -54,6 +83,7 @@ export interface ContactRow {
   statusNotes: string | null;
   secondaryFirstName: string | null;
   secondaryLastName: string | null;
+  secondaryDateOfBirth: string | null;
   secondaryEmail: string | null;
   secondaryPhone: string | null;
   referralDate: string | null;
@@ -108,6 +138,7 @@ function mapRow(r: Row): ContactRow {
     emailFollowUpAt: (r.email_follow_up_at as string) ?? null,
     finalClosureNoticeAt: (r.final_closure_notice_at as string) ?? null,
     statusNotes: (r.status_notes as string) ?? null,
+    secondaryDateOfBirth: (r.secondary_date_of_birth as string) ?? null,
     secondaryFirstName: (r.secondary_first_name as string) ?? null,
     secondaryLastName: (r.secondary_last_name as string) ?? null,
     secondaryEmail: (r.secondary_email as string) ?? null,
@@ -172,7 +203,7 @@ export async function listContacts(user: RbacUser, input: ListContactsInput = {}
   const limit = Math.min(Math.max(input.limit ?? 50, 1), 200);
   const offset = Math.max(input.offset ?? 0, 0);
 
-  let query = supabaseAdmin.from(TABLE).select(COLS, { count: 'exact' });
+  let query = supabaseAdmin.from(TABLE).select(cols(), { count: 'exact' });
 
   if (scope.mode === 'assigned') query = query.eq('assigned_staff_id', scope.staffId);
   if (input.type) query = query.eq('contact_type', input.type);
@@ -197,7 +228,12 @@ export async function listContacts(user: RbacUser, input: ListContactsInput = {}
 /** Fetch a contact, enforcing scope (assigned advisors only see their own). */
 export async function getContact(user: RbacUser, id: string): Promise<ContactRow | null> {
   const scope = contactReadScope(user);
-  const { data, error } = await supabaseAdmin.from(TABLE).select(COLS).eq('id', id).maybeSingle();
+  let { data, error } = await supabaseAdmin.from(TABLE).select(cols()).eq('id', id).maybeSingle();
+  if (isMissingSecondaryDob(error as PgError)) {
+    hasSecondaryDob = false;
+    console.warn('[crm] secondary_date_of_birth missing — apply migration 007.');
+    ({ data, error } = await supabaseAdmin.from(TABLE).select(cols()).eq('id', id).maybeSingle());
+  }
   if (error) raisePg(error as PgError);
   if (!data) return null;
   const row = mapRow(data as unknown as Row);
@@ -239,6 +275,7 @@ export interface ContactInput {
   statusNotes?: string;
   secondaryFirstName?: string;
   secondaryLastName?: string;
+  secondaryDateOfBirth?: string | null;
   secondaryEmail?: string;
   secondaryPhone?: string;
   referralDate?: string | null;
@@ -293,7 +330,7 @@ export async function createContact(user: RbacUser, input: ContactInput): Promis
     preferred_contact_method: input.preferredContactMethod?.trim() || null,
   };
 
-  const { data, error } = await supabaseAdmin.from(TABLE).insert(insert).select(COLS).single();
+  const { data, error } = await supabaseAdmin.from(TABLE).insert(stripPending(insert)).select(cols()).single();
   if (error) raisePg(error as PgError);
   return mapRow(data as unknown as Row);
 }
@@ -342,6 +379,7 @@ export async function updateContact(user: RbacUser, id: string, patch: ContactIn
   // Referral intake fields, shared with sig_referrals.
   if (patch.secondaryFirstName !== undefined) update.secondary_first_name = patch.secondaryFirstName.trim() || null;
   if (patch.secondaryLastName !== undefined) update.secondary_last_name = patch.secondaryLastName.trim() || null;
+  if (patch.secondaryDateOfBirth !== undefined) update.secondary_date_of_birth = patch.secondaryDateOfBirth || null;
   if (patch.secondaryEmail !== undefined) update.secondary_email = patch.secondaryEmail.trim().toLowerCase() || null;
   if (patch.secondaryPhone !== undefined) update.secondary_phone = patch.secondaryPhone.trim() || null;
   if (patch.referralDate !== undefined) update.referral_date = patch.referralDate || null;
@@ -361,7 +399,22 @@ export async function updateContact(user: RbacUser, id: string, patch: ContactIn
 
   if (Object.keys(update).length === 0) return existing;
 
-  const { data, error } = await supabaseAdmin.from(TABLE).update(update).eq('id', id).select(COLS).single();
+  let { data, error } = await supabaseAdmin
+    .from(TABLE)
+    .update(stripPending(update))
+    .eq('id', id)
+    .select(cols())
+    .single();
+  if (isMissingSecondaryDob(error as PgError)) {
+    hasSecondaryDob = false;
+    console.warn('[crm] secondary_date_of_birth missing — apply migration 007.');
+    ({ data, error } = await supabaseAdmin
+      .from(TABLE)
+      .update(stripPending(update))
+      .eq('id', id)
+      .select(cols())
+      .single());
+  }
   if (error) raisePg(error as PgError);
   return mapRow(data as unknown as Row);
 }
