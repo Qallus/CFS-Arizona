@@ -118,6 +118,7 @@ export function ContactsClient() {
   const [opps, setOpps] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [provisioned, setProvisioned] = useState(true);
+  const [total, setTotal] = useState(0);
   const [view, setView] = useState<ViewKey>('list');
   const [tab, setTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
@@ -130,6 +131,7 @@ export function ContactsClient() {
       const res = await fetch('/api/crm/opportunities');
       const data = await res.json();
       setProvisioned(data.provisioned !== false);
+      setTotal(typeof data.total === 'number' ? data.total : 0);
       setOpps(Array.isArray(data.opportunities) ? data.opportunities : []);
     } catch {
       setProvisioned(true);
@@ -254,6 +256,12 @@ export function ContactsClient() {
         />
         <StatTile label="Dormant" value={String(stats.dormant)} icon={Moon} tone="default" />
       </div>
+
+      {total > opps.length && (
+        <p className="mb-3 rounded-md bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+          Showing {opps.length} of {total} contacts. Narrow the search to see the rest.
+        </p>
+      )}
 
       {/* Tabs + view switcher */}
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

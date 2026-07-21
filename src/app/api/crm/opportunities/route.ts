@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireUser, crmError } from '@/lib/crm/http';
 import {
   listOpportunities,
+  countOpportunities,
   createOpportunity,
   getOpportunityForContact,
   type Stage,
@@ -25,7 +26,10 @@ export async function GET(req: NextRequest) {
       stage: (sp.get('stage') as Stage) || undefined,
       disposition: (sp.get('disposition') as Disposition) || undefined,
     });
-    return NextResponse.json({ provisioned: true, opportunities });
+    // `total` is the exact count, not opportunities.length — so the UI can
+    // tell the difference between "that is everything" and "that is a page".
+    const total = await countOpportunities(gate.user);
+    return NextResponse.json({ provisioned: true, opportunities, total });
   } catch (err) {
     return crmError(err);
   }

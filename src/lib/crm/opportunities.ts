@@ -165,11 +165,25 @@ export async function listOpportunities(
   if (input.stage) query = query.eq('stage', input.stage);
   if (input.disposition) query = query.eq('disposition', input.disposition);
 
+  // Ceiling raised from 1000: the caseload passed 500 the moment the 2025
+  // referrals and PNFF clients were imported, and the old default silently
+  // dropped the overflow rather than reporting it.
   const { data, error } = await query
     .order('updated_at', { ascending: false })
-    .limit(Math.min(Math.max(input.limit ?? 500, 1), 1000));
+    .limit(Math.min(Math.max(input.limit ?? 2000, 1), 5000));
   if (error) raisePg(error as PgError);
   return ((data ?? []) as unknown as Row[]).map(mapRow);
+}
+
+/** Exact row count for the caller's scope, so the UI never infers a total
+ *  from a truncated page. */
+export async function countOpportunities(user: RbacUser): Promise<number> {
+  const scope = contactReadScope(user);
+  let query = supabaseAdmin.from(TABLE).select('id', { count: 'exact', head: true });
+  if (scope.mode === 'assigned') query = query.eq('assigned_staff_id', scope.staffId);
+  const { count, error } = await query;
+  if (error) raisePg(error as PgError);
+  return count ?? 0;
 }
 
 export async function getOpportunity(user: RbacUser, id: string): Promise<OpportunityRow | null> {
