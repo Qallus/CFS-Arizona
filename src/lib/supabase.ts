@@ -8,11 +8,26 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not configured');
 }
 
+/**
+ * Whether the service-role key is present. Without it `supabaseAdmin` degrades
+ * to the anon client, and every RLS-protected read (sig_profiles, sig_*) comes
+ * back as an EMPTY result with no error — which reads as "user has no profile"
+ * and 401s the whole app. Callers use this to report the real cause.
+ */
+export const hasServiceRoleKey = Boolean(supabaseServiceKey);
+
+if (!hasServiceRoleKey) {
+  console.warn(
+    'SUPABASE_SERVICE_ROLE_KEY is not set — falling back to the anon key. ' +
+      'RLS-protected tables will read as empty and API routes will return 401.',
+  );
+}
+
 // Client-side Supabase client (uses anon key)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Server-side client with service role (for admin operations)
-export const supabaseAdmin = supabaseServiceKey 
+export const supabaseAdmin = supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)
   : supabase;
 

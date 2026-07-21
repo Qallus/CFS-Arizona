@@ -3,7 +3,7 @@
  * map CRM errors to responses.
  */
 import { NextResponse } from 'next/server';
-import { getCurrentRbacUser } from '@/lib/rbac/current-user';
+import { getCurrentRbacUser, getSessionIdentity } from '@/lib/rbac/current-user';
 import type { RbacUser } from '@/lib/rbac';
 import { CrmForbiddenError, CrmValidationError, CrmTableMissingError } from './access';
 
@@ -11,10 +11,25 @@ export async function requireUser(): Promise<
   { user: RbacUser; response?: undefined } | { user?: undefined; response: NextResponse }
 > {
   const user = await getCurrentRbacUser();
-  if (!user) {
-    return { response: NextResponse.json({ error: 'Authentication required' }, { status: 401 }) };
+  if (user) return { user };
+
+  // Signed in but unresolvable is an authorization problem, not an auth one —
+  // reporting it as 401 sends people to re-login, which never fixes it.
+  const identity = await getSessionIdentity();
+  if (identity) {
+    return {
+      response: NextResponse.json(
+        {
+          error:
+            `Signed in as ${identity.email}, but no active profile is linked to this account. ` +
+            'Check that the account has an active sig_profiles row and that the server has ' +
+            'SUPABASE_SERVICE_ROLE_KEY set.',
+        },
+        { status: 403 },
+      ),
+    };
   }
-  return { user };
+  return { response: NextResponse.json({ error: 'Authentication required' }, { status: 401 }) };
 }
 
 export function crmError(err: unknown): NextResponse {
