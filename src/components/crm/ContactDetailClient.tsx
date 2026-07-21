@@ -15,6 +15,7 @@ import {
   Plus,
   Clock,
   ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -221,6 +222,9 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
   const name = contactDisplayName(contact);
   const currentIdx = opp ? STAGES.indexOf(opp.stage) : -1;
   const nextStage: Stage | null = currentIdx >= 0 && currentIdx < STAGES.length - 1 ? STAGES[currentIdx + 1] : null;
+  // Contacts do move backwards — a deal cools, or someone mis-clicks during
+  // training. The funnel has to be correctable in both directions.
+  const prevStage: Stage | null = currentIdx > 0 ? STAGES[currentIdx - 1] : null;
   const isDormantOrExit = opp && (opp.disposition === 'exit' || opp.disposition.startsWith('dormant'));
 
   return (
@@ -285,16 +289,28 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
                 <div className="flex items-center gap-1.5">
                   {STAGES.map((s, i) => (
                     <div key={s} className="flex flex-1 items-center gap-1.5">
-                      <div
+                      {/* Any stage is clickable, forwards or back. */}
+                      <button
+                        type="button"
+                        onClick={() => i !== currentIdx && patchOpp({ stage: s })}
+                        disabled={busy || i === currentIdx}
+                        title={
+                          i === currentIdx
+                            ? `Currently at ${stageLabel[s]}`
+                            : i < currentIdx
+                              ? `Move back to ${stageLabel[s]}`
+                              : `Move forward to ${stageLabel[s]}`
+                        }
                         className={cn(
                           'flex-1 rounded-md px-2 py-2 text-center text-xs font-medium transition-colors',
-                          i < currentIdx && 'bg-brand/15 text-brand',
-                          i === currentIdx && 'bg-brand text-brand-foreground',
-                          i > currentIdx && 'bg-secondary text-muted-foreground',
+                          i < currentIdx && 'bg-brand/15 text-brand hover:bg-brand/25',
+                          i === currentIdx && 'bg-brand text-brand-foreground cursor-default',
+                          i > currentIdx && 'bg-secondary text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
+                          busy && 'opacity-60',
                         )}
                       >
                         {stageLabel[s]}
-                      </div>
+                      </button>
                       {i < STAGES.length - 1 && <ChevronRight className="size-3.5 shrink-0 text-muted-foreground" />}
                     </div>
                   ))}
@@ -315,6 +331,16 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
                   {nextStage && !isDormantOrExit && (
                     <Button size="sm" onClick={() => patchOpp({ stage: nextStage })} disabled={busy}>
                       Advance to {stageLabel[nextStage]}
+                    </Button>
+                  )}
+                  {prevStage && !isDormantOrExit && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => patchOpp({ stage: prevStage })}
+                      disabled={busy}
+                    >
+                      <ChevronLeft className="size-4" /> Back to {stageLabel[prevStage]}
                     </Button>
                   )}
                   {isDormantOrExit ? (

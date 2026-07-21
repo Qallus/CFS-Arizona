@@ -9,6 +9,10 @@ interface DatePickerProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  /** Earliest selectable year. Defaults to 120 years ago — dates of birth. */
+  fromYear?: number;
+  /** Latest selectable year. Defaults to 10 years out — future deadlines. */
+  toYear?: number;
 }
 
 const DAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -17,17 +21,47 @@ const MONTHS = [
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-export function DatePicker({ value, onChange, placeholder = 'Select date', className }: DatePickerProps) {
+/**
+ * Parse 'YYYY-MM-DD' as a LOCAL date.
+ *
+ * `new Date('2025-12-25')` is specified to parse as UTC midnight, which in
+ * Arizona (UTC-7) is 5pm on the 24th — so a saved date rendered back through
+ * the browser's local timezone lands a day early. Every date here is a plain
+ * calendar date with no time component, so it must be built locally.
+ */
+function parseLocalDate(value: string): Date | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
+  if (!m) return null;
+  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+/** Format a local Date as 'YYYY-MM-DD' without a UTC round-trip. */
+function toLocalIsoDate(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+export function DatePicker({
+  value,
+  onChange,
+  placeholder = 'Select date',
+  className,
+  fromYear,
+  toYear,
+}: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [viewDate, setViewDate] = useState(() => {
-    if (value) {
-      return new Date(value);
-    }
-    return new Date();
-  });
+  const [viewDate, setViewDate] = useState(() => parseLocalDate(value) ?? new Date());
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedDate = value ? new Date(value) : null;
+  const selectedDate = parseLocalDate(value);
+
+  const thisYear = new Date().getFullYear();
+  const minYear = fromYear ?? thisYear - 120;
+  const maxYear = toYear ?? thisYear + 10;
+  // Newest first: most people reaching for this are picking a recent date, and
+  // those born long ago are a short scroll away rather than a long one.
+  const years: number[] = [];
+  for (let y = maxYear; y >= minYear; y--) years.push(y);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -71,17 +105,14 @@ export function DatePicker({ value, onChange, placeholder = 'Select date', class
   };
 
   const handleSelectDate = (day: number) => {
-    const newDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-    const formattedDate = newDate.toISOString().split('T')[0];
-    onChange(formattedDate);
+    onChange(toLocalIsoDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), day)));
     setIsOpen(false);
   };
 
   const handleToday = () => {
     const today = new Date();
     setViewDate(today);
-    const formattedDate = today.toISOString().split('T')[0];
-    onChange(formattedDate);
+    onChange(toLocalIsoDate(today));
     setIsOpen(false);
   };
 
@@ -109,8 +140,8 @@ export function DatePicker({ value, onChange, placeholder = 'Select date', class
   };
 
   const formatDisplayValue = () => {
-    if (!value) return '';
-    const date = new Date(value);
+    const date = parseLocalDate(value);
+    if (!date) return '';
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
@@ -132,23 +163,57 @@ export function DatePicker({ value, onChange, placeholder = 'Select date', class
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 mt-2 p-4 bg-card border border-border rounded-xl shadow-xl min-w-[280px]">
+        <div className="absolute z-50 mt-2 p-4 bg-card border border-border rounded-xl shadow-xl min-w-[320px]">
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between gap-1 mb-4">
             <button
               type="button"
               onClick={handlePrevMonth}
               className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+              aria-label="Previous month"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="font-semibold text-foreground">
-              {MONTHS[viewDate.getMonth()]} {viewDate.getFullYear()}
-            </span>
+
+            {/* Month + year selects: paging back with the arrows is unusable
+                for a date of birth eighty years ago. */}
+            <div className="flex items-center gap-1.5">
+              <select
+                value={viewDate.getMonth()}
+                onChange={(e) =>
+                  setViewDate(new Date(viewDate.getFullYear(), Number(e.target.value), 1))
+                }
+                aria-label="Month"
+                className="rounded-md border border-border bg-secondary px-2 py-1 text-sm font-semibold text-foreground outline-none transition-colors hover:border-brand/50 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={viewDate.getFullYear()}
+                onChange={(e) =>
+                  setViewDate(new Date(Number(e.target.value), viewDate.getMonth(), 1))
+                }
+                aria-label="Year"
+                className="rounded-md border border-border bg-secondary px-2 py-1 text-sm font-semibold text-foreground outline-none transition-colors hover:border-brand/50 focus-visible:ring-[3px] focus-visible:ring-ring/50"
+              >
+                {years.map((y) => (
+                  <option key={y} value={y}>
+                    {y}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <button
               type="button"
               onClick={handleNextMonth}
               className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+              aria-label="Next month"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
