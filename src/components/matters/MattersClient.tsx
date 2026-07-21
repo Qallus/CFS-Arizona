@@ -271,6 +271,9 @@ export function MattersClient() {
       columns: STATUSES.map((s) => ({ key: s, label: STATUS_LABELS[s], tone: STATUS_TONES[s] })),
       getColumnKey: (m) => m.status,
       getDate: (m) => m.nextDeadlineAt,
+      // Venue is a county, so the pin lands on the county rather than a
+      // building. Useful for seeing where the caseload sits, not for directions.
+      getAddress: (m) => (m.venue?.trim() ? `${m.venue}, Arizona` : null),
       isFavorite: (m) => Boolean(m.isFavorite),
       isArchived: (m) => Boolean(m.archivedAt),
       fields: [

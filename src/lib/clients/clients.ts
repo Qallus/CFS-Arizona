@@ -21,8 +21,9 @@ import { purgeEntity } from '@/lib/collections';
 const TABLE = 'sig_clients';
 const COLS =
   'id, display_name, contact_id, matter_id, client_kind, fiduciary_role, court_supervised, ' +
-  'status, residence_type, facility_name, room_number, appointed_at, next_review_at, ' +
-  'assigned_staff_id, notes, archived_at, created_at, updated_at';
+  'status, residence_type, facility_name, room_number, address_line1, city, state, ' +
+  'postal_code, appointed_at, next_review_at, assigned_staff_id, notes, archived_at, ' +
+  'created_at, updated_at';
 
 /** Embedded so the list can show the matter without a second round trip. */
 const MATTER_EMBED = 'matter:sig_matters ( id, matter_ref, matter_type )';
@@ -55,6 +56,10 @@ interface Row {
   residence_type: string | null;
   facility_name: string | null;
   room_number: string | null;
+  address_line1: string | null;
+  city: string | null;
+  state: string | null;
+  postal_code: string | null;
   appointed_at: string | null;
   next_review_at: string | null;
   assigned_staff_id: string | null;
@@ -78,6 +83,10 @@ export interface ClientRecord {
   residenceType: string | null;
   facilityName: string | null;
   roomNumber: string | null;
+  addressLine1: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
   appointedAt: string | null;
   nextReviewAt: string | null;
   assignedStaffId: string | null;
@@ -106,6 +115,10 @@ function mapRow(r: Row): ClientRecord {
     residenceType: r.residence_type,
     facilityName: r.facility_name,
     roomNumber: r.room_number,
+    addressLine1: r.address_line1,
+    city: r.city,
+    state: r.state,
+    postalCode: r.postal_code,
     appointedAt: r.appointed_at,
     nextReviewAt: r.next_review_at,
     assignedStaffId: r.assigned_staff_id,
@@ -188,6 +201,10 @@ export interface ClientInput {
   residenceType?: string;
   facilityName?: string;
   roomNumber?: string;
+  addressLine1?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
   appointedAt?: string | null;
   nextReviewAt?: string | null;
   assignedStaffId?: string | null;
@@ -223,6 +240,10 @@ function toColumns(input: ClientInput): Record<string, unknown> {
   set('residence_type', input.residenceType);
   set('facility_name', input.facilityName);
   set('room_number', input.roomNumber);
+  set('address_line1', input.addressLine1);
+  set('city', input.city);
+  set('state', input.state);
+  set('postal_code', input.postalCode);
   set('appointed_at', input.appointedAt);
   set('next_review_at', input.nextReviewAt);
   set('assigned_staff_id', input.assignedStaffId);

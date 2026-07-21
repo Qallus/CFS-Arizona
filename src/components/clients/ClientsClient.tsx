@@ -79,6 +79,10 @@ interface Client {
   residenceType: string | null;
   facilityName: string | null;
   roomNumber: string | null;
+  addressLine1: string | null;
+  city: string | null;
+  state: string | null;
+  postalCode: string | null;
   appointedAt: string | null;
   nextReviewAt: string | null;
   notes: string | null;
@@ -95,6 +99,10 @@ const EMPTY_FORM = {
   residenceType: '',
   facilityName: '',
   roomNumber: '',
+  addressLine1: '',
+  city: '',
+  state: '',
+  postalCode: '',
   appointedAt: '',
   nextReviewAt: '',
   notes: '',
@@ -250,6 +258,10 @@ export function ClientsClient() {
       residenceType: client.residenceType ?? '',
       facilityName: client.facilityName ?? '',
       roomNumber: client.roomNumber ?? '',
+      addressLine1: client.addressLine1 ?? '',
+      city: client.city ?? '',
+      state: client.state ?? '',
+      postalCode: client.postalCode ?? '',
       appointedAt: client.appointedAt ?? '',
       nextReviewAt: client.nextReviewAt ? client.nextReviewAt.slice(0, 10) : '',
       notes: client.notes ?? '',
@@ -275,6 +287,15 @@ export function ClientsClient() {
       columns: ROLES.map((r) => ({ key: r, label: ROLE_LABELS[r], tone: 'neutral' as Tone })),
       getColumnKey: (c) => c.fiduciaryRole,
       getDate: (c) => c.nextReviewAt,
+      getAddress: (c) => {
+        // Street or city required: a bare state geocodes to the middle of
+        // Arizona, which is a misleading pin rather than a useful one.
+        if (!c.addressLine1?.trim() && !c.city?.trim()) return null;
+        return [c.addressLine1, c.city, c.state, c.postalCode]
+          .map((p) => (p ?? '').trim())
+          .filter(Boolean)
+          .join(', ');
+      },
       isFavorite: (c) => Boolean(c.isFavorite),
       isArchived: (c) => Boolean(c.archivedAt),
       fields: [
@@ -554,6 +575,44 @@ export function ClientsClient() {
                   value={form.roomNumber}
                   onChange={(e) => setForm((f) => ({ ...f, roomNumber: e.target.value }))}
                   placeholder="204B"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>Street address</Label>
+                <Input
+                  value={form.addressLine1}
+                  onChange={(e) => setForm((f) => ({ ...f, addressLine1: e.target.value }))}
+                  placeholder="1234 E Camelback Rd"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>City</Label>
+                <Input
+                  value={form.city}
+                  onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+                  placeholder="Phoenix"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label>State</Label>
+                <Input
+                  value={form.state}
+                  onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
+                  placeholder="AZ"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>ZIP</Label>
+                <Input
+                  value={form.postalCode}
+                  onChange={(e) => setForm((f) => ({ ...f, postalCode: e.target.value }))}
+                  placeholder="85018"
                 />
               </div>
             </div>

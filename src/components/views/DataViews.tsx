@@ -7,6 +7,7 @@
  * its fields and grouping rather than its own copy of these views. Built for
  * Matters first; the remaining dashboard pages reuse it by writing a config.
  */
+import dynamic from 'next/dynamic';
 import { useMemo, useState, type ReactNode } from 'react';
 import {
   List as ListIcon,
@@ -14,11 +15,13 @@ import {
   Columns3,
   LayoutGrid,
   CalendarDays,
+  MapPin,
   ChevronLeft,
   ChevronRight,
   Star,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { MapViewProps } from './MapView';
 import {
   StatusPill,
   TableWrap,
@@ -29,7 +32,16 @@ import {
   type Tone,
 } from '@/components/dashboard/page-parts';
 
-export const VIEW_MODES = ['list', 'table', 'kanban', 'card', 'calendar'] as const;
+// Map is loaded lazily: Leaflet touches `window` at import time, and there is
+// no reason to ship it to someone who never opens the map.
+// next/dynamic erases the component's generic parameter, so the cast puts it
+// back. Type-only import — it does not pull Leaflet into this bundle.
+const LazyMapView = dynamic(() => import('./MapView'), {
+  ssr: false,
+  loading: () => <p className="py-14 text-center text-sm text-muted-foreground">Loading map…</p>,
+}) as <T>(props: MapViewProps<T>) => ReactNode;
+
+export const VIEW_MODES = ['list', 'table', 'kanban', 'card', 'calendar', 'map'] as const;
 export type ViewMode = (typeof VIEW_MODES)[number];
 
 const VIEW_META: Record<ViewMode, { label: string; icon: typeof ListIcon }> = {
@@ -38,6 +50,7 @@ const VIEW_META: Record<ViewMode, { label: string; icon: typeof ListIcon }> = {
   kanban: { label: 'Kanban', icon: Columns3 },
   card: { label: 'Card', icon: LayoutGrid },
   calendar: { label: 'Calendar', icon: CalendarDays },
+  map: { label: 'Map', icon: MapPin },
 };
 
 export interface ViewColumn {
@@ -66,6 +79,8 @@ export interface ViewConfig<T> {
   getDate?: (item: T) => string | null;
   /** Table columns. */
   fields: ViewField<T>[];
+  /** Full address for the map. Return null when the record has none. */
+  getAddress?: (item: T) => string | null;
   isFavorite?: (item: T) => boolean;
   isArchived?: (item: T) => boolean;
 }
@@ -152,7 +167,29 @@ export function DataViews<T>(props: DataViewsProps<T>) {
   if (mode === 'kanban') return <KanbanView {...props} />;
   if (mode === 'card') return <CardView {...props} />;
   if (mode === 'calendar') return <CalendarView {...props} />;
+  if (mode === 'map') return <MapViewAdapter {...props} />;
   return <ListView {...props} />;
+}
+
+/* ---------------------------------- Map ---------------------------------- */
+
+function MapViewAdapter<T>({ items, config, onOpen }: DataViewsProps<T>) {
+  if (!config.getAddress) {
+    return <EmptyState title="No address field" description="These records have no address to map." />;
+  }
+  return (
+    <LazyMapView
+      items={items}
+      getId={config.getId}
+      getTitle={config.getTitle}
+      getSubtitle={(item: T) => {
+        const s = config.getSubtitle?.(item);
+        return typeof s === 'string' ? s : null;
+      }}
+      getAddress={config.getAddress}
+      onOpen={onOpen}
+    />
+  );
 }
 
 /* --------------------------------- List ---------------------------------- */

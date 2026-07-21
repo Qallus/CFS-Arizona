@@ -30,7 +30,8 @@ const COLS =
 
 // Embed a light contact summary for list/board rendering.
 const CONTACT_EMBED =
-  'contact:sig_contacts ( id, full_name, first_name, last_name, email, phone, mobile_phone, matter_type, referral_source )';
+  'contact:sig_contacts ( id, full_name, first_name, last_name, email, phone, mobile_phone, ' +
+  'matter_type, referral_source, address_line1, city, state, zip_code )';
 
 export type Stage = 'awareness' | 'interest' | 'intake' | 'nurture';
 export type Disposition =
@@ -54,6 +55,11 @@ export interface ContactSummary {
   mobilePhone: string | null;
   matterType: string | null;
   referralSource: string | null;
+  // Carried for the Map view; sig_contacts already stores these.
+  addressLine1: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
 }
 
 export interface OpportunityRow {
@@ -102,6 +108,10 @@ function mapContact(r: Row | null | undefined): ContactSummary | null {
     mobilePhone: (r.mobile_phone as string) ?? null,
     matterType: (r.matter_type as string) ?? null,
     referralSource: (r.referral_source as string) ?? null,
+    addressLine1: (r.address_line1 as string) ?? null,
+    city: (r.city as string) ?? null,
+    state: (r.state as string) ?? null,
+    zipCode: (r.zip_code as string) ?? null,
   };
 }
 

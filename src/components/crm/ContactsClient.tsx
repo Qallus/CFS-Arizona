@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Users,
   Search,
@@ -12,6 +13,7 @@ import {
   LayoutGrid,
   CalendarDays,
   Columns3,
+  MapPin,
   Database,
   ArrowRight,
   ChevronLeft,
@@ -30,7 +32,15 @@ import {
   Tr,
   EmptyState,
 } from '@/components/dashboard/page-parts';
+import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
+import type { MapViewProps } from '@/components/views/MapView';
+
+// Leaflet touches `window` at import time, so it cannot render on the server.
+const LazyMapView = dynamic(() => import('@/components/views/MapView'), {
+  ssr: false,
+  loading: () => <p className="py-14 text-center text-sm text-muted-foreground">Loading map…</p>,
+}) as <T>(props: MapViewProps<T>) => React.ReactNode;
 import { AddContactModal } from './AddContactModal';
 import { ImportContactsModal } from './ImportContactsModal';
 import {
@@ -56,6 +66,10 @@ interface ContactSummary {
   email: string | null;
   matterType: string | null;
   referralSource: string | null;
+  addressLine1: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
 }
 interface Opportunity {
   id: string;
@@ -66,14 +80,26 @@ interface Opportunity {
   contact: ContactSummary | null;
 }
 
-type ViewKey = 'table' | 'list' | 'cards' | 'calendar' | 'kanban';
+type ViewKey = 'list' | 'table' | 'kanban' | 'cards' | 'calendar' | 'map';
+// Order matches the shared ViewSwitcher used by Clients & Wards and Matters,
+// so the control does not reshuffle as you move between pages.
 const VIEWS: { key: ViewKey; label: string; icon: typeof TableIcon }[] = [
-  { key: 'table', label: 'Table', icon: TableIcon },
   { key: 'list', label: 'List', icon: LayoutList },
+  { key: 'table', label: 'Table', icon: TableIcon },
+  { key: 'kanban', label: 'Kanban', icon: Columns3 },
   { key: 'cards', label: 'Cards', icon: LayoutGrid },
   { key: 'calendar', label: 'Calendar', icon: CalendarDays },
-  { key: 'kanban', label: 'Kanban', icon: Columns3 },
+  { key: 'map', label: 'Map', icon: MapPin },
 ];
+
+/** Single-line address for geocoding, or null when there is nothing to map. */
+function contactAddress(c: ContactSummary | null): string | null {
+  if (!c) return null;
+  const parts = [c.addressLine1, c.city, c.state, c.zipCode].map((p) => (p ?? '').trim()).filter(Boolean);
+  // A bare state or zip geocodes to the middle of a state — worse than no pin.
+  if (!c.addressLine1?.trim() && !c.city?.trim()) return null;
+  return parts.join(', ');
+}
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '—';
@@ -88,7 +114,7 @@ export function ContactsClient() {
   const [opps, setOpps] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
   const [provisioned, setProvisioned] = useState(true);
-  const [view, setView] = useState<ViewKey>('table');
+  const [view, setView] = useState<ViewKey>('list');
   const [tab, setTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
@@ -231,6 +257,8 @@ export function ContactsClient() {
         <CardsView rows={visible} />
       ) : view === 'calendar' ? (
         <CalendarView rows={visible} />
+      ) : view === 'map' ? (
+        <ContactsMap rows={visible} />
       ) : (
         <KanbanView rows={searched} onMove={moveStage} />
       )}
@@ -550,5 +578,22 @@ function Avatar({ name, size = 'md' }: { name: string; size?: 'md' | 'lg' }) {
     >
       {name[0]?.toUpperCase()}
     </span>
+  );
+}
+
+/* ---------------------------------- Map ---------------------------------- */
+function ContactsMap({ rows }: { rows: Opportunity[] }) {
+  const router = useRouter();
+  return (
+    <SectionCard bodyClassName="p-3">
+      <LazyMapView
+        items={rows}
+        getId={(o: Opportunity) => o.id}
+        getTitle={(o: Opportunity) => contactDisplayName(o.contact)}
+        getSubtitle={(o: Opportunity) => o.contact?.email ?? null}
+        getAddress={(o: Opportunity) => contactAddress(o.contact)}
+        onOpen={(o: Opportunity) => router.push(`/contacts/${o.contactId}`)}
+      />
+    </SectionCard>
   );
 }
