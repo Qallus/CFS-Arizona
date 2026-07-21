@@ -16,10 +16,15 @@ import {
   User,
   PanelLeft,
   PanelLeftClose,
+  LogOut,
+  UserCog,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import { contactDisplayName } from '@/components/crm/crm-meta';
+import { useAuth } from '@/contexts/AuthContext';
+import { PERMISSIONS, roleLabel, type Role } from '@/lib/rbac';
 
 interface Note {
   id: string;
@@ -192,8 +197,120 @@ export function Topbar({
         >
           {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
         </button>
+
+        <UserMenu />
       </div>
     </header>
+  );
+}
+
+/* ---------------------- Account menu (top right) ---------------------- */
+function UserMenu() {
+  const { user, signOut, can } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  // Signing out is the one action that must work even when /api/me can't
+  // resolve a profile — that is precisely when a user needs to get out.
+  const label = user?.name || user?.email || 'Account';
+  const initial = (user?.name || user?.email || 'U')[0]?.toUpperCase();
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-lg p-1 pl-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="Account menu"
+        title={label}
+      >
+        {user?.avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.avatar} alt="" className="size-8 rounded-full object-cover" />
+        ) : (
+          <span className="grid size-8 place-items-center rounded-full bg-brand/20 text-xs font-semibold text-brand">
+            {initial}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-11 z-40 w-64 overflow-hidden rounded-xl border border-border bg-card shadow-lg"
+        >
+          <div className="border-b border-border px-4 py-3">
+            <p className="truncate text-sm font-medium text-foreground">{label}</p>
+            {user?.email && <p className="truncate text-xs text-muted-foreground">{user.email}</p>}
+            {user?.role && (
+              <p className="mt-1 text-[11px] font-medium text-brand">{roleLabel(user.role as Role)}</p>
+            )}
+          </div>
+
+          <div className="py-1">
+            <Link
+              href="/account/profile"
+              onClick={() => setOpen(false)}
+              role="menuitem"
+              className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-secondary/50"
+            >
+              <UserCog className="size-4 text-muted-foreground" />
+              My profile
+            </Link>
+
+            {can(PERMISSIONS.USERS_VIEW) && (
+              <Link
+                href="/account/roles"
+                onClick={() => setOpen(false)}
+                role="menuitem"
+                className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-secondary/50"
+              >
+                <Users className="size-4 text-muted-foreground" />
+                User management
+              </Link>
+            )}
+          </div>
+
+          <div className="border-t border-border py-1">
+            <button
+              onClick={async () => {
+                setSigningOut(true);
+                try {
+                  await signOut();
+                } finally {
+                  setSigningOut(false);
+                  setOpen(false);
+                }
+              }}
+              disabled={signingOut}
+              role="menuitem"
+              className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-60"
+            >
+              <LogOut className="size-4 text-muted-foreground" />
+              {signingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

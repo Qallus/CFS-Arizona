@@ -107,6 +107,9 @@ export default function RolesPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<Role>(ROLES.CLIENT_SERVICE_ASSOCIATE);
   const [inviteTitle, setInviteTitle] = useState('');
+  const [inviteFirstName, setInviteFirstName] = useState('');
+  const [inviteLastName, setInviteLastName] = useState('');
+  const [invitePhone, setInvitePhone] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
 
   function flash(m: Msg) {
@@ -155,7 +158,15 @@ export default function RolesPage() {
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: inviteEmail, role: inviteRole, title: inviteTitle, mode: 'invite' }),
+        body: JSON.stringify({
+          email: inviteEmail,
+          role: inviteRole,
+          title: inviteTitle,
+          firstName: inviteFirstName,
+          lastName: inviteLastName,
+          phone: invitePhone,
+          mode: 'invite',
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to invite user');
@@ -169,6 +180,9 @@ export default function RolesPage() {
       setShowInvite(false);
       setInviteEmail('');
       setInviteTitle('');
+      setInviteFirstName('');
+      setInviteLastName('');
+      setInvitePhone('');
       setInviteRole(ROLES.CLIENT_SERVICE_ASSOCIATE);
     } catch (err) {
       flash({ type: 'error', text: (err as Error).message });
@@ -462,6 +476,36 @@ export default function RolesPage() {
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="colleague@sig360.com"
+                  className="bg-secondary border-border mt-1"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-sm text-muted-foreground">First name</Label>
+                  <Input
+                    value={inviteFirstName}
+                    onChange={(e) => setInviteFirstName(e.target.value)}
+                    placeholder="Jane"
+                    className="bg-secondary border-border mt-1"
+                  />
+                </div>
+                <div>
+                  <Label className="text-sm text-muted-foreground">Last name</Label>
+                  <Input
+                    value={inviteLastName}
+                    onChange={(e) => setInviteLastName(e.target.value)}
+                    placeholder="Doe"
+                    className="bg-secondary border-border mt-1"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-sm text-muted-foreground">Phone (optional)</Label>
+                <Input
+                  type="tel"
+                  value={invitePhone}
+                  onChange={(e) => setInvitePhone(e.target.value)}
+                  placeholder="480-555-0134"
                   className="bg-secondary border-border mt-1"
                 />
               </div>
