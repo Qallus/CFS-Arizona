@@ -39,14 +39,22 @@ function normalize(address: string): string {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function lookupUpstream(query: string): Promise<Resolved> {
+const EMPTY = (query: string): Resolved => ({
+  query,
+  latitude: null,
+  longitude: null,
+  displayName: null,
+});
+
+/** Nominatim — free, no key, rate-limited. The default. */
+async function lookupNominatim(query: string): Promise<Resolved> {
   const url = `${NOMINATIM}?format=json&limit=1&q=${encodeURIComponent(query)}`;
   try {
     const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' } });
-    if (!res.ok) return { query, latitude: null, longitude: null, displayName: null };
+    if (!res.ok) return EMPTY(query);
     const hits = (await res.json()) as { lat?: string; lon?: string; display_name?: string }[];
     const hit = Array.isArray(hits) ? hits[0] : undefined;
-    if (!hit?.lat || !hit?.lon) return { query, latitude: null, longitude: null, displayName: null };
+    if (!hit?.lat || !hit?.lon) return EMPTY(query);
     return {
       query,
       latitude: Number(hit.lat),
@@ -54,8 +62,52 @@ async function lookupUpstream(query: string): Promise<Resolved> {
       displayName: hit.display_name ?? null,
     };
   } catch {
-    return { query, latitude: null, longitude: null, displayName: null };
+    return EMPTY(query);
   }
+}
+
+/**
+ * Google Geocoding — better on US street addresses and named facilities, which
+ * is most of what CFS looks up. Costs money and needs a key. Set
+ * GOOGLE_MAPS_API_KEY and this takes over automatically; no other change is
+ * needed, and the cache and throttle keep working either way.
+ *
+ * Note the tiles stay OpenStreetMap regardless — swapping those is a separate
+ * change in MapView.
+ */
+async function lookupGoogle(query: string, apiKey: string): Promise<Resolved> {
+  const url =
+    'https://maps.googleapis.com/maps/api/geocode/json' +
+    `?address=${encodeURIComponent(query)}&key=${apiKey}`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return EMPTY(query);
+    const data = (await res.json()) as {
+      status?: string;
+      results?: { geometry?: { location?: { lat: number; lng: number } }; formatted_address?: string }[];
+    };
+    const hit = data.results?.[0];
+    const loc = hit?.geometry?.location;
+    if (data.status !== 'OK' || !loc) return EMPTY(query);
+    return {
+      query,
+      latitude: loc.lat,
+      longitude: loc.lng,
+      displayName: hit?.formatted_address ?? null,
+    };
+  } catch {
+    return EMPTY(query);
+  }
+}
+
+async function lookupUpstream(query: string): Promise<Resolved> {
+  const googleKey = process.env.GOOGLE_MAPS_API_KEY;
+  return googleKey ? lookupGoogle(query, googleKey) : lookupNominatim(query);
+}
+
+/** Google has no 1-req/sec courtesy limit, so the throttle only applies to OSM. */
+function throttleFor(): number {
+  return process.env.GOOGLE_MAPS_API_KEY ? 0 : THROTTLE_MS;
 }
 
 export async function POST(req: NextRequest) {
@@ -100,7 +152,7 @@ export async function POST(req: NextRequest) {
     const toLookup = missing.slice(0, MAX_UNCACHED_LOOKUPS);
 
     for (let i = 0; i < toLookup.length; i++) {
-      if (i > 0) await sleep(THROTTLE_MS);
+      if (i > 0 && throttleFor() > 0) await sleep(throttleFor());
       const resolved = await lookupUpstream(toLookup[i]);
       results.set(toLookup[i].toLowerCase(), resolved);
 
