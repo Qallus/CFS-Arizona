@@ -149,7 +149,7 @@ export function SectionCard({
 /*  Status pill                                                       */
 /* ------------------------------------------------------------------ */
 
-type Tone = "neutral" | "brand" | "good" | "warning" | "critical" | "info";
+export type Tone = "neutral" | "brand" | "good" | "warning" | "critical" | "info";
 
 const toneClasses: Record<Tone, string> = {
   neutral: "bg-secondary text-muted-foreground",

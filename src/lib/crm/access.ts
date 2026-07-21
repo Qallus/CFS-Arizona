@@ -34,9 +34,25 @@ export interface PgError {
   code?: string;
   message?: string;
 }
+/**
+ * "This table does not exist yet."
+ *
+ * Two shapes, because the error can come from either layer:
+ *   - Postgres itself: SQLSTATE 42P01, "relation ... does not exist".
+ *   - PostgREST's schema cache: PGRST205, "Could not find the table ... in the
+ *     schema cache" — what Supabase actually returns for an unapplied
+ *     migration, and the case the original check missed. Without it a missing
+ *     table surfaced as a raw 500 instead of the graceful "not provisioned"
+ *     empty state every caller is written to expect.
+ */
 export function isUndefinedTable(err: PgError | null): boolean {
   if (!err) return false;
-  return err.code === '42P01' || /relation .* does not exist/i.test(err.message ?? '');
+  if (err.code === '42P01' || err.code === 'PGRST205') return true;
+  const message = err.message ?? '';
+  return (
+    /relation .* does not exist/i.test(message) ||
+    /could not find the table/i.test(message)
+  );
 }
 export function raisePg(err: PgError | null): never {
   if (isUndefinedTable(err)) throw new CrmTableMissingError();

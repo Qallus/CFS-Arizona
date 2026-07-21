@@ -49,9 +49,12 @@ interface PgError {
   message?: string;
 }
 
+/** See the note in crm/access.ts — PostgREST reports this as PGRST205. */
 function isUndefinedTable(err: PgError | null): boolean {
   if (!err) return false;
-  return err.code === '42P01' || /relation .* does not exist/i.test(err.message ?? '');
+  if (err.code === '42P01' || err.code === 'PGRST205') return true;
+  const message = err.message ?? '';
+  return /relation .* does not exist/i.test(message) || /could not find the table/i.test(message);
 }
 
 function raise(err: PgError | null): never {
