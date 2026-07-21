@@ -16,6 +16,9 @@ import {
   MapPin,
   Share2,
   Moon,
+  Download,
+  ChevronsLeft,
+  ChevronsRight,
   Database,
   ArrowRight,
   ChevronLeft,
@@ -119,6 +122,9 @@ export function ContactsClient() {
   const [loading, setLoading] = useState(true);
   const [provisioned, setProvisioned] = useState(true);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+  const [exporting, setExporting] = useState(false);
   const [view, setView] = useState<ViewKey>('list');
   const [tab, setTab] = useState<TabKey>('all');
   const [search, setSearch] = useState('');
@@ -205,6 +211,51 @@ export function ContactsClient() {
     [searched, tab],
   );
 
+  // Kanban, calendar and map are aggregate views — paging them would hide the
+  // shape of the data, which is the whole reason to look at them.
+  const PAGED_VIEWS: ViewKey[] = ['list', 'table', 'cards'];
+  const paged = PAGED_VIEWS.includes(view);
+  const pageCount = Math.max(1, Math.ceil(visible.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = useMemo(
+    () =>
+      paged
+        ? visible.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+        : visible,
+    [visible, paged, currentPage, pageSize],
+  );
+
+  // Any change to what is being filtered invalidates the page number.
+  useEffect(() => {
+    setPage(1);
+  }, [tab, search, view, pageSize]);
+
+  /** Export exactly what is on screen — same tab, same search. */
+  async function exportCsv() {
+    setExporting(true);
+    try {
+      const res = await fetch('/api/crm/contacts/export', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: visible.map((o) => o.contactId) }),
+      });
+      if (!res.ok) throw new Error('Export failed.');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cfs-contacts-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      /* the browser reports a failed download itself */
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (!loading && !provisioned) {
     return (
       <PageShell>
@@ -237,6 +288,15 @@ export function ContactsClient() {
             </div>
             <Button size="sm" variant="outline" onClick={() => setShowImport(true)}>
               <Upload className="size-4" /> Import
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={exportCsv}
+              disabled={exporting || visible.length === 0}
+              title={`Export the ${visible.length} contacts currently shown`}
+            >
+              <Download className="size-4" /> {exporting ? 'Exporting…' : 'Export'}
             </Button>
             <Button size="sm" onClick={() => setShowAdd(true)}>
               <Plus className="size-4" /> Add contact
@@ -303,17 +363,79 @@ export function ContactsClient() {
       ) : opps.length === 0 ? (
         <EmptyState icon={Users} title="No contacts yet" description="Add or import contacts to start the funnel." />
       ) : view === 'table' ? (
-        <TableView rows={visible} />
+        <TableView rows={pageRows} />
       ) : view === 'list' ? (
-        <ListView rows={visible} />
+        <ListView rows={pageRows} />
       ) : view === 'cards' ? (
-        <CardsView rows={visible} />
+        <CardsView rows={pageRows} />
       ) : view === 'calendar' ? (
         <CalendarView rows={visible} />
       ) : view === 'map' ? (
         <ContactsMap rows={visible} />
       ) : (
         <KanbanView rows={searched} onMove={moveStage} />
+      )}
+
+      {paged && visible.length > 0 && (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground">
+            {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, visible.length)} of{' '}
+            {visible.length}
+          </p>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="h-9 rounded-md border border-border bg-secondary px-2 text-sm text-foreground"
+              aria-label="Contacts per page"
+            >
+              {[25, 50, 100, 200].map((n) => (
+                <option key={n} value={n}>
+                  {n} per page
+                </option>
+              ))}
+            </select>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setPage(1)}
+                disabled={currentPage === 1}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
+                aria-label="First page"
+              >
+                <ChevronsLeft className="size-4" />
+              </button>
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
+                aria-label="Previous page"
+              >
+                <ChevronLeft className="size-4" />
+              </button>
+              <span className="px-2 text-sm tabular-nums text-foreground">
+                {currentPage} / {pageCount}
+              </span>
+              <button
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                disabled={currentPage === pageCount}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
+                aria-label="Next page"
+              >
+                <ChevronRight className="size-4" />
+              </button>
+              <button
+                onClick={() => setPage(pageCount)}
+                disabled={currentPage === pageCount}
+                className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-40"
+                aria-label="Last page"
+              >
+                <ChevronsRight className="size-4" />
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <AddContactModal open={showAdd} onOpenChange={setShowAdd} onCreated={load} />
