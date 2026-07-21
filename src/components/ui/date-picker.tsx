@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { parseLocalDate, toLocalIsoDate } from '@/lib/dates';
 
 interface DatePickerProps {
   value: string;
@@ -20,26 +21,6 @@ const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
-
-/**
- * Parse 'YYYY-MM-DD' as a LOCAL date.
- *
- * `new Date('2025-12-25')` is specified to parse as UTC midnight, which in
- * Arizona (UTC-7) is 5pm on the 24th — so a saved date rendered back through
- * the browser's local timezone lands a day early. Every date here is a plain
- * calendar date with no time component, so it must be built locally.
- */
-function parseLocalDate(value: string): Date | null {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(value);
-  if (!m) return null;
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
-}
-
-/** Format a local Date as 'YYYY-MM-DD' without a UTC round-trip. */
-function toLocalIsoDate(d: Date): string {
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
 
 export function DatePicker({
   value,

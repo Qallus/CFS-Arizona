@@ -302,6 +302,39 @@ export async function uploadAttachment(
   return mapAttachment(data as unknown as AttachmentRow);
 }
 
+/**
+ * Delete every favorite, share and attachment belonging to a record.
+ *
+ * These tables key on (entity_type, entity_id) rather than a foreign key — the
+ * price of making them generic — so Postgres cannot cascade on our behalf.
+ * Every hard delete has to call this.
+ *
+ * The storage objects matter most: without this, deleting a matter leaves its
+ * court filings and medical records sitting in the bucket indefinitely, long
+ * after the record they belong to is gone.
+ *
+ * Called after the parent row is already deleted, so it takes no permission
+ * argument — the caller has established the right to destroy the record.
+ */
+export async function purgeEntity(entityType: EntityType, entityId: string): Promise<void> {
+  const { data } = await supabaseAdmin
+    .from('sig_attachments')
+    .select('storage_path')
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId);
+
+  const paths = ((data ?? []) as { storage_path: string }[]).map((r) => r.storage_path);
+  if (paths.length > 0) {
+    await supabaseAdmin.storage.from(BUCKET).remove(paths);
+  }
+
+  for (const table of ['sig_attachments', 'sig_favorites', 'sig_shares'] as const) {
+    // sig_favorites has no entity row of its own to guard; matching on the
+    // pair is enough for all three.
+    await supabaseAdmin.from(table).delete().eq('entity_type', entityType).eq('entity_id', entityId);
+  }
+}
+
 export async function deleteAttachment(user: RbacUser, attachmentId: string): Promise<void> {
   if (!hasPermission(user, PERMISSIONS.DOCUMENTS_DELETE)) {
     throw new CrmForbiddenError('You cannot delete documents.');

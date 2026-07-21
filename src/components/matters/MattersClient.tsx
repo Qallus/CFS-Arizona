@@ -30,6 +30,7 @@ import {
 } from '@/components/views/DataViews';
 import { ItemActions } from '@/components/views/ItemActions';
 import { AttachmentsPanel } from '@/components/views/AttachmentsPanel';
+import { formatDateOnly } from '@/lib/dates';
 
 /* --------------------------------- Types --------------------------------- */
 
@@ -264,7 +265,7 @@ export function MattersClient() {
       getSubtitle: (m) => m.clientName || m.title || TYPE_LABELS[m.matterType],
       getMeta: (m) =>
         m.nextDeadlineAt
-          ? `Next deadline ${new Date(m.nextDeadlineAt).toLocaleDateString()}`
+          ? `Next deadline ${formatDateOnly(m.nextDeadlineAt)}`
           : m.venue || '',
       getBadge: (m) => ({ label: STATUS_LABELS[m.status] ?? m.status, tone: STATUS_TONES[m.status] ?? 'neutral' }),
       columns: STATUSES.map((s) => ({ key: s, label: STATUS_LABELS[s], tone: STATUS_TONES[s] })),
@@ -289,8 +290,7 @@ export function MattersClient() {
         {
           key: 'deadline',
           label: 'Next deadline',
-          render: (m) =>
-            m.nextDeadlineAt ? new Date(m.nextDeadlineAt).toLocaleDateString() : '—',
+          render: (m) => formatDateOnly(m.nextDeadlineAt),
         },
       ],
     }),

@@ -16,6 +16,7 @@ import {
   CrmValidationError,
   type PgError,
 } from '@/lib/crm/access';
+import { purgeEntity } from '@/lib/collections';
 
 const TABLE = 'sig_clients';
 const COLS =
@@ -299,4 +300,6 @@ export async function deleteClient(user: RbacUser, id: string): Promise<void> {
   assertEdit(user);
   const { error } = await supabaseAdmin.from(TABLE).delete().eq('id', id);
   if (error) raisePg(error as PgError);
+  // Nothing cascades from the generic (entity_type, entity_id) tables.
+  await purgeEntity('client', id);
 }

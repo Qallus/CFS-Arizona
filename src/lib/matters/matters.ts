@@ -21,6 +21,7 @@ import {
   CrmValidationError,
   type PgError,
 } from '@/lib/crm/access';
+import { purgeEntity } from '@/lib/collections';
 
 const TABLE = 'sig_matters';
 const COLS =
@@ -315,4 +316,7 @@ export async function deleteMatter(user: RbacUser, id: string): Promise<void> {
   assertEdit(user);
   const { error } = await supabaseAdmin.from(TABLE).delete().eq('id', id);
   if (error) raisePg(error as PgError);
+  // Favorites, shares and attachments key on (entity_type, entity_id), so
+  // nothing cascades. Uploaded files would otherwise outlive the matter.
+  await purgeEntity('matter', id);
 }

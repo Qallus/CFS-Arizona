@@ -26,6 +26,7 @@ import { PageShell, PageHeader, StatTile, StatusPill, type Tone } from '@/compon
 import { DataViews, ViewSwitcher, type ViewMode, type ViewConfig } from '@/components/views/DataViews';
 import { ItemActions } from '@/components/views/ItemActions';
 import { AttachmentsPanel } from '@/components/views/AttachmentsPanel';
+import { formatDateOnly } from '@/lib/dates';
 
 const KINDS = ['individual', 'ward', 'estate', 'trust'] as const;
 const KIND_LABELS: Record<string, string> = {
@@ -263,7 +264,7 @@ export function ClientsClient() {
         `${ROLE_LABELS[c.fiduciaryRole] ?? c.fiduciaryRole}${c.courtSupervised ? ' · court' : ''}`,
       getMeta: (c) =>
         c.nextReviewAt
-          ? `Next review ${new Date(c.nextReviewAt).toLocaleDateString()}`
+          ? `Next review ${formatDateOnly(c.nextReviewAt)}`
           : c.facilityName || '',
       getBadge: (c) => ({
         label: STATUS_LABELS[c.status] ?? c.status,
@@ -298,7 +299,7 @@ export function ClientsClient() {
         {
           key: 'review',
           label: 'Next review',
-          render: (c) => (c.nextReviewAt ? new Date(c.nextReviewAt).toLocaleDateString() : '—'),
+          render: (c) => formatDateOnly(c.nextReviewAt),
         },
         {
           key: 'status',
