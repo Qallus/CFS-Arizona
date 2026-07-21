@@ -81,9 +81,11 @@ export function WorkflowPath({
 
   return (
     <div>
-      {/* Chevron path */}
+      {/* Chevron path — fills the card width, matching the funnel below it.
+          min-w keeps the labels legible on narrow screens, where the wrapper
+          scrolls horizontally rather than crushing seven steps together. */}
       <div className="flex w-full overflow-x-auto pb-1">
-        <div className="flex min-w-max">
+        <div className="flex w-full min-w-[720px]">
           {PATH_NODES.map((node, i) => {
             const done = i < currentIdx;
             const active = i === currentIdx;
@@ -103,7 +105,10 @@ export function WorkflowPath({
                 title={node.label}
                 style={{ clipPath: clip, marginRight: last ? 0 : -NOTCH + 2, zIndex: PATH_NODES.length - i }}
                 className={cn(
-                  'relative flex items-center gap-1.5 whitespace-nowrap py-2.5 pr-4 text-xs font-medium',
+                  // flex-1 so the seven steps share the width evenly; the
+                  // asymmetric padding keeps the label clear of the notch that
+                  // the clip-path cuts into the left edge.
+                  'relative flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap py-2.5 pr-4 text-xs font-medium',
                   first ? 'pl-4' : 'pl-6',
                   lostHere
                     ? 'bg-destructive text-white'
