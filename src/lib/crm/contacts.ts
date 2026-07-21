@@ -22,6 +22,8 @@ import {
 
 const TABLE = 'sig_contacts';
 const COLS =
+  'secondary_first_name, secondary_last_name, secondary_email, secondary_phone, ' +
+  'referral_date, referral_type, attorney, appointment_notes, notes, ' +
   'id, source, external_id, first_name, last_name, full_name, email, phone, mobile_phone, ' +
   'home_phone, work_phone, company_name, status, contact_type, city, state, zip_code, country, ' +
   'household_id, household_external_id, servicing_advisor, writing_advisor, assigned_planner, ' +
@@ -39,6 +41,16 @@ export interface ContactRow {
   firstName: string | null;
   lastName: string | null;
   fullName: string | null;
+  // Referral intake fields, shared with sig_referrals.
+  secondaryFirstName: string | null;
+  secondaryLastName: string | null;
+  secondaryEmail: string | null;
+  secondaryPhone: string | null;
+  referralDate: string | null;
+  referralType: string | null;
+  attorney: string | null;
+  appointmentNotes: string | null;
+  notes: string | null;
   email: string | null;
   phone: string | null;
   mobilePhone: string | null;
@@ -78,6 +90,15 @@ function mapRow(r: Row): ContactRow {
     id: String(r.id),
     source: String(r.source ?? 'manual'),
     externalId: (r.external_id as string) ?? null,
+    secondaryFirstName: (r.secondary_first_name as string) ?? null,
+    secondaryLastName: (r.secondary_last_name as string) ?? null,
+    secondaryEmail: (r.secondary_email as string) ?? null,
+    secondaryPhone: (r.secondary_phone as string) ?? null,
+    referralDate: (r.referral_date as string) ?? null,
+    referralType: (r.referral_type as string) ?? null,
+    attorney: (r.attorney as string) ?? null,
+    appointmentNotes: (r.appointment_notes as string) ?? null,
+    notes: (r.notes as string) ?? null,
     firstName: (r.first_name as string) ?? null,
     lastName: (r.last_name as string) ?? null,
     fullName: (r.full_name as string) ?? null,
@@ -190,6 +211,15 @@ export interface ContactInput {
   addressLine2?: string;
   referralSource?: string;
   referralSourceDetail?: string;
+  secondaryFirstName?: string;
+  secondaryLastName?: string;
+  secondaryEmail?: string;
+  secondaryPhone?: string;
+  referralDate?: string | null;
+  referralType?: string;
+  attorney?: string;
+  appointmentNotes?: string;
+  notes?: string;
   matterType?: string;
   preferredContactMethod?: string;
 }
@@ -283,6 +313,16 @@ export async function updateContact(user: RbacUser, id: string, patch: ContactIn
   if (patch.referralSourceDetail !== undefined) update.referral_source_detail = patch.referralSourceDetail.trim() || null;
   if (patch.matterType !== undefined) update.matter_type = patch.matterType.trim() || null;
   if (patch.preferredContactMethod !== undefined) update.preferred_contact_method = patch.preferredContactMethod.trim() || null;
+  // Referral intake fields, shared with sig_referrals.
+  if (patch.secondaryFirstName !== undefined) update.secondary_first_name = patch.secondaryFirstName.trim() || null;
+  if (patch.secondaryLastName !== undefined) update.secondary_last_name = patch.secondaryLastName.trim() || null;
+  if (patch.secondaryEmail !== undefined) update.secondary_email = patch.secondaryEmail.trim().toLowerCase() || null;
+  if (patch.secondaryPhone !== undefined) update.secondary_phone = patch.secondaryPhone.trim() || null;
+  if (patch.referralDate !== undefined) update.referral_date = patch.referralDate || null;
+  if (patch.referralType !== undefined) update.referral_type = patch.referralType.trim() || null;
+  if (patch.attorney !== undefined) update.attorney = patch.attorney.trim() || null;
+  if (patch.appointmentNotes !== undefined) update.appointment_notes = patch.appointmentNotes.trim() || null;
+  if (patch.notes !== undefined) update.notes = patch.notes.trim() || null;
 
   if (Object.keys(update).length === 0) return existing;
 

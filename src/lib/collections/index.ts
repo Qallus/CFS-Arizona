@@ -22,6 +22,7 @@ export const ENTITY_TYPES = [
   'court_accounting',
   'document',
   'note',
+  'referral',
 ] as const;
 export type EntityType = (typeof ENTITY_TYPES)[number];
 
