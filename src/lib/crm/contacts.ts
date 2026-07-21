@@ -22,6 +22,8 @@ import {
 
 const TABLE = 'sig_contacts';
 const COLS =
+  'cc_fee_due, staff_contact, last_contact_type, contact_date, send_follow_up_email_at, ' +
+  'email_follow_up_at, final_closure_notice_at, status_notes, ' +
   'secondary_first_name, secondary_last_name, secondary_email, secondary_phone, ' +
   'referral_date, referral_type, attorney, appointment_notes, notes, ' +
   'id, source, external_id, first_name, last_name, full_name, email, phone, mobile_phone, ' +
@@ -42,6 +44,14 @@ export interface ContactRow {
   lastName: string | null;
   fullName: string | null;
   // Referral intake fields, shared with sig_referrals.
+  ccFeeDue: string | null;
+  staffContact: string | null;
+  lastContactType: string | null;
+  contactDate: string | null;
+  sendFollowUpEmailAt: string | null;
+  emailFollowUpAt: string | null;
+  finalClosureNoticeAt: string | null;
+  statusNotes: string | null;
   secondaryFirstName: string | null;
   secondaryLastName: string | null;
   secondaryEmail: string | null;
@@ -90,6 +100,14 @@ function mapRow(r: Row): ContactRow {
     id: String(r.id),
     source: String(r.source ?? 'manual'),
     externalId: (r.external_id as string) ?? null,
+    ccFeeDue: (r.cc_fee_due as string) ?? null,
+    staffContact: (r.staff_contact as string) ?? null,
+    lastContactType: (r.last_contact_type as string) ?? null,
+    contactDate: (r.contact_date as string) ?? null,
+    sendFollowUpEmailAt: (r.send_follow_up_email_at as string) ?? null,
+    emailFollowUpAt: (r.email_follow_up_at as string) ?? null,
+    finalClosureNoticeAt: (r.final_closure_notice_at as string) ?? null,
+    statusNotes: (r.status_notes as string) ?? null,
     secondaryFirstName: (r.secondary_first_name as string) ?? null,
     secondaryLastName: (r.secondary_last_name as string) ?? null,
     secondaryEmail: (r.secondary_email as string) ?? null,
@@ -211,6 +229,14 @@ export interface ContactInput {
   addressLine2?: string;
   referralSource?: string;
   referralSourceDetail?: string;
+  ccFeeDue?: string;
+  staffContact?: string;
+  lastContactType?: string;
+  contactDate?: string | null;
+  sendFollowUpEmailAt?: string | null;
+  emailFollowUpAt?: string | null;
+  finalClosureNoticeAt?: string | null;
+  statusNotes?: string;
   secondaryFirstName?: string;
   secondaryLastName?: string;
   secondaryEmail?: string;
@@ -323,6 +349,15 @@ export async function updateContact(user: RbacUser, id: string, patch: ContactIn
   if (patch.attorney !== undefined) update.attorney = patch.attorney.trim() || null;
   if (patch.appointmentNotes !== undefined) update.appointment_notes = patch.appointmentNotes.trim() || null;
   if (patch.notes !== undefined) update.notes = patch.notes.trim() || null;
+  // PNFF sheet fields.
+  if (patch.ccFeeDue !== undefined) update.cc_fee_due = patch.ccFeeDue.trim() || null;
+  if (patch.staffContact !== undefined) update.staff_contact = patch.staffContact.trim() || null;
+  if (patch.lastContactType !== undefined) update.last_contact_type = patch.lastContactType.trim() || null;
+  if (patch.contactDate !== undefined) update.contact_date = patch.contactDate || null;
+  if (patch.sendFollowUpEmailAt !== undefined) update.send_follow_up_email_at = patch.sendFollowUpEmailAt || null;
+  if (patch.emailFollowUpAt !== undefined) update.email_follow_up_at = patch.emailFollowUpAt || null;
+  if (patch.finalClosureNoticeAt !== undefined) update.final_closure_notice_at = patch.finalClosureNoticeAt || null;
+  if (patch.statusNotes !== undefined) update.status_notes = patch.statusNotes.trim() || null;
 
   if (Object.keys(update).length === 0) return existing;
 

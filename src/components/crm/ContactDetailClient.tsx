@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   UserCircle,
   GitBranch,
+  AlarmClock,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,6 +37,7 @@ import type { WorkflowStage } from './workflow-meta';
 import { MultiCombobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { FollowUpsPanel } from './FollowUpsPanel';
 import {
   STAGES,
   type Stage,
@@ -73,6 +75,23 @@ interface Contact {
   matterType: string | null;
   preferredContactMethod: string | null;
   status: string | null;
+  // PNFF sheet fields
+  ccFeeDue: string | null;
+  staffContact: string | null;
+  lastContactType: string | null;
+  contactDate: string | null;
+  sendFollowUpEmailAt: string | null;
+  emailFollowUpAt: string | null;
+  finalClosureNoticeAt: string | null;
+  statusNotes: string | null;
+  secondaryFirstName: string | null;
+  secondaryLastName: string | null;
+  secondaryEmail: string | null;
+  secondaryPhone: string | null;
+  referralDate: string | null;
+  referralType: string | null;
+  attorney: string | null;
+  notes: string | null;
 }
 interface Opportunity {
   id: string;
@@ -273,6 +292,9 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
           <TabsTrigger value="workflow" className="gap-1.5">
             <GitBranch className="size-4" /> Workflow &amp; funnel
           </TabsTrigger>
+          <TabsTrigger value="followups" className="gap-1.5">
+            <AlarmClock className="size-4" /> Next steps
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="details">
@@ -456,6 +478,10 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
           </SectionCard>
         </div>
         </TabsContent>
+
+        <TabsContent value="followups">
+          <FollowUpsPanel contactId={contactId} />
+        </TabsContent>
       </Tabs>
 
       <LogActivityModal open={showLog} onOpenChange={setShowLog} contactId={contactId} opportunityId={opp?.id ?? null} onLogged={load} />
@@ -521,10 +547,40 @@ const FIELD_GROUPS: {
     ],
   },
   {
+    title: 'Second client',
+    fields: [
+      { key: 'secondaryFirstName', label: 'Client 2 first name' },
+      { key: 'secondaryLastName', label: 'Client 2 last name' },
+      { key: 'secondaryEmail', label: 'Client 2 email', type: 'email' },
+      { key: 'secondaryPhone', label: 'Client 2 phone', type: 'tel' },
+    ],
+  },
+  {
     title: 'Referral',
     fields: [
-      { key: 'referralSource', label: 'Referral source', placeholder: 'Attorney, hospital, website…' },
+      { key: 'referralSource', label: 'Referred by', placeholder: 'Attorney, hospital, website…' },
       { key: 'referralSourceDetail', label: 'Referral detail' },
+      { key: 'referralDate', label: 'Referral date', type: 'date' },
+      { key: 'referralType', label: 'Referral type', placeholder: 'PNFF' },
+      { key: 'attorney', label: 'Attorney (as applicable)' },
+    ],
+  },
+  {
+    title: 'Engagement',
+    fields: [
+      { key: 'status', label: 'Status', placeholder: 'Initial Contact' },
+      { key: 'staffContact', label: 'Staff contact', placeholder: 'TL' },
+      { key: 'lastContactType', label: 'Last contact type', placeholder: 'Initial Consult' },
+      { key: 'contactDate', label: 'Last contact date', type: 'date' },
+      { key: 'ccFeeDue', label: 'CC fee due', placeholder: 'Due Upon Intake' },
+    ],
+  },
+  {
+    title: 'Follow-up sequence',
+    fields: [
+      { key: 'sendFollowUpEmailAt', label: 'Follow-up email sent', type: 'date' },
+      { key: 'emailFollowUpAt', label: 'Second follow-up', type: 'date' },
+      { key: 'finalClosureNoticeAt', label: 'Closure notice sent', type: 'date' },
     ],
   },
 ];
@@ -568,6 +624,23 @@ function DetailsPanel({ contact, onSaved }: { contact: Contact; onSaved: () => v
           referralSource: form.referralSource ?? '',
           referralSourceDetail: form.referralSourceDetail ?? '',
           matterType: form.matterType ?? '',
+          secondaryFirstName: form.secondaryFirstName ?? '',
+          secondaryLastName: form.secondaryLastName ?? '',
+          secondaryEmail: form.secondaryEmail ?? '',
+          secondaryPhone: form.secondaryPhone ?? '',
+          referralDate: form.referralDate || null,
+          referralType: form.referralType ?? '',
+          attorney: form.attorney ?? '',
+          status: form.status ?? '',
+          ccFeeDue: form.ccFeeDue ?? '',
+          staffContact: form.staffContact ?? '',
+          lastContactType: form.lastContactType ?? '',
+          contactDate: form.contactDate || null,
+          sendFollowUpEmailAt: form.sendFollowUpEmailAt || null,
+          emailFollowUpAt: form.emailFollowUpAt || null,
+          finalClosureNoticeAt: form.finalClosureNoticeAt || null,
+          statusNotes: form.statusNotes ?? '',
+          notes: form.notes ?? '',
         }),
       });
       const data = await res.json();
