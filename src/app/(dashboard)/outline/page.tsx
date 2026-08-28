@@ -11,6 +11,9 @@ import {
   Phone,
   Database,
   Send,
+  Inbox,
+  ListChecks,
+  FileText,
 } from "lucide-react";
 import {
   PageShell,
@@ -19,6 +22,7 @@ import {
   StatTile,
   type Tone,
 } from "@/components/dashboard/page-parts";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export const metadata = { title: "Outline" };
 
@@ -297,6 +301,17 @@ export default function OutlinePage() {
         </p>
       </div>
 
+      <Tabs defaultValue="outline">
+        <TabsList className="mb-5">
+          <TabsTrigger value="outline" className="gap-1.5">
+            <ListChecks className="size-4" /> Outline
+          </TabsTrigger>
+          <TabsTrigger value="requests" className="gap-1.5">
+            <Inbox className="size-4" /> Feature Requests
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="outline">
       <div className="mb-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatTile label="Shipped" value={doneCount} icon={CheckCircle2} tone="good" />
         <StatTile label="Up next" value={nextCount} icon={CircleAlert} tone="warning" />
@@ -459,6 +474,164 @@ export default function OutlinePage() {
         <MessageSquare className="mr-1 inline size-3" />
         Hand-maintained — edit the arrays at the top of this page as items land.
       </p>
+        </TabsContent>
+
+        {/* ------------------------ feature requests ------------------------ */}
+        <TabsContent value="requests">
+          <div className="mb-5 max-w-3xl">
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Copy a template, fill it in, and send it over. Paste it as-is — the structure
+              is the point. A request in this shape can usually go straight into a build; the
+              same request as a sentence in a message usually costs a round of questions
+              first.
+            </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              You do not need to know how it should be built. Describe the outcome you want —
+              the how is our side. The full guide lives at{" "}
+              <code className="rounded border border-border bg-secondary px-1.5 py-0.5 font-mono text-[12px]">
+                Docs/FEATURE-REQUESTS.md
+              </code>{" "}
+              in the repo.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            <SectionCard
+              title="Feature request"
+              description="Something you want to do that the app cannot do yet"
+              bodyClassName="p-0"
+            >
+              <pre className="overflow-x-auto px-5 py-4 font-mono text-[12px] leading-relaxed text-muted-foreground">
+{`## Feature Request
+
+**Requested by:**
+**Date:**
+**Priority:** blocking / high / normal / nice-to-have
+
+### What I want to do that I can't today
+
+
+### Where in the app
+(Screen name, and what you clicked to get there.
+ e.g. Contacts > open a contact > Workflow & funnel)
+
+
+### What happens now
+
+
+### What should happen instead
+
+
+### Who this affects
+(Just me / the fiduciaries / everyone / clients)
+
+
+### Is there a workaround today?
+(If yes, what is it and how painful is it?
+ This is what decides urgency.)
+
+
+### Anything else
+(Screenshots, a real example, a court deadline
+ this ties to)`}
+              </pre>
+            </SectionCard>
+
+            <SectionCard
+              title="Bug report"
+              description="Something that exists but behaves wrongly"
+              bodyClassName="p-0"
+            >
+              <pre className="overflow-x-auto px-5 py-4 font-mono text-[12px] leading-relaxed text-muted-foreground">
+{`## Bug Report
+
+**Reported by:**
+**Date:**
+**Severity:** blocking / wrong data / annoying / cosmetic
+
+### What I did
+(Numbered steps, so it can be reproduced exactly)
+1.
+2.
+3.
+
+### What I expected
+
+
+### What actually happened
+
+
+### Does it happen every time?
+
+
+### Who is affected
+
+
+### Screenshot`}
+              </pre>
+            </SectionCard>
+          </div>
+
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <SectionCard
+              title="Priorities"
+              description="Pick honestly — if everything is blocking, nothing is"
+              bodyClassName="p-0"
+            >
+              <ul className="divide-y divide-border">
+                {[
+                  { k: "blocking", tone: "critical" as Tone, d: "Work cannot continue. Someone is stuck right now." },
+                  { k: "high", tone: "warning" as Tone, d: "There is a workaround, but it is costing real time daily." },
+                  { k: "normal", tone: "brand" as Tone, d: "Worth doing. Fits into the next stretch of work." },
+                  { k: "nice-to-have", tone: "neutral" as Tone, d: "Would be better. No harm in waiting." },
+                ].map((p) => (
+                  <li key={p.k} className="flex items-start gap-3 px-5 py-3.5">
+                    <StatusPill tone={p.tone}>{p.k}</StatusPill>
+                    <p className="min-w-0 flex-1 text-sm text-muted-foreground">{p.d}</p>
+                  </li>
+                ))}
+              </ul>
+              <p className="border-t border-border px-5 py-3.5 text-sm text-muted-foreground">
+                For bugs, <strong className="text-foreground">wrong data</strong> outranks{" "}
+                <strong className="text-foreground">annoying</strong> even when it is less
+                irritating — an incorrect number on screen can end up in a court accounting,
+                and that is a different class of problem from a clunky screen.
+              </p>
+            </SectionCard>
+
+            <SectionCard
+              title="What happens after you send one"
+              description="So you are not left wondering where it went"
+              bodyClassName="p-0"
+            >
+              <ul className="divide-y divide-border">
+                {[
+                  "It gets read against the current build — some requests turn out to already exist somewhere else in the app, and that answer comes back the same day.",
+                  "Anything unclear comes back as one round of questions, not several.",
+                  "It lands on this page under next steps, so you can see where it sits without asking.",
+                  "It ships, and it moves up to completed.",
+                ].map((s, i) => (
+                  <li key={s} className="flex items-start gap-3 px-5 py-3.5">
+                    <span className="mt-0.5 grid size-6 shrink-0 place-items-center rounded-full bg-brand/15 font-mono text-[11px] font-semibold text-brand">
+                      {i + 1}
+                    </span>
+                    <p className="min-w-0 flex-1 text-sm text-muted-foreground">{s}</p>
+                  </li>
+                ))}
+              </ul>
+              <div className="flex items-start gap-3 border-t border-border px-5 py-3.5">
+                <FileText className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                <p className="min-w-0 flex-1 text-sm text-muted-foreground">
+                  Three gaps stall most requests: <strong className="text-foreground">where</strong>{" "}
+                  in the app, <strong className="text-foreground">what should happen instead</strong>,
+                  and <strong className="text-foreground">who it affects</strong>. The templates
+                  ask for all three.
+                </p>
+              </div>
+            </SectionCard>
+          </div>
+        </TabsContent>
+      </Tabs>
     </PageShell>
   );
 }
