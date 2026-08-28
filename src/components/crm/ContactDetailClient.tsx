@@ -33,7 +33,7 @@ import {
 import { cn } from '@/lib/utils';
 import { LogActivityModal } from './LogActivityModal';
 import { EmailModal } from '@/components/contacts/EmailModal';
-import { WorkflowPath, WorkflowActions } from './WorkflowPath';
+import { WorkflowActions } from './WorkflowPath';
 import type { WorkflowStage } from './workflow-meta';
 import { MultiCombobox } from '@/components/ui/combobox';
 import { DatePicker } from '@/components/ui/date-picker';
@@ -325,26 +325,41 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
 
         <TabsContent value="workflow">
         <div className="space-y-4">
-          {/* Lead servicing workflow (Salesforce-style path) */}
-          {opp && (
-            <SectionCard
-              title="Lead servicing workflow"
-              description="Every lead is serviced through this consistent path."
-              action={
+          {/* Per-contact stat cards — click to filter the timeline.
+              Above the funnel: they are the quickest read on this contact, and
+              the funnel below is the thing you act on. */}
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+            {CONTACT_STATS.map((s) => (
+              <StatTile
+                key={s.key}
+                compact
+                label={s.label}
+                value={typeCounts[s.key] ?? 0}
+                icon={s.icon}
+                active={activityFilter === s.key}
+                onClick={() => setActivityFilter((f) => (f === s.key ? 'all' : s.key))}
+              />
+            ))}
+          </div>
+
+          {/* The funnel is now the only account of where this contact stands.
+              The lead-servicing path that used to sit above it told a second,
+              competing version of the same story; its advance control lives
+              here instead, so there is one place to read and one to act. */}
+          <SectionCard
+            title="Fiduciary funnel"
+            description={opp ? stageBlurb[opp.stage] : 'Start this contact in the funnel.'}
+            action={
+              opp ? (
                 <WorkflowActions
                   workflowStage={opp.workflowStage}
                   closedStatus={opp.closedStatus}
                   busy={busy}
                   onSet={(stage) => patchOpp({ workflowStage: stage })}
                 />
-              }
-            >
-              <WorkflowPath workflowStage={opp.workflowStage} closedStatus={opp.closedStatus} />
-            </SectionCard>
-          )}
-
-          {/* Stage stepper */}
-          <SectionCard title="Fiduciary funnel" description={opp ? stageBlurb[opp.stage] : 'Start this contact in the funnel.'}>
+              ) : undefined
+            }
+          >
             {!opp ? (
               <Button onClick={startFunnel} disabled={busy}>Start funnel at Awareness</Button>
             ) : (
@@ -430,21 +445,6 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
               </>
             )}
           </SectionCard>
-
-          {/* Per-contact stat cards — click to filter the timeline */}
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {CONTACT_STATS.map((s) => (
-              <StatTile
-                key={s.key}
-                compact
-                label={s.label}
-                value={typeCounts[s.key] ?? 0}
-                icon={s.icon}
-                active={activityFilter === s.key}
-                onClick={() => setActivityFilter((f) => (f === s.key ? 'all' : s.key))}
-              />
-            ))}
-          </div>
 
           {/* Activity timeline */}
           <SectionCard
