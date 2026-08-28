@@ -173,6 +173,74 @@ export interface CreateProfileInput {
   title?: string;
   phone?: string;
   status?: UserStatus;
+  /**
+   * Manual mode only: the password to sign in with. Required there, because
+   * a manually added user never receives an invite link and so has no other
+   * way to acquire credentials.
+   */
+  password?: string;
+}
+
+/**
+ * An account is two records: credentials in Supabase Auth, and role/status
+ * here in sig_profiles. Only the invite flow used to create the first one,
+ * so a manually added user got a profile and no way to sign in — the account
+ * looked complete in the admin list and failed at the login screen.
+ *
+ * Creates the auth user with the email pre-confirmed: an admin typing a
+ * password on someone's behalf has already vouched for the address, and
+ * leaving it unconfirmed reproduces exactly the silent failure this fixes.
+ */
+async function createAuthUser(email: string, password: string): Promise<string> {
+  const admin = supabaseAdmin.auth.admin as unknown as {
+    createUser: (args: {
+      email: string;
+      password: string;
+      email_confirm: boolean;
+    }) => Promise<{ data: { user?: { id?: string } | null } | null; error: { message?: string; status?: number } | null }>;
+  };
+
+  let res;
+  try {
+    res = await admin.createUser({ email, password, email_confirm: true });
+  } catch (err) {
+    throw new ProfileValidationError(
+      `Could not create sign-in credentials: ${(err as Error).message}`,
+    );
+  }
+
+  if (res.error) {
+    const msg = res.error.message ?? '';
+    if (/already (been )?registered|already exists|duplicate/i.test(msg)) {
+      throw new ProfileValidationError(
+        'Someone is already signed up with that email address. Use the invite flow to send them a link instead of setting a password here.',
+      );
+    }
+    throw new ProfileValidationError(`Could not create sign-in credentials: ${msg}`);
+  }
+
+  const id = res.data?.user?.id;
+  if (!id) {
+    throw new ProfileValidationError(
+      'Supabase Auth accepted the new user but returned no id. Check the service-role key.',
+    );
+  }
+  return id;
+}
+
+/** Best-effort rollback so a failed profile insert cannot orphan credentials. */
+async function deleteAuthUser(authUserId: string): Promise<void> {
+  try {
+    const admin = supabaseAdmin.auth.admin as unknown as {
+      deleteUser: (id: string) => Promise<unknown>;
+    };
+    await admin.deleteUser(authUserId);
+  } catch (err) {
+    console.error(
+      `[rbac] orphaned auth user ${authUserId} — profile insert failed and cleanup did not:`,
+      (err as Error).message,
+    );
+  }
 }
 
 function splitNameFromEmail(email: string): { first: string; last: string } {
@@ -203,8 +271,24 @@ export async function createProfile(
   const status =
     input.status ?? (mode === 'invite' ? USER_STATUSES.INVITED : USER_STATUSES.ACTIVE);
 
+  // Manual mode marks the account active immediately, so it has to arrive with
+  // working credentials — otherwise it presents as ready and cannot sign in.
+  // Invite mode deliberately skips this: the auth user is created when the
+  // invite link is generated, and the invitee sets their own password.
+  let authUserId: string | null = null;
+  if (mode === 'manual') {
+    const password = input.password?.trim() ?? '';
+    if (password.length < 8) {
+      throw new ProfileValidationError(
+        'Adding a user directly requires a password of at least 8 characters. To let them choose their own, send an invite instead.',
+      );
+    }
+    authUserId = await createAuthUser(email, password);
+  }
+
   const insert = {
     email,
+    auth_user_id: authUserId,
     role: input.role,
     first_name: input.firstName?.trim() || fallback.first,
     last_name: input.lastName?.trim() || fallback.last,
@@ -222,6 +306,9 @@ export async function createProfile(
 
   const { data, error } = await supabaseAdmin.from(TABLE).insert(insert).select(COLS).single();
   if (error) {
+    // Roll the credentials back rather than leaving an auth user that no
+    // profile points at — that is the same split-account state in reverse.
+    if (authUserId) await deleteAuthUser(authUserId);
     if (error.code === '23505') {
       throw new ProfileValidationError('A user with that email already exists.');
     }

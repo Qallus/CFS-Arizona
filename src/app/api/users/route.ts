@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     if (isInvite) {
       invite = await sendInvite(user, gate.user.email);
     }
+    // Never echo the password back, not even the one the caller just sent.
     return NextResponse.json({ user, invite }, { status: 201 });
   } catch (err) {
     if (err instanceof TableMissingError) {
