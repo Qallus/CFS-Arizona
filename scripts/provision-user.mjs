@@ -60,9 +60,22 @@ if (!url || !serviceKey) {
 const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 
 /* --------------------------- helpers --------------------------- */
+// Must match the sig_user_role enum exactly — Postgres rejects anything else,
+// and the failure arrives as an opaque enum error rather than a useful one.
 const INTERNAL_ROLES = [
-  'super_admin', 'admin', 'fiduciary', 'case_manager',
-  'bookkeeper', 'support_operations', 'auditor',
+  'super_admin',
+  'owner_leadership',
+  'admin',
+  'financial_planner',
+  'writing_advisor',
+  'servicing_advisor',
+  'planner_administrator',
+  'client_service_associate',
+  'marketing_manager',
+  'event_coordinator',
+  'compliance_reviewer',
+  'support_operations',
+  'read_only',
 ];
 
 function nameFromEmail(addr) {
