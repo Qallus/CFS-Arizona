@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +26,11 @@ interface DialpadModalProps {
   onClose: () => void;
   initialPhone?: string;
   contactName?: string;
+  /** Workflow context — when supplied, a completed call is logged to this contact's timeline. */
+  contactId?: string | null;
+  opportunityId?: string | null;
+  /** Called after a call was written to the timeline, so the caller can refresh it. */
+  onLogged?: () => void;
 }
 
 const DIALPAD_KEYS = [
@@ -43,7 +48,15 @@ const DIALPAD_KEYS = [
   { digit: '#', letters: '' },
 ];
 
-export function DialpadModal({ isOpen, onClose, initialPhone, contactName }: DialpadModalProps) {
+export function DialpadModal({
+  isOpen,
+  onClose,
+  initialPhone,
+  contactName,
+  contactId,
+  opportunityId,
+  onLogged,
+}: DialpadModalProps) {
   const [phoneNumber, setPhoneNumber] = useState(initialPhone || '');
   const [device, setDevice] = useState<Device | null>(null);
   const [activeCall, setActiveCall] = useState<Call | null>(null);
@@ -52,6 +65,52 @@ export function DialpadModal({ isOpen, onClose, initialPhone, contactName }: Dia
   const [isMuted, setIsMuted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  // Call length is measured from the wall clock rather than read off the
+  // display timer: the Twilio event handlers below are registered once and
+  // would otherwise close over the duration value as it was at dial time.
+  const connectedAtRef = useRef<number | null>(null);
+  // 'disconnect' can arrive alongside a local hangup, and both paths end the
+  // call — this keeps a single call from producing two timeline entries.
+  const loggedRef = useRef(false);
+
+  /**
+   * Write a finished call to the contact's timeline, with billable minutes
+   * derived from how long it was actually connected. Rounds up, so a
+   * two-minute-ten call bills as three — matching how the practice already
+   * reports time. Calls that never connected are not logged: an unanswered
+   * ring is not billable, and would bury real contact in noise.
+   */
+  const logCall = useCallback(async () => {
+    if (!contactId || loggedRef.current || connectedAtRef.current === null) return;
+    loggedRef.current = true;
+
+    const seconds = Math.round((Date.now() - connectedAtRef.current) / 1000);
+    connectedAtRef.current = null;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    try {
+      const res = await fetch('/api/crm/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactId,
+          opportunityId: opportunityId || null,
+          type: 'call',
+          direction: 'out',
+          subject: `Call — ${mins}m ${secs}s`,
+          body: `Outbound call to ${phoneNumber}.`,
+          billableMinutes: Math.max(1, Math.ceil(seconds / 60)),
+        }),
+      });
+      if (res.ok) onLogged?.();
+    } catch (err) {
+      // The call happened whether or not we managed to record it. Surfacing
+      // this would be alarming and unactionable mid-hangup.
+      console.error('Could not log the call to the timeline:', err);
+    }
+  }, [contactId, opportunityId, phoneNumber, onLogged]);
 
   useEffect(() => {
     if (initialPhone) {
@@ -147,6 +206,8 @@ export function DialpadModal({ isOpen, onClose, initialPhone, contactName }: Dia
     setError(null);
     setCallStatus('connecting');
     setDuration(0);
+    connectedAtRef.current = null;
+    loggedRef.current = false;
 
     try {
       const call = await device.connect({
@@ -164,11 +225,13 @@ export function DialpadModal({ isOpen, onClose, initialPhone, contactName }: Dia
 
       call.on('accept', () => {
         console.log('Call accepted/connected');
+        connectedAtRef.current = Date.now();
         setCallStatus('connected');
       });
 
       call.on('disconnect', () => {
         console.log('Call disconnected');
+        void logCall();
         setCallStatus('ended');
         setActiveCall(null);
         setTimeout(() => {
@@ -195,11 +258,14 @@ export function DialpadModal({ isOpen, onClose, initialPhone, contactName }: Dia
       setError(err.message);
       setCallStatus('idle');
     }
-  }, [device, phoneNumber]);
+  }, [device, phoneNumber, logCall]);
 
   const handleHangup = useCallback(() => {
     if (activeCall) {
+      // Emits 'disconnect', which is where the call gets logged.
       activeCall.disconnect();
+    } else {
+      void logCall();
     }
     setCallStatus('ended');
     setActiveCall(null);
@@ -207,7 +273,7 @@ export function DialpadModal({ isOpen, onClose, initialPhone, contactName }: Dia
       setCallStatus('idle');
       setDuration(0);
     }, 2000);
-  }, [activeCall]);
+  }, [activeCall, logCall]);
 
   const handleMuteToggle = useCallback(() => {
     if (activeCall) {

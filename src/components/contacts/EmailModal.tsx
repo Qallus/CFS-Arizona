@@ -20,9 +20,22 @@ interface EmailModalProps {
   onClose: () => void;
   initialEmail?: string;
   contactName?: string;
+  /** Workflow context — when supplied, the send is logged to this contact's timeline. */
+  contactId?: string | null;
+  opportunityId?: string | null;
+  /** Called after a send that was written to the timeline, so the caller can refresh it. */
+  onLogged?: () => void;
 }
 
-export function EmailModal({ isOpen, onClose, initialEmail, contactName }: EmailModalProps) {
+export function EmailModal({
+  isOpen,
+  onClose,
+  initialEmail,
+  contactName,
+  contactId,
+  opportunityId,
+  onLogged,
+}: EmailModalProps) {
   const [toEmail, setToEmail] = useState(initialEmail || '');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
@@ -46,16 +59,32 @@ export function EmailModal({ isOpen, onClose, initialEmail, contactName }: Email
     setSending(true);
 
     try {
-      const response = await fetch('/api/email', {
+      // With a contact in hand this is case work: it goes out through Resend
+      // and is written to that contact's timeline. Without one it is just a
+      // message from the shared mailbox, and takes the older SMTP path.
+      const scoped = Boolean(contactId);
+      const response = await fetch(scoped ? '/api/crm/email' : '/api/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          to: toEmail,
-          subject,
-          text: body,
-          cc: cc || undefined,
-          bcc: bcc || undefined,
-        }),
+        body: JSON.stringify(
+          scoped
+            ? {
+                contactId,
+                opportunityId: opportunityId || null,
+                to: toEmail,
+                subject,
+                body,
+                cc: cc || undefined,
+                bcc: bcc || undefined,
+              }
+            : {
+                to: toEmail,
+                subject,
+                text: body,
+                cc: cc || undefined,
+                bcc: bcc || undefined,
+              },
+        ),
       });
 
       const data = await response.json();
@@ -64,6 +93,7 @@ export function EmailModal({ isOpen, onClose, initialEmail, contactName }: Email
         throw new Error(data.error || 'Failed to send email');
       }
 
+      if (data.logged) onLogged?.();
       setSent(true);
       setTimeout(() => {
         handleClose();

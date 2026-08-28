@@ -32,6 +32,7 @@ import {
 } from '@/components/dashboard/page-parts';
 import { cn } from '@/lib/utils';
 import { LogActivityModal } from './LogActivityModal';
+import { EmailModal } from '@/components/contacts/EmailModal';
 import { WorkflowPath, WorkflowActions } from './WorkflowPath';
 import type { WorkflowStage } from './workflow-meta';
 import { MultiCombobox } from '@/components/ui/combobox';
@@ -152,6 +153,7 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [showLog, setShowLog] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
   const [busy, setBusy] = useState(false);
   const [activityFilter, setActivityFilter] = useState<string>('all');
 
@@ -276,9 +278,28 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
               </div>
             </div>
           </div>
-          <Button size="sm" onClick={() => setShowLog(true)}>
-            <Plus className="size-4" /> Log activity
-          </Button>
+          {/* Reach the contact without leaving the funnel — the send writes
+              itself to the activity timeline below, so the billable record no
+              longer depends on remembering to log it.
+
+              Text and call are built but not surfaced: Twilio is on hold, and
+              a button that dials nothing is worse than no button. Restore
+              them by re-adding the two triggers here and their modals at the
+              foot of this component. */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowEmail(true)}
+              disabled={!contact.email}
+              title={contact.email ? `Email ${contact.email}` : 'No email address on this contact'}
+            >
+              <Mail className="size-4" /> Email
+            </Button>
+            <Button size="sm" onClick={() => setShowLog(true)}>
+              <Plus className="size-4" /> Log activity
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -486,6 +507,20 @@ export function ContactDetailClient({ contactId }: { contactId: string }) {
       </Tabs>
 
       <LogActivityModal open={showLog} onOpenChange={setShowLog} contactId={contactId} opportunityId={opp?.id ?? null} onLogged={load} />
+
+      {/* Carries the contact and opportunity, so the send lands on this
+          timeline rather than disappearing into the mailbox. `load` re-reads
+          the activities, which is what makes the new entry appear without a
+          refresh. */}
+      <EmailModal
+        isOpen={showEmail}
+        onClose={() => setShowEmail(false)}
+        initialEmail={contact.email ?? ''}
+        contactName={name}
+        contactId={contactId}
+        opportunityId={opp?.id ?? null}
+        onLogged={load}
+      />
     </PageShell>
   );
 }

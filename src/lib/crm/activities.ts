@@ -149,3 +149,24 @@ export async function logActivity(input: LogActivityInput): Promise<ActivityRow>
   if (error) raisePg(error as PgError);
   return mapActivity(data as Row);
 }
+
+/**
+ * Timeline write for the comms paths (email / SMS / call), which log as a
+ * side effect of an action that has already happened.
+ *
+ * Deliberately swallows its own failure: by the time this runs the message is
+ * already sent and irretrievable, so reporting the send as failed would be a
+ * lie — and would invite the user to send it a second time. A dropped
+ * timeline row is recoverable by hand; a duplicate email to a client is not.
+ */
+export async function tryLogActivity(input: LogActivityInput): Promise<ActivityRow | null> {
+  try {
+    return await logActivity(input);
+  } catch (err) {
+    console.error(
+      `[crm] timeline write failed for ${input.type} on contact ${input.contactId}:`,
+      (err as Error).message,
+    );
+    return null;
+  }
+}

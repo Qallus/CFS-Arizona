@@ -19,9 +19,22 @@ interface SmsModalProps {
   onClose: () => void;
   initialPhone?: string;
   contactName?: string;
+  /** Workflow context — when supplied, the send is logged to this contact's timeline. */
+  contactId?: string | null;
+  opportunityId?: string | null;
+  /** Called after a send that was written to the timeline, so the caller can refresh it. */
+  onLogged?: () => void;
 }
 
-export function SmsModal({ isOpen, onClose, initialPhone, contactName }: SmsModalProps) {
+export function SmsModal({
+  isOpen,
+  onClose,
+  initialPhone,
+  contactName,
+  contactId,
+  opportunityId,
+  onLogged,
+}: SmsModalProps) {
   const [phoneNumber, setPhoneNumber] = useState(initialPhone || '');
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
@@ -53,6 +66,8 @@ export function SmsModal({ isOpen, onClose, initialPhone, contactName }: SmsModa
           action: 'send',
           to: phoneNumber,
           body: message,
+          contactId: contactId || undefined,
+          opportunityId: opportunityId || undefined,
         }),
       });
 
@@ -62,6 +77,7 @@ export function SmsModal({ isOpen, onClose, initialPhone, contactName }: SmsModa
         throw new Error(data.error || 'Failed to send message');
       }
 
+      if (data.logged) onLogged?.();
       setSent(true);
       setTimeout(() => {
         handleClose();

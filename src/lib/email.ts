@@ -32,6 +32,17 @@ export interface SendEmailInput {
   text?: string;
   from?: string;
   replyTo?: string;
+  cc?: string | string[];
+  bcc?: string | string[];
+}
+
+/** Resend wants arrays; the compose form gives comma-separated text. */
+function addressList(v?: string | string[]): string[] | undefined {
+  if (!v) return undefined;
+  const list = (Array.isArray(v) ? v : v.split(','))
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return list.length ? list : undefined;
 }
 
 export interface SendEmailResult {
@@ -59,6 +70,8 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
         html: input.html,
         ...(input.text ? { text: input.text } : {}),
         ...(input.replyTo ? { reply_to: input.replyTo } : {}),
+        ...(addressList(input.cc) ? { cc: addressList(input.cc) } : {}),
+        ...(addressList(input.bcc) ? { bcc: addressList(input.bcc) } : {}),
       }),
     });
     const data = (await res.json().catch(() => ({}))) as { id?: string; message?: string };

@@ -76,7 +76,10 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { action, to, body: messageBody, contacts, template } = body;
+    // contactId / opportunityId are optional workflow context. When present
+    // the text is also written to that contact's activity timeline; without
+    // them this route behaves exactly as before for the bulk/inbox screens.
+    const { action, to, body: messageBody, contacts, template, contactId, opportunityId } = body;
 
     if (action === 'send') {
       // Send single SMS
@@ -98,7 +101,21 @@ export async function POST(request: NextRequest) {
         is_read: true,
       });
 
-      return NextResponse.json({ success: true, messageSid: message.sid });
+      let logged = false;
+      if (contactId) {
+        const { tryLogActivity } = await import('@/lib/crm/activities');
+        const row = await tryLogActivity({
+          contactId: String(contactId),
+          opportunityId: opportunityId ? String(opportunityId) : null,
+          type: 'sms',
+          direction: 'out',
+          subject: 'Text message',
+          body: messageBody || null,
+        });
+        logged = Boolean(row);
+      }
+
+      return NextResponse.json({ success: true, messageSid: message.sid, logged });
     }
 
     if (action === 'bulk') {

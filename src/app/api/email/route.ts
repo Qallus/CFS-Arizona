@@ -246,7 +246,7 @@ export async function POST(request: NextRequest) {
     const transporter = createTransporter();
 
     const mailOptions: any = {
-      from: `"ChannelCast" <${EMAIL_CONFIG.address}>`,
+      from: `"${process.env.EMAIL_FROM_NAME || 'Certified Fiduciary Services'}" <${EMAIL_CONFIG.address}>`,
       to,
       subject,
       text: text || '',
