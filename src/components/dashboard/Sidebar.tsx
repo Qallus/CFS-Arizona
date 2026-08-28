@@ -84,7 +84,7 @@ const navigation: NavGroup[] = [
   },
   {
     label: 'Product',
-    items: [{ name: 'Build Notes', href: '/build-notes', icon: Map }],
+    items: [{ name: 'Outline', href: '/outline', icon: Map }],
   },
 ];
 
