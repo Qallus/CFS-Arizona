@@ -25,6 +25,7 @@ import {
   Car,
   ShieldCheck,
   Settings,
+  Map,
   X,
   LogOut,
 } from 'lucide-react';
@@ -80,6 +81,10 @@ const navigation: NavGroup[] = [
       { name: 'Website', href: '/website', icon: Globe },
       { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     ],
+  },
+  {
+    label: 'Product',
+    items: [{ name: 'Build Notes', href: '/build-notes', icon: Map }],
   },
 ];
 
